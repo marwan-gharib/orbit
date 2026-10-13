@@ -21,8 +21,8 @@ Update it whenever `core/` gains, loses, or changes a reusable piece (DOC-6).
 
 ## Utils
 
+- `AppConsts` (base URL for every request) — core/constants/app_consts.dart
 - `ApiResult<T>` (+ `fold`) — core/utils/api_result.dart
-- `UseCase`, `UseCaseWithoutParams` — core/utils/use_case.dart
 - `PagedResult<T>` — core/utils/paged_result.dart
 - `Validators` — core/utils/validators.dart
 - `Logger` — core/utils/logger.dart
@@ -51,7 +51,7 @@ Update it whenever `core/` gains, loses, or changes a reusable piece (DOC-6).
 ## Localization
 
 - slang source of truth — `assets/i18n/<locale>.i18n.json`; regenerate with `dart run slang`.
-- Generated translations — lib/generated/i18n/ (never edit by hand).
+- Generated translations — lib/core/i18n/ (never edit by hand).
 - Config — `slang.yaml` (`string_interpolation: braces`).
 
 ## Theme / router / DI
