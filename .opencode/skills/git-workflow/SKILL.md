@@ -1,0 +1,67 @@
+---
+name: git-workflow
+description: Prepare clean commits, branch names, and pull request descriptions using Conventional Commits and small focused changes. Use ONLY when the user asks to commit, write a commit message, name a branch, or draft a PR description.
+metadata:
+  opencode/slash: "true"
+---
+
+# Git Workflow
+
+The agent never commits or pushes on its own (CORE-13). Use this skill only when the user
+explicitly asks. `git push` is denied by `opencode.json`. Never force-push or rewrite shared history.
+
+## When to use
+"Commit this", "write a commit message", "name the branch", "write the PR description".
+
+## Branch names
+`<type>/<short-kebab-description>`, e.g. `feat/product-details`, `fix/login-token-refresh`,
+`refactor/orders-cubit-split`, `docs/auth-feature-doc`.
+
+## Commits (Conventional Commits)
+Format: `<type>(<scope>): <imperative summary, max 72 chars>`
+
+| Type | Use for |
+|---|---|
+| `feature` | New behavior for users |
+| `fix` | Bug fix |
+| `refactor` | Structure change, no behavior change |
+| `test` | Tests only |
+| `docs` | Docs only (including `FEATURE.md`) |
+| `chore` | Tooling, config, dependencies |
+| `perf` | Performance improvement |
+| `style` | Formatting only |
+
+Scope is the feature or area: `feat(products): add product details screen`.
+Body (optional): why, not what. Mention breaking changes with `BREAKING CHANGE:`.
+
+## Procedure
+1. `git status` and `git diff` to see exactly what changed. Never commit files you did not mean to (generated files, `.env`).
+2. **One logical change per commit.** Split unrelated changes. A feature commit includes its tests and its `FEATURE.md` update.
+3. Verify the Definition of Done passes before committing (CORE-24..31).
+4. Stage specific files, not `git add .` blindly.
+5. Write the message. Use the attribution trailer the environment requires, if any.
+
+## Pull request description
+```markdown
+## What
+<one or two sentences>
+
+## Why
+<problem or ticket>
+
+## Changes
+- <by layer or feature, short bullets>
+
+## Testing
+- <tests added, how verified, commands run>
+
+## Docs
+- FEATURE.md updated: <features>
+
+## Notes for reviewer
+- <risky areas, follow-ups, Noticed items>
+```
+Keep PRs small and focused. If a PR touches more than one feature or mixes refactor with behavior, suggest splitting.
+
+## Precedence
+`AGENTS.md` and `.opencode/rules/` override this skill. On conflict, cite the rule ID and follow the rule.

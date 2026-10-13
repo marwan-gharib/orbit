@@ -2,9 +2,11 @@
 
 ## Networking
 
-- DATA-1  HTTP goes only through `BaseApiClient` (abstract, in `core/network/`). Its single
-          implementation is the only file that imports `dio`. A datasource never imports
-          `dio` and never builds a `Dio` instance.
+- DATA-1  HTTP goes only through `BaseApiClient` (abstract, in `core/network/`).
+          `dio` may be imported only inside `core/network/` (the implementation and its
+          interceptors) and by the `Dio` error classifier in `core/errors/`. A datasource,
+          repository, usecase or widget never imports `dio` and never builds a `Dio`
+          instance.
 - DATA-2  Interceptors own auth-token attachment, logging, error mapping, refresh.
           Never duplicate that logic in a datasource or repository.
 - DATA-3  Validate the request/response shape at the data-layer boundary (models parse

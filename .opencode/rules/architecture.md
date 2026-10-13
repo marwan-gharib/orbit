@@ -65,8 +65,10 @@ test/                                # mirrors lib/ exactly
 - ARCH-4  Code used by 2+ features belongs in `core/`. Before writing anything that
           looks reusable, read `docs/CORE_MAP.md`, then search `core/`. Reuse; do not duplicate.
 - ARCH-5  Everything in `core/` is built on an abstraction (api client, secure storage,
-          cache storage, logger, analytics...). Only the single implementation class may
-          import the underlying package (dio, shared_preferences, flutter_secure_storage...).
+          cache storage, logger, analytics...). Only the implementation inside `core/network/`
+          and its interceptors may import `dio` (plus the `Dio` error classifier in
+          `core/errors/`); every other package (shared_preferences, flutter_secure_storage...)
+          is imported by its single implementation class only.
           Each implementation owns its error handling so no caller can forget it.
 - ARCH-6  Datasources have NO abstract interface. `RemoteDataSource` / `LocalDataSource`
           are plain concrete classes. The only abstraction boundary is the repository

@@ -34,7 +34,7 @@ abstract class UseCaseWithoutParams<Output> {
 - ERR-2  Exceptions are caught in the data layer and mapped to a `Failure` subtype.
          Follow the existing mechanism (API client implementation + an existing
          `RepositoryImpl`). Do not invent a second error-mapping approach.
-         New `Failure` subtypes are added only in `core/error/`.
+         New `Failure` subtypes are added only in `core/errors/`.
 - ERR-3  Consume results with `fold()`, never by unwrapping. The domain layer propagates
          `ApiResult` unchanged. The Cubit maps it to a state; widgets never see raw exceptions.
 - ERR-4  A `Failure` becomes user text through ONE shared mapping (extension in

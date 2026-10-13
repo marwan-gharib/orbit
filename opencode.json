@@ -29,6 +29,9 @@
       "git commit*": "deny",
       "git push*": "deny",
       "rm *": "ask"
+    },
+    "skill": {
+      "*": "allow"
     }
   }
 }
