@@ -2,25 +2,12 @@
 
 ## Domain rules
 
-- DOM-1  Usecase contracts (already in `core/utils/`, do not redefine):
-
-```dart
-abstract class UseCase<Output, Input> {
-  Future<ApiResult<Output>> call(Input input);
-}
-
-// No input at all: never force a dummy Params object such as NoParams().
-abstract class UseCaseWithoutParams<Output> {
-  Future<ApiResult<Output>> call();
-}
-```
-
 - DOM-2  Every usecase file/class ends in `UseCase` (`login_usecase.dart` → `LoginUseCase`).
          Never a variant spelling.
 - DOM-3  Input rules:
          - More than one primitive input → ONE `*Params` class in `domain/params/`.
          - Exactly one primitive/id input → may be passed directly.
-         - No input → implement `UseCaseWithoutParams<Output>`.
+         - No input → `call()` takes no parameters; never force a dummy Params object such as `NoParams()`.
 - DOM-4  Usecases return `ApiResult<T>` only. No nullable returns, no raw exceptions,
          no `void` that hides failure.
 - DOM-5  Repository contracts live in `domain/repositories/`, are `abstract` and

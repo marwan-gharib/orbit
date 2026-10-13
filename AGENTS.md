@@ -52,7 +52,33 @@ Reference feature (mirror its structure and style): `lib/features/auth` (if exis
 | Tests only                                                         | testing                                                                                                     |
 | Docs only                                                          | feature-docs                                                                                                |
 
-## 4. Commands (use them — they enforce the process)
+## 4. Skills (load with the `skill` tool BEFORE the work they cover)
+
+Skills live in `.opencode/skills/`. Rules always win over skills (a skill never overrides a rule ID).
+
+| Situation                                              | Load skill                                   |
+|--------------------------------------------------------|----------------------------------------------|
+| Writing or editing any code                            | `clean-code`                                 |
+| Designing or growing a class, Cubit, repo, service     | `solid-principles`                           |
+| Deciding where code goes, layer or import questions    | `clean-architecture`                         |
+| After ANY change to a feature, or FEATURE.md missing   | `feature-doc`                                |
+| New feature from scratch                               | `feature-scaffold` (+ `write-tests`, `feature-doc`) |
+| New API call in an existing feature                    | `add-endpoint` (+ `write-tests`, `feature-doc`) |
+| Adding or changing behavior, or any test work          | `write-tests`                                |
+| Bug, crash, wrong behavior, failing test               | `debugging`                                  |
+| User explicitly asks to refactor / restructure         | `refactoring`                                |
+| User asks for a review of a diff or PR                 | `code-review`                                |
+| Slow, janky, memory, or "optimize"                     | `performance-audit`                          |
+| Auth, tokens, personal data, deep links, WebView       | `security-review`                            |
+| Task seems to need a new package                       | `package-evaluation`                         |
+| User asks to commit, name a branch, or write a PR text | `git-workflow`                               |
+| Preparing a build for testers or the stores            | `release-readiness`                          |
+
+Print one extra line next to `Rules loaded:` →  `Skills loaded: <names>` (or `Skills loaded: none`).
+
+
+
+## 5. Commands (use them — they enforce the process)
 
 | Command                  | Use when                                                          |
 |--------------------------|-------------------------------------------------------------------|
@@ -62,7 +88,7 @@ Reference feature (mirror its structure and style): `lib/features/auth` (if exis
 | `/review`                | Reviewing the current diff against all rules (read-only subagent) |
 | `/doc-sync <feature>`    | Creating or repairing a `FEATURE.md` from the code                |
 
-## 5. Done means
+## 6. Done means
 
 Defined in `00-core.md` section G. Short form: format → analyze → tests →
 slang (if i18n changed) → FEATURE.md updated → self-review. A failed step means

@@ -36,12 +36,10 @@ abstract class ProductRepository {
 
 ## domain/usecases/get_product_usecase.dart
 ```dart
-// ADAPT: base class and import path from core/utils. One primitive input may be passed directly.
-class GetProductUseCase implements UseCase<ProductEntity, String> {
+class GetProductUseCase {
   const GetProductUseCase(this._repository);
   final ProductRepository _repository;
 
-  @override
   Future<ApiResult<ProductEntity>> call(String id) => _repository.getProduct(id);
 }
 ```
