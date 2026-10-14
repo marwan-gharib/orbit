@@ -31,10 +31,11 @@ Update it whenever `core/` gains, loses, or changes a reusable piece (DOC-6).
 ## Shared widgets
 - `AppButton`, `AppTextField`, `AppLoader`, `AppSnackBar` — core/widgets/…
 
-## Animations (`core/animations/`, barrel `animations.dart`)
+## Animations (`core/animations/`, barrel `animations.dart`, cheat sheet `core/animations/README.md`, dev gallery `lib/dev/animations_showcase_page.dart`)
 - Tokens — `AppDurations`, `AppCurves`, `AppAnimationConstants` — core/animations/tokens/… (the only place durations, curves, motion numbers live).
 - Engine — `Entrance` — core/animations/entrance/entrance.dart — plays once on first build, Interval-based delay (no timers), honours `disableAnimations`.
 - Entrances — `FadeIn`, `SlideIn`, `ScaleIn`, `FadeSlideIn`, `BlurIn` — core/animations/entrance/… (RTL-aware, generic over `child`).
+- Facade — `WidgetAnimations` (extension on `Widget`: `.fadeIn()`, `.slideIn()`, `.scaleIn()`, `.fadeSlideIn(delay:)`, `.blurIn()`, `.tapScale(onTap:)`, `.shake(controller)`, `.pulse()`, `.bounce(controller)`, `.staggered(index:)`, `.revealOnScroll()`) — core/animations/extensions/animate_extension.dart — thin pass-through to the widget of the same name; defaults stay on the widgets.
 - Staggered — `StaggeredItem` (engine), `StaggeredListItem`, `StaggeredGridItem`, `StaggeredColumn` — core/animations/staggered/… — `index × stagger` delay, past-cap items render immediately; keep-alive so entrances never replay on scroll-back (bounded by `maxStaggerIndex`, not list length).
 - Feedback — `TapScale`, `ShakeWidget`/`ShakeController`, `PulseWidget`, `BounceWidget`/`BounceController` — core/animations/feedback/… (press scale, error shake, breathing loop, one-shot pop; Shake/Bounce fire from a Cubit `trigger` counter or a controller, and every motion honours `disableAnimations`).
 - Haptics — `AppHaptics` (+ `HapticType`) — core/animations/feedback/app_haptics.dart — the only caller of `HapticFeedback`; global `enabled` switch.
