@@ -20,7 +20,7 @@ adds engineering judgment (bugs, design, risk). Use both on large changes.
 2. **Review in this order** (stop to flag blockers early):
    1. **Correctness:** logic errors, off-by-one, null handling, async races (state used after `await`),
       missing `isClosed` or `mounted` checks, wrong error mapping, edge cases (empty, huge, malformed, offline).
-   2. **Architecture:** layer boundaries (use the `clean-architecture` verify commands), responsibilities (`solid-principles`).
+   2. **Architecture:** layer boundaries (use the `clean-architecture` verify commands), responsibilities (`solid-principles`), string literals used as keys, paths, or routes (ARCH-10).
    3. **Security:** secrets, tokens in logs, unvalidated input (see `security-review`).
    4. **Tests:** every new or changed behavior covered? Failure paths? Would the tests fail if the code were wrong?
    5. **Performance:** rebuild scope, work in `build()`, unbounded lists, repeated network calls (see `performance-audit`).

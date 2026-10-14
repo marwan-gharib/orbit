@@ -35,7 +35,7 @@ Crashes, exceptions, wrong UI, state not updating, flaky or failing tests, "it w
 | UI does not update after state change | State not a new instance, mutated list inside the same state, equality makes states equal (ARCH-9, STATE-8) |
 | UI rebuilds too often or loops | Creating objects or Cubits inside `build()`, `BlocBuilder` with no `buildWhen`, emitting in a listener that retriggers itself |
 | Null or type error from the API | Unvalidated payload (DATA-3), server contract changed, model parses optional as required |
-| Works first time, breaks on revisit | Cubit registered as singleton, or state held in a shared instance (DI-2) |
+| Works first time, breaks on revisit | Cubit registered as singleton, or state held in a shared instance (DI-3) |
 | Overflow stripes | Fixed sizes, long text, large font scale or RTL (UI-6) |
 | Wrong text direction or misplaced icons | `left`/`right` instead of directional APIs (UI-5) |
 | Flaky test | Real time, real async race, shared mutable state between tests, missing `await` |

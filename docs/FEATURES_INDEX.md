@@ -5,7 +5,6 @@ Maintained under DOC-2 / DOC-3 (`.opencode/rules/feature-docs.md`).
 
 | Feature | Purpose | Doc | Routes | Depends on |
 |---------|---------|-----|--------|------------|
-| home | Boot/landing screen; replaces the removed counter demo | lib/features/home/FEATURE.md | / | core (slang i18n) |
+| auth | Login, session, token refresh | lib/features/auth/FEATURE.md | /login | core/network, core/local/secure |
 
-<!-- Row format: | <feature> | <purpose> | lib/features/<feature>/FEATURE.md | <routes> | <depends on> | -->
-<!-- Run /doc-sync <feature> to generate each FEATURE.md. -->
+<!-- Replace the example row with your real features. Run /doc-sync <feature> to generate each FEATURE.md. -->

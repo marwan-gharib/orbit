@@ -17,15 +17,22 @@ Reference feature (mirror its structure and style): `lib/features/auth` (if exis
        (`*.g.dart`, slang output), `android/`, `ios/`, `.env*` without explicit approval.
 - H-2  Never add a package. Propose it and wait for approval.
 - H-3  Never rename, move, or delete files without explicit instruction.
-       Never `git commit` / `git push` unless asked.
+       Never run `git commit` / `git push` (denied in `opencode.json`); when asked, prepare the
+       message or PR text with the `git-workflow` skill and let the user run git.
 - H-4  Presentation → Domain → Data. Domain never imports `package:flutter`.
        Cubit/Bloc depends on usecases only.
 - H-5  No hardcoded user-facing string, no hardcoded color/text style,
-       no `Navigator.push`, no `dio` outside the API client implementation.
+       no `Navigator.push`, no `dio` import outside `core/network/` and the Dio error
+       classifier in `core/errors/`.
 - H-6  Never guess a file path, class name, or API. Search or ask.
 - H-7  Smallest change that solves the problem. No drive-by refactoring.
 - H-8  Any change to a feature updates that feature's `FEATURE.md` in the same task.
 - H-9  If a request conflicts with a rule, name the rule ID and ask. Never override silently.
+- H-10 No string literal as a key, path, or identifier. Every API/JSON field name, query/body/header
+       name, endpoint, route name/path, storage/cache key, asset path, env variable name, and event
+       name MUST be a constant in `core/constants/` (ApiKeys, Endpoints, AppRoutes, Assets,
+       AppConsts, ... one file per purpose). The only place such a literal may be written is
+       inside those files. No exceptions. No fitting file? Create a new one there. Full rule: ARCH-10.
 
 ## 2. Before writing any code (mandatory order)
 
@@ -34,7 +41,8 @@ Reference feature (mirror its structure and style): `lib/features/auth` (if exis
    Open source files only after that, and only the ones you need.
 3. Read every rule file listed for the task type. If several types apply, read the union.
 4. When creating something new, read the reference feature first.
-5. Print one line before the first edit: `Rules loaded: <file names>`.
+5. Load the skills required by section 4, then print one line before the first edit:
+   `Rules loaded: <file names>` and `Skills loaded: <names>` (or `Skills loaded: none`).
 
 ## 3. Routing table
 
@@ -51,6 +59,7 @@ Reference feature (mirror its structure and style): `lib/features/auth` (if exis
 | Change inside `core/`                                              | architecture, data-layer (if network/local), feature-docs (update `docs/CORE_MAP.md`)                       |
 | Tests only                                                         | testing                                                                                                     |
 | Docs only                                                          | feature-docs                                                                                                |
+| New or changed constant (key, endpoint, route, asset)              | architecture (ARCH-10), feature-docs (update `docs/CORE_MAP.md`)                                            |
 
 ## 4. Skills (load with the `skill` tool BEFORE the work they cover)
 
@@ -74,9 +83,7 @@ Skills live in `.opencode/skills/`. Rules always win over skills (a skill never 
 | User asks to commit, name a branch, or write a PR text | `git-workflow`                               |
 | Preparing a build for testers or the stores            | `release-readiness`                          |
 
-Print one extra line next to `Rules loaded:` →  `Skills loaded: <names>` (or `Skills loaded: none`).
-
-
+Print `Skills loaded: <names>` (or `Skills loaded: none`) next to the `Rules loaded:` line.
 
 ## 5. Commands (use them — they enforce the process)
 

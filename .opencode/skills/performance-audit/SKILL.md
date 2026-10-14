@@ -47,7 +47,7 @@ Jank, slow screens, slow startup, memory growth, battery complaints, "optimize t
 - Dispose controllers, focus nodes, animation controllers, and stream subscriptions. Cancel timers. Close Cubits (provided via `BlocProvider`) (STATE-6, UI-9).
 
 **Startup**
-- Lazy registration in DI (`registerLazySingleton`, DI-2). Defer non-critical init until after the first frame.
+- Lazy registration in DI (`registerLazySingleton`, DI-3). Defer non-critical init until after the first frame.
 
 **Network**
 - Debounce search input (a Bloc case, STATE-1), cache per repository policy (DATA-8), avoid duplicate in-flight requests, paginate.

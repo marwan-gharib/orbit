@@ -2,6 +2,10 @@
 
 ## Domain rules
 
+- DOM-1  A usecase is a plain concrete class with ONE public method, `call(...)`, that returns
+         `Future<ApiResult<T>>`. There is NO base class and NO abstract usecase interface: no
+         `UseCase<Output, Input>`, no `UseCaseWithoutParams`, no `NoParams`. A usecase
+         `extends` / `implements` nothing. The Cubit calls it like a function: `await _getProduct(id)`.
 - DOM-2  Every usecase file/class ends in `UseCase` (`login_usecase.dart` → `LoginUseCase`).
          Never a variant spelling.
 - DOM-3  Input rules:

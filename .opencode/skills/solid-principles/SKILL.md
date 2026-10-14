@@ -16,22 +16,22 @@ about 200 lines; a class that is hard to unit test; design review.
 
 | Principle | Meaning | Where it shows up here |
 |---|---|---|
-| **S**ingle Responsibility | One reason to change | Usecase = one business operation. Cubit = state orchestration only. Mapper = one conversion. `RepositoryImpl` = orchestration, caching, mapping, error mapping. Widget = layout. |
+| **S**ingle Responsibility | One reason to change | Usecase = one business operation (a plain class with `call()`, no base class). Cubit = state orchestration only. `toEntity()` or a view-model mapper = one conversion. `RepositoryImpl` = orchestration, caching, mapping, error mapping. Widget = layout. |
 | **O**pen/Closed | Add behavior by adding code, not editing stable code | New payment method or filter = new strategy class registered in one place, not another branch in 6 switches. |
 | **L**iskov Substitution | Any implementation honors the contract | A `RepositoryImpl` returns `ApiResult` per the contract and never throws. A fake in tests behaves like the real one. |
 | **I**nterface Segregation | Small, focused contracts | One repository contract per aggregate. Widgets take a view model or primitives, not a whole state or entity. |
-| **D**ependency Inversion | Depend on abstractions at boundaries | Cubit -> usecases. Usecase -> repository contract. `core/` -> `BaseApiClient` and storage abstractions. Everything constructor-injected (DI-3). |
+| **D**ependency Inversion | Depend on abstractions at boundaries | Cubit -> usecases. Usecase -> repository contract. `core/` -> `BaseApiClient` and storage abstractions. Everything constructor-injected (DI-4). |
 
 ## Violation signals and fixes
 
 **SRP**
 - Signals: class name contains `And` / `Manager` / `Helper`; imports span 3 or more layers;
   a Cubit that formats strings, validates forms, or builds requests.
-- Fix: move formatting to a mapper or extension, validation to a usecase or validator, request building to the datasource.
+- Fix: move formatting to a presentation mapper or an extension, validation to a usecase or validator, request building to the datasource.
 
 **OCP**
 - Signals: the same `switch` on a type or enum repeated in several files; every new variant edits many files.
-- Fix: one strategy interface plus implementations, or a `sealed` hierarchy with the behavior on the variants, or use `Strategy Design Pattern`.
+- Fix: the Strategy pattern (one strategy interface plus implementations) or a `sealed` hierarchy with the behavior on the variants.
 - Note: a `sealed` class with exhaustive `switch` is closed on purpose (STATE-3). The compiler tells you every place to update. That is fine for UI states.
 
 **LSP**
@@ -43,7 +43,7 @@ about 200 lines; a class that is hard to unit test; design review.
 - Fix: split by use case or aggregate.
 
 **DIP**
-- Signals: a Cubit constructing its own repository; `getIt<T>()` inside a class (DI-3); a domain class importing `data/` or a package.
+- Signals: a Cubit constructing its own repository; `getIt<T>()` inside a class (DI-4); a domain class importing `data/` or a package.
 - Fix: accept the abstraction through the constructor.
 - Project exception: datasources have no interface on purpose (ARCH-6). The abstraction boundary is the repository contract. Do not add interfaces to datasources.
 

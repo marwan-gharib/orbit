@@ -33,12 +33,13 @@ deleting files needs explicit instruction (CORE-9).
 | Several positional primitives | Introduce a `Params` object (DOM-3) |
 | Repeated `switch` on a type | Replace with a `sealed` hierarchy or strategy (see `solid-principles`) |
 | Business logic in a widget or Cubit | Move to a usecase (ARCH-2, STATE-2) |
-| Inline JSON or entity conversion | Extract a mapper (DATA-5) |
+| Inline JSON or entity conversion | Move it into the model's `toEntity()` or a presentation mapper (DATA-5) |
 | God Cubit with unrelated state | Split into focused Cubits per concern, each at route level |
 | Duplicated code in 2+ features | Move to `core/` after checking `docs/CORE_MAP.md` (ARCH-4) |
 | Boolean flag params | Split into two named functions |
 | Deep nesting | Guard clauses, `switch` expressions |
 | Hardcoded strings or colors | Move to i18n and theme extension (UI-1, UI-4) |
+| String literal as a key, path, route, or asset | Move to `core/constants/` (ARCH-10) |
 
 ## Stop conditions
 Stop and ask if: tests cannot be made green after a step, the scope keeps growing, a public

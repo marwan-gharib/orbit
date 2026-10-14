@@ -2,7 +2,7 @@
 
 ## Dependency injection
 
-- DI-1  In first read `lib/core/di/feature_module_registry.md`.
+- DI-1  Before adding or changing any DI registration, read `lib/core/di/feature_module_registry.md` first.
 - DI-2  `get_it` only. All registrations live in `core/di/`.
 - DI-3  Lifetimes:
         - Cubit/Bloc → `registerFactory`.
@@ -20,7 +20,8 @@
 - NAV-1  `go_router` only. No `Navigator.push` / `pop` / `showDialog`-based flows that
          bypass the router for screens.
 - NAV-2  Routes are declared in `core/router/`. Route names and paths are manual constants
-         (typed routes need build_runner and are not allowed).
+         kept in `core/constants/` (`AppRoutes`, ARCH-10); typed routes need build_runner and
+         are not allowed.
 - NAV-3  A Cubit never navigates. It emits a state (e.g. `LoginSuccess`); a `BlocListener`
          in the widget reacts and calls `context.go` / `context.push` through the `BuildContext`
          extension. Use `listenWhen` so only the intended state triggers navigation.

@@ -10,8 +10,9 @@ flagging a conflict.
           Read source files only after that, and only the ones you need.
 - CORE-3  Read every rule file the routing table requires. Never work from memory.
 - CORE-4  When creating anything new, read the reference feature and mirror it.
-- CORE-5  Print one line before the first edit: `Rules loaded: <file names>`.
-          Several task types apply → load the union.
+- CORE-5  Print one line before the first edit: `Rules loaded: <file names>`, and next to it
+          `Skills loaded: <names>` (or `none`) after loading the skills required by `AGENTS.md`
+          section 4. Several task types apply → load the union.
 
 ## B. Working agreement
 
@@ -29,14 +30,16 @@ flagging a conflict.
           silently override it and do not silently comply.
 - CORE-12 Legacy code that violates these rules: follow the rules in new and
           changed code only, leave the rest alone, report it under `Noticed:`.
-- CORE-13 No `git commit` / `git push` unless explicitly asked.
+- CORE-13 Never run `git commit` / `git push` (both are denied in `opencode.json`). When the user
+          asks, prepare the commit message, branch name, or PR text with the `git-workflow`
+          skill and let the user run git.
 
 ## C. Workflow per change
 
 1. Task start protocol (section A).
 2. Read the code you will touch.
 3. Apply the smallest correct change, layer by layer in this order:
-   domain → data → presentation → DI → route → i18n → tests → docs.
+   constants → domain → data → presentation → DI → route → i18n → tests → docs.
 4. Run the Definition of Done (section G).
 5. Run the self-review checklist (section H).
 6. Report using the format in section F.
@@ -87,14 +90,14 @@ Noticed: <one line, optional>
 
 ## H. Self-review checklist (confirm every group that your diff touches)
 
-- Any code        → H-1..H-9, CORE-7..CORE-16
-- Any new file    → ARCH-1, ARCH-6, ARCH-7, ARCH-8, ARCH-9
+- Any code        → H-1..H-10, ARCH-10, CORE-7..CORE-16
+- Any new file    → ARCH-1, ARCH-6, ARCH-7, ARCH-8, ARCH-9, ARCH-10
 - Domain          → DOM-1..DOM-6, ERR-1
 - Data            → DATA-1..DATA-9, ERR-2
 - State           → STATE-1..STATE-8, ERR-3, ERR-4
 - UI              → UI-1..UI-9, STATE-3, STATE-5
-- DI / routes     → DI-1..DI-4, NAV-1..NAV-4
-- Tests           → TEST-1..TEST-6
+- DI / routes     → DI-1..DI-5, NAV-1..NAV-4
+- Tests           → TEST-1..TEST-7
 - Docs            → DOC-1..DOC-6
 - Protected files untouched: `pubspec.yaml`, `analysis_options.yaml`, generated files,
   `android/`, `ios/`, env files, and no new package.

@@ -64,6 +64,7 @@ Sections in the template: 1 Purpose, 2 Screens & routes, 3 File map, 4 Entities 
 ## Quality bar
 - Someone new to the feature can answer "what does it do, where is X, what does it depend on?" without opening code.
 - Every path in the doc exists. Every table row is current.
+- Endpoints and keys are listed by constant name (`Endpoints.product`), never as raw strings.
 - No filler. Empty sections say `none`, not `TBD`.
 
 ## Precedence

@@ -16,6 +16,7 @@ WebViews, new dependencies, pre-release review, or an explicit security request.
 **Secrets and config**
 - [ ] No API keys, tokens, passwords, or private URLs in source, assets, or `FEATURE.md`.
       Config comes from build-time `--dart-define` or flavor config. Never commit `.env`.
+      Environment variable NAMES live in `core/constants/` (ARCH-10); secret VALUES never appear in source.
 - [ ] Anything shipped in the app is treated as public. Real secrets stay on the server.
 
 **Storage**

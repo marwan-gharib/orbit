@@ -15,7 +15,7 @@
 |-------|--------------------------------------|----------------|
 | presentation | screens/…, cubits/…/…, view_models/…, mappers/… | |
 | domain | entities/…, repositories/…, usecases/…, params/… | |
-| data | datasources/remote/…, datasources/local/…, models/…, mappers/…, repositories/… | |
+| data | datasources/remote/…, datasources/local/…, models/…, repositories/… | |
 
 ## 4. Entities & models
 | Entity | Key fields | Model (data) | Notes |
@@ -26,8 +26,8 @@
 |---------|-------|--------|------------------------|
 
 ## 6. API & storage
-| Endpoint / key | Method | Used by (datasource method) | Cache policy |
-|----------------|--------|-----------------------------|--------------|
+| Endpoint / key (constant name, e.g. `Endpoints.product`) | Method | Used by (datasource method) | Cache policy |
+|----------------------------------------------------------|--------|-----------------------------|--------------|
 
 ## 7. State
 - Cubit/Bloc: `<Name>` — Cubit | Bloc (reason: <one line>)

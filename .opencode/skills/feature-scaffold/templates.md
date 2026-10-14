@@ -1,9 +1,38 @@
 # Skeletons (structure only)
 
 Replace `Product` with the real name. Anything marked `// ADAPT` must be copied from the
-reference feature or `core/`; the exact API of `ApiResult`, `UseCase`, `BaseApiClient`
-and `Failure` differs per project. Equality follows ARCH-9 (use `Equatable` only if it is
+reference feature or `core/`; the exact API of `ApiResult`, `BaseApiClient`, `Failure` and the
+shared widgets differs per project. Equality follows ARCH-9 (use `Equatable` only if it is
 already in `pubspec.yaml`, otherwise implement `==` / `hashCode`).
+
+Every key, path, route, and asset is a constant from `core/constants/` (ARCH-10). A string
+literal may be written only inside those constants files.
+
+## core/constants/api_keys.dart
+```dart
+abstract final class ApiKeys {
+  static const String productId = 'id';
+  static const String productName = 'name';
+  static const String productPriceCents = 'price_cents';
+}
+```
+
+## core/constants/endpoints.dart
+```dart
+abstract final class Endpoints {
+  static const String products = '/products';
+  static String product(String id) => '$products/$id';
+}
+```
+
+## core/constants/app_routes.dart
+```dart
+abstract final class AppRoutes {
+  static const String productDetailsName = 'product-details';
+  static const String productDetailsPath = '/products/:id';
+  static const String productIdParam = 'id';
+}
+```
 
 ## domain/entities/product_entity.dart
 ```dart
@@ -34,13 +63,31 @@ abstract class ProductRepository {
 }
 ```
 
-## domain/usecases/get_product_usecase.dart
+## domain/usecases (plain classes: one `call`, no base class, DOM-1)
 ```dart
+// domain/usecases/get_product_usecase.dart  (one primitive input, passed directly)
 class GetProductUseCase {
   const GetProductUseCase(this._repository);
   final ProductRepository _repository;
 
   Future<ApiResult<ProductEntity>> call(String id) => _repository.getProduct(id);
+}
+
+// domain/usecases/get_products_usecase.dart  (several inputs: one Params object)
+class GetProductsUseCase {
+  const GetProductsUseCase(this._repository);
+  final ProductRepository _repository;
+
+  Future<ApiResult<PagedResult<ProductEntity>>> call(GetProductsParams params) =>
+      _repository.getProducts(page: params.page, pageSize: params.pageSize);
+}
+
+// domain/usecases/get_session_usecase.dart  (no input: call() takes nothing)
+class GetSessionUseCase {
+  const GetSessionUseCase(this._repository);
+  final SessionRepository _repository;
+
+  Future<ApiResult<UserEntity>> call() => _repository.getSession();
 }
 ```
 
@@ -56,31 +103,30 @@ class GetProductsParams {
 ## data/models/product_model.dart
 ```dart
 class ProductModel {
-  const ProductModel({
-    required this.id,
-    required this.name,
-    required this.priceCents,
-  });
+  const ProductModel({required this.id, required this.name, required this.priceCents});
 
   final String id;
   final String name;
   final int priceCents;
 
   factory ProductModel.fromJson(Map<String, dynamic> json) {
-    return ProductModel(
-      id: (json['id']).toString(),
-      name: (json['name']).toString(),
-      priceCents: int.parse((json['price_cents']).toString()),
-    );
+    // Defensive parsing (DATA-3): a wrong shape becomes a Failure upstream, not a late crash.
+    final id = json[ApiKeys.productId];
+    final name = json[ApiKeys.productName];
+    final priceCents = json[ApiKeys.productPriceCents];
+    if (id is! String || name is! String || priceCents is! int) {
+      throw const FormatException();
+    }
+    return ProductModel(id: id, name: name, priceCents: priceCents);
   }
 
   Map<String, dynamic> toJson() => {
-    'id': id,
-    'name': name,
-    'price_cents': priceCents,
-  };
+        ApiKeys.productId: id,
+        ApiKeys.productName: name,
+        ApiKeys.productPriceCents: priceCents,
+      };
 
-  toEntity() => ProductEntity(id: id, name: name, priceCents: priceCents);
+  ProductEntity toEntity() => ProductEntity(id: id, name: name, priceCents: priceCents);
 }
 ```
 
@@ -92,8 +138,8 @@ class ProductRemoteDataSource {
 
   Future<ProductModel> getProduct(String id) async {
     // ADAPT: call the client exactly as the reference feature does
-    // (method names, endpoint constants, response handling).
-    final json = await _client.get('endpoint from endpoints class in core/constants');
+    // (method names, response handling). The path always comes from `Endpoints`.
+    final json = await _client.get(Endpoints.product(id));
     return ProductModel.fromJson(json as Map<String, dynamic>);
   }
 }
@@ -109,7 +155,7 @@ class ProductRepositoryImpl implements ProductRepository {
   Future<ApiResult<ProductEntity>> getProduct(String id) async {
     try {
       final model = await _remote.getProduct(id);
-      return ApiResult.success(ProductMapper.toEntity(model)); // ADAPT constructor
+      return ApiResult.success(model.toEntity()); // ADAPT constructor
     } on Object catch (e, st) {
       return ApiResult.failure(mapToFailure(e, st)); // ADAPT: use the existing error mapper
     }
@@ -117,10 +163,38 @@ class ProductRepositoryImpl implements ProductRepository {
 }
 ```
 
+## presentation/view_models/product_view_model.dart and presentation/mappers/product_view_mapper.dart
+```dart
+class ProductViewModel {
+  const ProductViewModel({required this.id, required this.name, required this.priceLabel});
+
+  final String id;
+  final String name;
+  final String priceLabel;
+
+  @override
+  bool operator ==(Object other) =>
+      other is ProductViewModel &&
+      other.id == id &&
+      other.name == name &&
+      other.priceLabel == priceLabel;
+
+  @override
+  int get hashCode => Object.hash(id, name, priceLabel);
+}
+
+abstract final class ProductViewMapper {
+  static ProductViewModel fromEntity(ProductEntity entity) => ProductViewModel(
+        id: entity.id,
+        name: entity.name,
+        priceLabel: formatPrice(entity.priceCents), // ADAPT: the project's formatter in core/helpers
+      );
+}
+```
+
 ## presentation/cubits/product_details/product_details_state.dart
 Detail screens need Loading, Success, Error. A LIST screen also needs an `Empty` state
-(STATE-5). States that carry data (`Success`, `Error`) need value equality (STATE-8, ARCH-9):
-implement `==` / `hashCode` like the entity above, or use `Equatable` if already in `pubspec.yaml`.
+(STATE-5). States that carry data need value equality (STATE-8, ARCH-9).
 ```dart
 sealed class ProductDetailsState {
   const ProductDetailsState();
@@ -133,11 +207,23 @@ final class ProductDetailsLoading extends ProductDetailsState {
 final class ProductDetailsSuccess extends ProductDetailsState {
   const ProductDetailsSuccess(this.product);
   final ProductViewModel product;
+
+  @override
+  bool operator ==(Object other) => other is ProductDetailsSuccess && other.product == product;
+
+  @override
+  int get hashCode => product.hashCode;
 }
 
 final class ProductDetailsError extends ProductDetailsState {
   const ProductDetailsError(this.failure);
   final Failure failure;
+
+  @override
+  bool operator ==(Object other) => other is ProductDetailsError && other.failure == failure;
+
+  @override
+  int get hashCode => failure.hashCode;
 }
 ```
 
@@ -167,6 +253,7 @@ class ProductDetailsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // ADAPT: use the shared widgets from core/widgets/ and the Failure -> text extension (ERR-4).
     return BlocBuilder<ProductDetailsCubit, ProductDetailsState>(
       builder: (context, state) => switch (state) {
         ProductDetailsLoading() => const AppLoader(),
@@ -177,10 +264,25 @@ class ProductDetailsScreen extends StatelessWidget {
   }
 }
 ```
-The Cubit is provided at route level: `BlocProvider(create: (_) => getIt<ProductDetailsCubit>()..load(id), child: ...)`
-inside `core/router/` only (DI-3).
+
+## core/router: the route provides the Cubit (the only place besides core/di that calls getIt, DI-4)
+```dart
+GoRoute(
+  name: AppRoutes.productDetailsName,
+  path: AppRoutes.productDetailsPath,
+  builder: (context, state) {
+    // ADAPT: handle a missing id the way the project does (redirect or error page).
+    final id = state.pathParameters[AppRoutes.productIdParam] ?? '';
+    return BlocProvider(
+      create: (_) => getIt<ProductDetailsCubit>()..load(id),
+      child: const ProductDetailsScreen(),
+    );
+  },
+),
+```
 
 ## core/di/product_injection.dart
+Read `lib/core/di/feature_module_registry.md` first (DI-1).
 ```dart
 void registerProductDependencies(GetIt getIt) {
   getIt

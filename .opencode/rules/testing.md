@@ -2,7 +2,7 @@
 
 - TEST-1  No feature or behavior change is done without tests:
           - domain: usecase tests;
-          - data: repository impl, datasource, mapper, and model parsing tests;
+          - data: repository impl, datasource, and model tests (`fromJson`, `toJson`, `toEntity()`);
           - presentation: Cubit/Bloc tests (every state transition, including error and empty)
             and widget tests for each screen (loading, success, empty, error);
           - core: tests for any new shared util/widget.
@@ -21,3 +21,6 @@
 - TEST-6  Use the test tooling already in `dev_dependencies` (check `pubspec.yaml`; typically
           `mocktail` and `bloc_test`). Never add a test package. Run only the affected tests:
           `flutter test test/features/<feature>`.
+- TEST-7  Test code uses the same constants as production for JSON keys, endpoint paths, and
+          storage keys (`ApiKeys`, `Endpoints`, ...). Literals are allowed only for test VALUES
+          (names, ids, amounts).

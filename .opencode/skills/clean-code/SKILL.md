@@ -32,8 +32,9 @@ Writing or editing any code; "clean this up"; "simplify"; "make it readable"; be
 4. **No duplication, no premature abstraction.**
    - Extract on the third occurrence. A wrong abstraction costs more than duplication.
    - Reusable across features: move to `core/` (ARCH-4). Check `docs/CORE_MAP.md` first.
-5. **No magic values.** Numbers and keys become named constants (private `const` near use,
-   or `core/constants/`). User-facing strings go to i18n (UI-4).
+5. **No magic values.** Every key, path, route, asset, and meaningful repeated number or string
+   becomes a constant in `core/constants/` (ARCH-10). No exceptions: never a literal at the
+   usage, never a private `const` next to it. User-facing strings go to i18n (UI-4).
 6. **No dead code.** Delete it, never comment it out. No unused parameters, imports, or fields.
 7. **Comments** follow CORE-14..16: explain why, never what.
 8. **Nulls and errors.**

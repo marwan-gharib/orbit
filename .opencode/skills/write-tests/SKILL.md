@@ -5,7 +5,7 @@ description: Write unit, repository, Cubit/Bloc, and widget tests for this Flutt
 
 # Write Tests
 
-Rules: `.opencode/rules/testing.md` (TEST-1..6). This skill gives patterns.
+Rules: `.opencode/rules/testing.md` (TEST-1..7). This skill gives patterns.
 Check `pubspec.yaml` `dev_dependencies` first and use only what is there (TEST-6).
 Run only affected tests: `flutter test test/features/<feature>`.
 
@@ -26,6 +26,7 @@ New behavior, changed behavior, bug fix (regression test first), "add tests", mi
 3. Run it again. It passes. Run the rest of the feature's tests.
 
 ## Usecase test
+A usecase is a plain class (DOM-1): mock the repository contract and call the usecase like a function.
 ```dart
 class MockProductRepository extends Mock implements ProductRepository {}
 
@@ -55,9 +56,11 @@ Mock the datasource (and cache abstraction). Assert: success maps model to entit
 exception type maps to the right `Failure`, cache hit or miss behavior, pagination
 (`hasMore`, next page).
 
-## Model and mapper tests
-`fromJson` with a valid payload, a missing key, a wrong type (must fail as designed),
-`toJson` round trip. Mapper: field-by-field mapping.
+## Model and view-mapper tests
+Model: `fromJson` with a valid payload, a missing key, a wrong type (must fail as designed),
+`toJson` round trip, and `toEntity()` field by field. Build payloads with the production
+constants (`ApiKeys.*`, TEST-7); literals only for values. View mapper
+(`presentation/mappers/`): field-by-field mapping.
 
 ## Cubit test (bloc_test)
 ```dart

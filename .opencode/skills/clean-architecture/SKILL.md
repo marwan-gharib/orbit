@@ -18,15 +18,16 @@ Placing new code; creating a feature; reviewing imports; fixing a boundary viola
 | I need to... | Put it in |
 |---|---|
 | Represent a business concept | `domain/entities/` (pure Dart) |
-| Express one business operation | `domain/usecases/` (+ `domain/params/` if more than one input) |
+| Express one business operation | `domain/usecases/` (plain class with `call()`, no base class; + `domain/params/` if more than one input) |
 | Describe what data I need | `domain/repositories/` (abstract contract) |
-| Parse or serialize JSON / DB rows | `data/models/` (hand-written `fromJson` / `toJson` / `toEntity`) |
-| Call the API or local storage | `data/datasources/remote|local/` (concrete, via core abstractions) |
+| Parse or serialize JSON / DB rows, and convert to an entity | `data/models/` (hand-written `fromJson` / `toJson` / `toEntity()`, keys from `ApiKeys`) |
+| Call the API or local storage | `data/datasources/remote/` or `local/` (concrete, via core abstractions) |
 | Orchestrate sources, cache, map errors | `data/repositories/*RepositoryImpl` |
 | Convert entity -> UI shape | `presentation/view_models/` + `presentation/mappers/` |
 | Hold screen state | `presentation/cubits/<name>/` (cubit + sealed state) |
 | Draw UI | `presentation/screens/`, `presentation/widgets/` |
 | Reuse across 2+ features | `core/` (check `docs/CORE_MAP.md` first) |
+| Name a key, endpoint, route, storage key, asset, or env variable | `core/constants/<purpose>.dart` (ARCH-10) |
 | Wire dependencies | `core/di/<feature>_injection.dart` |
 | Declare routes | `core/router/` |
 
@@ -48,6 +49,8 @@ a sealed state -> Widget switches on the state, using view models.
 | Feature A imports feature B's `data/` or `presentation/` | Move shared code to `core/`, or expose a domain usecase (ARCH-1) |
 | Datasource imports `dio` | Go through `BaseApiClient` (DATA-1) |
 | Cubit navigates or holds `BuildContext` | Emit a state, navigate in `BlocListener` (NAV-3, STATE-7) |
+| String literal used as a key, endpoint, route, storage key, or asset path | Move it to `core/constants/` (ARCH-10) |
+| Usecase extends or implements a base class | Make it a plain class with `call()` (DOM-1) |
 
 ## Verify (run from the project root)
 
@@ -57,7 +60,10 @@ grep -rn "package:flutter" lib/features/*/domain && echo "VIOLATION" || echo "do
 # Presentation must not import data layer
 grep -rEn "/data/" lib/features/*/presentation && echo "VIOLATION" || echo "presentation ok"
 # Only the API client implementation may import dio
-grep -rn "package:dio" lib --include=*.dart | grep -v "lib/core/network" && echo "VIOLATION" || echo "dio ok"
+grep -rn "package:dio" lib --include=*.dart | grep -vE "lib/core/(network|errors)" && echo "VIOLATION" || echo "dio ok"
+# No literal JSON keys or endpoint paths outside core/constants (ARCH-10)
+grep -rnE "json\[['\"]" lib --include=*.dart | grep -v "lib/core/constants" && echo "VIOLATION" || echo "json keys ok"
+grep -rnE "\.(get|post|put|patch|delete)\(\s*['\"]" lib --include=*.dart | grep -v "lib/core/constants" && echo "VIOLATION" || echo "endpoints ok"
 # Cubits must not import repositories or datasources
 grep -rEn "(repositories|datasources)/" lib/features/*/presentation/cubits && echo "VIOLATION" || echo "cubits ok"
 ```
@@ -66,7 +72,7 @@ A grep hit is a lead, not proof. Open the file and confirm before fixing.
 
 ## Process for a new feature
 1. Read the reference feature (see `AGENTS.md`) and mirror it.
-2. Design inside-out: entities -> contract -> usecases -> models/mappers -> datasource -> repo impl -> cubit/states -> screens -> DI -> routes.
+2. Design inside-out: constants -> entities -> contract -> usecases -> models (with `toEntity()`) -> datasource -> repo impl -> cubit/states -> view models -> screens -> DI -> routes.
 3. Run the verify commands. Fix findings.
 4. Record the file map and dependencies in `FEATURE.md` (use the `feature-doc` skill).
 

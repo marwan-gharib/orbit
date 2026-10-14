@@ -7,8 +7,9 @@ metadata:
 
 # Git Workflow
 
-The agent never commits or pushes on its own (CORE-13). Use this skill only when the user
-explicitly asks. `git push` is denied by `opencode.json`. Never force-push or rewrite shared history.
+The agent never runs `git commit` or `git push` (CORE-13); both are denied in `opencode.json`.
+Use this skill only when the user explicitly asks for a commit message, a branch name, or a PR
+description, and hand them the exact commands to run. Never suggest force-push or rewriting shared history.
 
 ## When to use
 "Commit this", "write a commit message", "name the branch", "write the PR description".
@@ -22,7 +23,7 @@ Format: `<type>(<scope>): <imperative summary, max 72 chars>`
 
 | Type | Use for |
 |---|---|
-| `feature` | New behavior for users |
+| `feat` | New behavior for users |
 | `fix` | Bug fix |
 | `refactor` | Structure change, no behavior change |
 | `test` | Tests only |
@@ -35,11 +36,11 @@ Scope is the feature or area: `feat(products): add product details screen`.
 Body (optional): why, not what. Mention breaking changes with `BREAKING CHANGE:`.
 
 ## Procedure
-1. `git status` and `git diff` to see exactly what changed. Never commit files you did not mean to (generated files, `.env`).
+1. `git status` and `git diff` to see exactly what changed. Never stage files you did not mean to (generated files, `.env`).
 2. **One logical change per commit.** Split unrelated changes. A feature commit includes its tests and its `FEATURE.md` update.
 3. Verify the Definition of Done passes before committing (CORE-24..31).
-4. Stage specific files, not `git add .` blindly.
-5. Write the message. Use the attribution trailer the environment requires, if any.
+4. Give the user the exact `git add <files>` command for the specific files, not `git add .` blindly.
+5. Write the message and give the final `git commit -m "..."` command for the user to run.
 
 ## Pull request description
 ```markdown

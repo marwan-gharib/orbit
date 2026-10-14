@@ -3,65 +3,39 @@
 Check this before writing anything reusable (ARCH-4, UI-2). Keep it short: name, path, one-line use.
 Update it whenever `core/` gains, loses, or changes a reusable piece (DOC-6).
 
+## Constants (ARCH-10: the ONLY place string keys, paths, routes, assets live)
+- `ApiKeys` — core/constants/api_keys.dart — JSON / request / header field names.
+- `Endpoints` — core/constants/endpoints.dart — API paths.
+- `AppRoutes` — core/constants/app_routes.dart — route names and paths.
+- `Assets` — core/constants/assets.dart — asset paths.
+- `AppConsts` — core/constants/app_consts.dart — other shared constants (storage keys, env names, durations...).
+
 ## Network
+- `BaseApiClient` — core/network/… — abstract HTTP client; its implementation and interceptors are the only `dio` importers.
+- Interceptors — core/network/… — auth token, logging, error mapping.
 
-- `BaseApiClient` — core/network/base_api_client.dart — abstract HTTP client.
-- `DioApiClient` — core/network/dio_api_client.dart — the concrete client.
-- Interceptors — core/network/interceptors/ — auth token, locale, error mapping, logging.
-- `dio` import scope (amended ARCH-5/DATA-1): only `core/network/**` and the
-  `Dio` error classifier at core/errors/dio_error_handler.dart.
-
-## Error
-
-- `Failure` hierarchy (Network, Cancelled, Unauthorized, Forbidden, NotFound, Validation,
-  Request, Server, RateLimit, Parsing, Cache, Storage, Unknown) — core/errors/failures.dart
-- `Exception` hierarchy — core/errors/exceptions.dart
-- `ErrorMapper` (exception → `Failure`) — core/errors/error_mapper.dart
-- Dio error translation — core/errors/dio_error_handler.dart
+## Errors
+- `Failure` hierarchy — core/errors/… — list subtypes here.
+- Dio error classifier — core/errors/… — maps exceptions to `Failure`.
 
 ## Utils
-
-- `AppConsts` (base URL for every request) — core/constants/app_consts.dart
-- `ApiResult<T>` (+ `fold`) — core/utils/api_result.dart
-- `PagedResult<T>` — core/utils/paged_result.dart
-- `Validators` — core/utils/validators.dart
-- `Logger` — core/utils/logger.dart
+- `ApiResult<T>` (with `fold`) — core/utils/…
+- `PagedResult<T>` — core/utils/…
 
 ## Local storage
-
-- `SecureStorageClient` (abstraction) / `SecureStorageImpl` — core/local/secure/
-- `CacheService` (abstraction) / `SharedPreferencesService` — core/local/cache/
+- Secure storage abstraction — core/local/secure/…
+- Cache abstraction — core/local/cache/…
 
 ## Shared widgets
-
-- None yet. Add `AppButton`, `AppTextField`, `AppLoader`, `AppSnackBar` to core/widgets/
-  when a second feature needs them (UI-2).
+- `AppButton`, `AppTextField`, `AppLoader`, `AppSnackBar` — core/widgets/…
 
 ## Extensions / helpers
-
-- `BuildContext` extensions — core/extensions/context_extensions.dart
-
-## Responsive
-
-- `Responsive` (facade) + `ResponsiveScaler` / `IdentityResponsiveScaler` / `ScreenUtilScaler`
-  — core/responsive/. NOT yet mounted: `main()` does not call `Responsive.ensureInitialized()`
-  and no `ResponsiveScope` sits above the app, so the engine is the identity transform
-  (values pass through unchanged). Mount both when the first screen uses scaling.
-
-## Localization
-
-- slang source of truth — `assets/i18n/<locale>.i18n.json`; regenerate with `dart run slang`.
-- Generated translations — lib/core/i18n/ (never edit by hand).
-- Config — `slang.yaml` (`string_interpolation: braces`).
+- `BuildContext` extensions — core/extensions/…
+- Failure → localized message — core/extensions/…
 
 ## Theme / router / DI
+- `AppColorsExtension` — core/theme/…
+- go_router configuration — core/router/…
+- Injection container — core/di/… (read `lib/core/di/feature_module_registry.md` first, DI-1)
 
-- `AppColorsExtension` — core/theme/extensions/colors_extension.dart
-- `AppColors` (raw palette, theme-only) — core/theme/app_colors.dart
-- `AppTheme` (light/dark) — core/theme/app_theme.dart
-- `AppRouter` + `AppRouterRoutes` — core/router/app_router.dart, core/router/app_router_routes.dart
-- Route constants — core/router/route_names.dart, core/router/route_paths.dart
-- `RouteGuards` — core/router/route_guards.dart (empty stub, no guards yet)
-- Injection container — core/di/injection_container.dart (`initDependencies` → `initCoreModule`)
-- Core module registrations — core/di/core_module.dart — secure storage, cache (SharedPreferences), `BaseApiClient` (`DioApiClient.configured` with `AppConsts.baseUrl`)
-- Feature-module pattern — core/di/feature_module_registry.md
+<!-- Fill the paths. Run a one-off session: "scan core/ and fill docs/CORE_MAP.md" (docs only). -->
