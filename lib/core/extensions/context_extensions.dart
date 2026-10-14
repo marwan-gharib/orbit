@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
 /// One-liner accessors for ambient [BuildContext] state (theme, media query,
-/// focus). Note: `context.colors` / `context.textStyles` (custom theme
-/// extensions) are deferred until the theme layer lands in `lib/core/theme/`.
+/// focus). Note: `context.colors` / `context.textStyles` live next to their
+/// extension classes in `lib/core/theme/extensions/`.
 extension AppContext on BuildContext {
   ThemeData get theme => Theme.of(this);
 

@@ -44,8 +44,9 @@ abstract final class Responsive {
   static void configure(MediaQueryData metrics, {required Size designSize}) =>
       _scaler.configure(metrics, designSize: designSize);
 
-  /// Waits for the engine to be usable. Not wired yet — `main()` does not call
-  /// it and no `ResponsiveScope` is mounted, so the facade stays on the
-  /// identity transform until the first screen needs scaling.
+  /// Waits for the engine to be usable. Nothing calls it yet: the
+  /// `ResponsiveScope` mounted in `main()` binds the engine in `initState`
+  /// and configures it in the first `didChangeDependencies`, so the facade is
+  /// ready before the app's first frame.
   static Future<void> ensureInitialized() => _scaler.ensureInitialized();
 }
