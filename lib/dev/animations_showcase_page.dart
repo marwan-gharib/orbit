@@ -23,6 +23,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../core/animations/animations.dart';
+import '../core/widgets/app_dialog.dart';
 
 /// Dev screen with one section per animation group: entrance, staggered,
 /// feedback, loading, state, navigation, overlays, scroll and lottie.
@@ -772,9 +773,9 @@ class _OverlaysSection extends StatelessWidget {
     );
   }
 
-  Future<void> _showDemoDialog(BuildContext context) => AppDialog.show<bool>(
+  Future<void> _showDemoDialog(BuildContext context) => showAppDialog<bool>(
     context: context,
-    builder: (dialogContext) => AlertDialog(
+    builder: (dialogContext) => AppDialog(
       title: const Text('Delete project?'),
       content: const Text('This removes the project and all its reports.'),
       actions: [
@@ -784,6 +785,10 @@ class _OverlaysSection extends StatelessWidget {
         ),
         FilledButton(
           onPressed: () => Navigator.pop(dialogContext, true),
+          style: FilledButton.styleFrom(
+            backgroundColor: Theme.of(dialogContext).colorScheme.error,
+            foregroundColor: Theme.of(dialogContext).colorScheme.onError,
+          ),
           child: const Text('Delete'),
         ),
       ],

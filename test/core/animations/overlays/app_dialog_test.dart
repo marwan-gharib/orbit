@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:orbit/core/animations/animations.dart';
+import 'package:orbit/core/widgets/app_dialog.dart';
 
 import 'harness.dart';
 
@@ -19,10 +20,10 @@ void main() {
         builder: (context) => Center(
           child: FilledButton(
             onPressed: () => onDialog(
-              AppDialog.show<bool>(
+              showAppDialog<bool>(
                 context: context,
                 blurBarrier: blurBarrier,
-                builder: (context) => AlertDialog(
+                builder: (context) => AppDialog(
                   title: const Text('confirm'),
                   actions: [
                     TextButton(

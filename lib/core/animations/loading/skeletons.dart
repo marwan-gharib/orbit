@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 
 import 'package:orbit/core/animations/tokens/app_animation_constants.dart';
+import 'package:orbit/core/responsive/responsive.dart';
 
 import 'placeholder_colors.dart';
 import 'shimmer_box.dart';
@@ -34,8 +35,10 @@ class SkeletonTextBlock extends StatelessWidget {
         children: [
           for (var i = 0; i < lines; i++) ...[
             if (i > 0)
-              const SizedBox(
-                height: AppAnimationConstants.skeletonBlockSpacing,
+              SizedBox(
+                height: Responsive.adapt(
+                  AppAnimationConstants.skeletonBlockSpacing,
+                ),
               ),
             ShimmerBox.textLine(
               width: _fractionOf(
@@ -74,7 +77,9 @@ class SkeletonListTile extends StatelessWidget {
   Widget build(BuildContext context) => Row(
     children: [
       const ShimmerBox.circle(),
-      const SizedBox(width: AppAnimationConstants.skeletonTileSpacing),
+      SizedBox(
+        width: Responsive.adapt(AppAnimationConstants.skeletonTileSpacing),
+      ),
       Expanded(
         child: LayoutBuilder(
           builder: (context, constraints) => Column(
@@ -84,8 +89,10 @@ class SkeletonListTile extends StatelessWidget {
               ShimmerBox.textLine(
                 width: _fractionOf(constraints.maxWidth, titleWidth),
               ),
-              const SizedBox(
-                height: AppAnimationConstants.skeletonBlockSpacing,
+              SizedBox(
+                height: Responsive.adapt(
+                  AppAnimationConstants.skeletonBlockSpacing,
+                ),
               ),
               ShimmerBox.textLine(
                 width: _fractionOf(constraints.maxWidth, subtitleWidth),
@@ -121,12 +128,14 @@ class SkeletonCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Container(
     width: double.infinity,
-    padding: const EdgeInsets.all(AppAnimationConstants.skeletonCardPadding),
+    padding: EdgeInsets.all(
+      Responsive.adapt(AppAnimationConstants.skeletonCardPadding),
+    ),
     decoration: BoxDecoration(
       color: PlaceholderColors.sweepBaseOf(context)
           .withValues(alpha: AppAnimationConstants.skeletonCardFillOpacity),
       borderRadius: BorderRadius.circular(
-        AppAnimationConstants.skeletonCardRadius,
+        Responsive.radius(AppAnimationConstants.skeletonCardRadius),
       ),
     ),
     child: SkeletonTextBlock(lines: lines),

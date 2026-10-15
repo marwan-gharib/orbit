@@ -114,7 +114,7 @@ ExpandableSection(header: Text(t.filters), body: const FiltersPanel())
 ### Overlays — one motion profile for every modal surface
 
 ```dart
-await AppDialog.show<bool>(context: context, builder: (_) => const Confirm());
+await showAppDialog<bool>(context: context, builder: (_) => const Confirm());
 await AppBottomSheet.show<ProjectFilter>(context: context, builder: (_) => sheet);
 await AppSnackbar.show(context, message: t.saved, type: AppSnackbarType.success);
 AppPopupMenu<String>(onSelected: run, items: [...]);   // anchored dropdown

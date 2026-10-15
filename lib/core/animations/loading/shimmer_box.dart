@@ -1,6 +1,7 @@
 import 'package:flutter/widgets.dart';
 
 import 'package:orbit/core/animations/tokens/app_animation_constants.dart';
+import 'package:orbit/core/responsive/responsive.dart';
 
 import 'placeholder_colors.dart';
 
@@ -78,13 +79,15 @@ class ShimmerBox extends StatelessWidget {
           decoration: BoxDecoration(
             color: fill,
             borderRadius: BorderRadius.circular(
-              AppAnimationConstants.skeletonBoxRadius,
+              Responsive.radius(AppAnimationConstants.skeletonBoxRadius),
             ),
           ),
         );
       case PlaceholderShape.circle:
         final size =
-            width ?? height ?? AppAnimationConstants.skeletonAvatarSize;
+            width ??
+            height ??
+            Responsive.adapt(AppAnimationConstants.skeletonAvatarSize);
         return Container(
           width: size,
           height: size,
@@ -92,7 +95,8 @@ class ShimmerBox extends StatelessWidget {
         );
       case PlaceholderShape.textLine:
         final lineHeight =
-            height ?? AppAnimationConstants.skeletonTextLineHeight;
+            height ??
+            Responsive.adapt(AppAnimationConstants.skeletonTextLineHeight);
         return Container(
           width: width,
           height: lineHeight,

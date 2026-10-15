@@ -4,6 +4,9 @@ import 'package:flutter/widgets.dart';
 
 import '../tokens/app_animation_constants.dart';
 import '../tokens/app_durations.dart';
+
+import 'package:orbit/core/responsive/responsive.dart';
+
 import 'app_haptics.dart';
 
 /// Programmatic trigger for a [ShakeWidget]; call [shake] to play it.
@@ -149,7 +152,7 @@ class _ShakeWidgetState extends State<ShakeWidget>
     final double wave = math.sin(
       2 * math.pi * AppAnimationConstants.shakeOscillations * progress,
     );
-    return AppAnimationConstants.shakeAmplitude *
+    return Responsive.adapt(AppAnimationConstants.shakeAmplitude) *
         wave *
         (1 - progress) *
         _directionSign;

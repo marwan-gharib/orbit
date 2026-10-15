@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 
 import '../tokens/app_animation_constants.dart';
 import '../tokens/app_durations.dart';
+
+import 'package:orbit/core/responsive/responsive.dart';
+
 import 'app_overlay_motion.dart';
 
 /// Severity of a transient message: picks the icon and the theme color it is
@@ -117,7 +120,7 @@ abstract final class AppSnackbar {
     content: Row(
       children: [
         Icon(type.icon, color: type.colorOf(colors)),
-        SizedBox(width: AppAnimationConstants.overlayIconGap),
+        SizedBox(width: Responsive.adapt(AppAnimationConstants.overlayIconGap)),
         Expanded(child: Text(message)),
       ],
     ),

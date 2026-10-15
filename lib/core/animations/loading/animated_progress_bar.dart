@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:orbit/core/animations/tokens/app_animation_constants.dart';
 import 'package:orbit/core/animations/tokens/app_curves.dart';
 import 'package:orbit/core/animations/tokens/app_durations.dart';
+import 'package:orbit/core/responsive/responsive.dart';
 import 'package:orbit/core/theme/extensions/colors_extension.dart';
 
 /// A progress bar that eases between values, determinate or indeterminate.
@@ -156,9 +157,9 @@ class _AnimatedProgressBarState extends State<AnimatedProgressBar>
         );
     final cornerRadius = widget.radius ?? widget.height / 2;
     return ClipRRect(
-      borderRadius: BorderRadius.circular(cornerRadius),
+      borderRadius: BorderRadius.circular(Responsive.radius(cornerRadius)),
       child: SizedBox(
-        height: widget.height,
+        height: Responsive.adapt(widget.height),
         child: Stack(
           children: [
             // The bar needs a bounded width; this keeps the stack honest

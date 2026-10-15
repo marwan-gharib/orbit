@@ -18,10 +18,11 @@ import 'app_overlay_motion.dart';
 /// `ColorScheme.scrim`, so light, dark and custom schemes all read correctly.
 ///
 /// ```dart
-/// final confirmed = await AppDialog.show<bool>(
+/// await showAppDialog<bool>(
 ///   context: context,
-///   builder: (context) => AlertDialog(
+///   builder: (context) => AppDialog(
 ///     title: Text(context.strings.deleteProject),
+///     content: Text(context.strings.deleteProjectConfirm),
 ///     actions: [
 ///       TextButton(
 ///         onPressed: () => Navigator.pop(context, false),
@@ -34,46 +35,48 @@ import 'app_overlay_motion.dart';
 ///     ],
 ///   ),
 /// );
+///
+/// // Or use the convenience confirm method from [ConfirmDialog]:
+/// final confirmed = await ConfirmDialog.show(
+///   context: context,
+///   title: context.strings.deleteProject,
+///   message: context.strings.deleteProjectConfirm,
+///   confirmLabel: context.strings.delete,
+///   cancelLabel: context.strings.cancel,
+///   destructive: true,
+/// );
 /// ```
-abstract final class AppDialog {
-  /// Shows [builder] as a dialog and completes with the value it was popped
-  /// with, or null when dismissed without a result.
-  ///
-  /// Set [blurBarrier] to false on screens where a full-window blur is too
-  /// expensive (a list animating behind the dialog); the dim scrim stays.
-  static Future<T?> show<T>({
-    required BuildContext context,
-    required WidgetBuilder builder,
-    bool barrierDismissible = true,
-    bool blurBarrier = true,
-    bool useSafeArea = true,
-    bool useRootNavigator = true,
-    RouteSettings? routeSettings,
-  }) {
-    final NavigatorState navigator = Navigator.of(
-      context,
-      rootNavigator: useRootNavigator,
-    );
-    return navigator.push<T>(
-      _AppDialogRoute<T>(
-        context: context,
-        themes: InheritedTheme.capture(from: context, to: navigator.context),
-        builder: (dialogContext) =>
-            BlurIn(child: ScaleIn(child: builder(dialogContext))),
-        barrierDismissible: barrierDismissible,
-        barrierColor: Theme.of(context).colorScheme.scrim,
-        barrierLabel: MaterialLocalizations.of(context)
-            .modalBarrierDismissLabel,
-        useSafeArea: useSafeArea,
-        animationStyle: AppOverlayMotion.modalOf(context),
-        blurBarrier: blurBarrier,
-        settings: routeSettings,
-      ),
-    );
-  }
+Future<T?> showAppDialog<T>({
+  required BuildContext context,
+  required WidgetBuilder builder,
+  bool barrierDismissible = true,
+  bool blurBarrier = true,
+  bool useSafeArea = true,
+  bool useRootNavigator = true,
+  RouteSettings? routeSettings,
+}) {
+  final NavigatorState navigator = Navigator.of(
+    context,
+    rootNavigator: useRootNavigator,
+  );
+  return navigator.push<T>(
+    _AppDialogRoute<T>(
+      context: context,
+      themes: InheritedTheme.capture(from: context, to: navigator.context),
+      builder: (dialogContext) =>
+          BlurIn(child: ScaleIn(child: builder(dialogContext))),
+      barrierDismissible: barrierDismissible,
+      barrierColor: Theme.of(context).colorScheme.scrim,
+      barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
+      useSafeArea: useSafeArea,
+      animationStyle: AppOverlayMotion.modalOf(context),
+      blurBarrier: blurBarrier,
+      settings: routeSettings,
+    ),
+  );
 }
 
-/// The route behind [AppDialog.show]: [DialogRoute] plus a barrier that
+/// The route behind [showAppDialog]: [DialogRoute] plus a barrier that
 /// blurs whatever it covers, and a shorter exit than the entrance.
 class _AppDialogRoute<T> extends DialogRoute<T> {
   _AppDialogRoute({

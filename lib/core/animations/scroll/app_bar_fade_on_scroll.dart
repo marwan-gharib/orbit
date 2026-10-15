@@ -3,6 +3,8 @@ import 'package:flutter/material.dart';
 
 import '../tokens/app_animation_constants.dart';
 
+import 'package:orbit/core/responsive/responsive.dart';
+
 /// Scroll-linked 0..1 progress shared with descendant [FadeOnScrollBar]s:
 /// 0 at the top of the followed scroll view, 1 once scrolled past the
 /// [AppBarFadeOnScroll.threshold].
@@ -127,7 +129,7 @@ class _AppBarFadeOnScrollState extends State<AppBarFadeOnScroll> {
     if (controller != null) {
       _scrollOffset = controller.hasClients ? controller.position.pixels : 0.0;
     }
-    final threshold = widget.threshold;
+    final threshold = Responsive.adapt(widget.threshold);
     _progress.value = threshold <= 0.0
         ? AppAnimationConstants.fadeOpacityEnd
         : (_scrollOffset / threshold)
@@ -214,7 +216,7 @@ class FadeOnScrollBar extends StatelessWidget {
       builder: (context, child) {
         final alpha = progress.value;
         return PhysicalModel(
-          elevation: elevation * alpha,
+          elevation: Responsive.adapt(elevation) * alpha,
           color: (backgroundColor ?? Colors.transparent).withValues(
             alpha: alpha,
           ),
