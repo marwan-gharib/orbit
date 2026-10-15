@@ -1,0 +1,4 @@
+base_locale: en
+input_directory: assets/i18n
+output_directory: lib/core/i18n
+string_interpolation: braces

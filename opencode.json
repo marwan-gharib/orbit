@@ -1,0 +1,37 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "instructions": [
+    ".opencode/rules/00-core.md"
+  ],
+  "permission": {
+    "edit": {
+      "*": "allow",
+      "pubspec.yaml": "ask",
+      "pubspec.lock": "ask",
+      "analysis_options.yaml": "ask",
+      "**/*.g.dart": "deny",
+      "android/**": "ask",
+      "ios/**": "ask",
+      ".env*": "ask"
+    },
+    "bash": {
+      "*": "ask",
+      "git status*": "allow",
+      "git diff*": "allow",
+      "git log*": "allow",
+      "dart format*": "allow",
+      "flutter analyze*": "allow",
+      "flutter test*": "allow",
+      "flutter pub get*": "allow",
+      "dart run slang*": "allow",
+      "flutter pub add*": "ask",
+      "flutter pub upgrade*": "ask",
+      "git commit*": "deny",
+      "git push*": "deny",
+      "rm *": "ask"
+    },
+    "skill": {
+      "*": "allow"
+    }
+  }
+}
