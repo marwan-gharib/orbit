@@ -1,6 +1,14 @@
 {
   "app": {
-    "title": "Orbit"
+    "title": "Orbit",
+    "loginPlaceholder": {
+      "title": "Login (Placeholder)",
+      "body": "Login screen not yet implemented"
+    },
+    "homePlaceholder": {
+      "title": "Home (Placeholder)",
+      "body": "Home screen not yet implemented"
+    }
   },
   "home": {
     "title": "Home"
@@ -52,5 +60,49 @@
     "passwordMismatch": "Passwords do not match.",
     "phone": "Enter a valid phone number.",
     "numeric": "Enter numbers only."
+  },
+  "splash": {
+    "tagline": "Every project. Every team. One orbit.",
+    "taglineWords": ["Every", "project.", "Every", "team.", "One", "orbit."],
+    "modules": {
+      "projects": "Projects",
+      "people": "People",
+      "finance": "Finance",
+      "clients": "Clients",
+      "insights": "Insights"
+    },
+    "accessibilityLabel": "Orbit startup screen. Five modules orbit the logo and converge into one unified system. Every project. Every team. One orbit."
+  },
+  "onboarding": {
+    "skip": "Skip",
+    "next": "Next",
+    "back": "Back",
+    "getStarted": "Get started",
+    "illustration": {
+      "profitNumber": "EGP {amount}"
+    },
+    "slide1": {
+      "headline": "Every project, always in view",
+      "body": "Track tasks, timelines, and budgets in real time, and catch delays before they grow."
+    },
+    "slide2": {
+      "headline": "Your team, right in your pocket",
+      "body": "Check in, request leave, and approve requests from anywhere, in seconds."
+    },
+    "slide3": {
+      "headline": "From closed deal to real profit",
+      "body": "Won deals become projects automatically, and costs follow the hours your team logs."
+    },
+    "slide4": {
+      "headline": "Decisions backed by live data",
+      "body": "Dashboards and early-warning alerts keep you one step ahead of project risk."
+    },
+    "a11y": {
+      "skipButton": "Skip onboarding",
+      "nextButton": "Go to next page",
+      "backButton": "Go to previous page",
+      "getStartedButton": "Complete onboarding and continue to login",
+      "pageIndicator": "Page {current} of {total}"
+    }
   }
 }
