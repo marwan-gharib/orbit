@@ -26,6 +26,7 @@ dependencies:
   slang_flutter: ^4.19.0
   intl: ^0.20.3
   lottie: ^3.6.1
+  flutter_svg: ^2.3.0
 
 dev_dependencies:
   flutter_test:
@@ -41,3 +42,4 @@ flutter:
   uses-material-design: true
   assets:
     - assets/images/
+    - assets/svgs/onboarding/
