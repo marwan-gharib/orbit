@@ -1,3 +1,5 @@
+import 'dart:ui' show Tristate;
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -91,6 +93,179 @@ void main() {
         const AppButton(label: 'Submit', icon: Icon(Icons.add)),
       );
       expect(find.byIcon(Icons.add), findsOneWidget);
+    });
+
+    testWidgets('should honor a minimumSize override on the label path', (
+      tester,
+    ) async {
+      await pumpWidget(
+        tester,
+        const AppButton(
+          label: 'Go',
+          padding: EdgeInsets.zero,
+          minimumSize: Size(120, 56),
+        ),
+      );
+
+      expect(tester.getSize(find.byType(FilledButton)), const Size(120, 56));
+    });
+  });
+
+  group('AppButton.icon', () {
+    testWidgets('should render an IconButton with the semantic label '
+        'attached', (tester) async {
+      final handle = tester.ensureSemantics();
+      await pumpWidget(
+        tester,
+        AppButton.icon(
+          icon: const Icon(Icons.chevron_left),
+          semanticLabel: 'Go back',
+          onPressed: () {},
+        ),
+      );
+
+      expect(find.byType(IconButton), findsOneWidget);
+      final node = tester
+          .getSemantics(find.bySemanticsLabel('Go back'))
+          .getSemanticsData();
+      expect(node.label, 'Go back');
+      expect(node.flagsCollection.isButton, isTrue);
+      expect(node.flagsCollection.isEnabled, isNot(Tristate.isFalse));
+      handle.dispose();
+    });
+
+    testWidgets('should expose the default 48 dp minimum tap target', (
+      tester,
+    ) async {
+      await pumpWidget(
+        tester,
+        AppButton.icon(
+          icon: const Icon(Icons.chevron_left),
+          semanticLabel: 'Go back',
+          onPressed: () {},
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final size = tester.getSize(find.byType(IconButton));
+      expect(size.height, greaterThanOrEqualTo(48.0));
+      expect(size.width, greaterThanOrEqualTo(48.0));
+    });
+
+    testWidgets('should disable the tap when onPressed is null', (
+      tester,
+    ) async {
+      final handle = tester.ensureSemantics();
+      await pumpWidget(
+        tester,
+        AppButton.icon(
+          icon: const Icon(Icons.chevron_left),
+          semanticLabel: 'Go back',
+        ),
+      );
+      await tester.tap(find.byType(IconButton));
+      final node = tester
+          .getSemantics(find.bySemanticsLabel('Go back'))
+          .getSemanticsData();
+      expect(node.flagsCollection.isEnabled, Tristate.isFalse);
+      handle.dispose();
+    });
+
+    testWidgets('should mirror the glyph in RTL when mirrorInRtl is set', (
+      tester,
+    ) async {
+      await pumpWidget(
+        tester,
+        const Directionality(
+          textDirection: TextDirection.rtl,
+          child: AppButton.icon(
+            icon: Icon(Icons.chevron_left),
+            semanticLabel: 'Go back',
+            mirrorInRtl: true,
+          ),
+        ),
+      );
+
+      final flip = tester
+          .widgetList<Transform>(
+            find.descendant(
+              of: find.byType(AppButton),
+              matching: find.byType(Transform),
+            ),
+          )
+          .first;
+      expect(
+        flip.transform.storage[0],
+        -1.0,
+        reason: 'the flip matrix negates x',
+      );
+    });
+
+    testWidgets('should keep natural orientation in LTR', (tester) async {
+      await pumpWidget(
+        tester,
+        const AppButton.icon(
+          icon: Icon(Icons.chevron_left),
+          semanticLabel: 'Go back',
+        ),
+      );
+
+      expect(
+        find.descendant(
+          of: find.byType(AppButton),
+          matching: find.byType(Transform),
+        ),
+        findsNothing,
+      );
+    });
+  });
+
+  group('AppButton.content', () {
+    testWidgets('should render caller content on a variant surface with the '
+        'requested overrides', (tester) async {
+      await pumpWidget(
+        tester,
+        AppButton.content(
+          content: const Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [Text('crossfade')],
+          ),
+          cornerRadius: BorderRadius.circular(12),
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+        ),
+      );
+
+      expect(find.text('crossfade'), findsOneWidget);
+      final filled = tester.widget<FilledButton>(find.byType(FilledButton));
+      final shape = filled.style?.shape?.resolve(<WidgetState>{});
+      expect(
+        (shape as RoundedRectangleBorder).borderRadius,
+        BorderRadius.circular(12),
+      );
+      final padding =
+          filled.style?.padding?.resolve(<WidgetState>{}) as EdgeInsets?;
+      expect(padding!.left, 24);
+      expect(padding.right, 24);
+    });
+
+    testWidgets('should keep the standard label row reachable from the base '
+        'constructor', (tester) async {
+      await pumpWidget(tester, const AppButton(label: 'Label row'));
+      expect(find.text('Label row'), findsOneWidget);
+    });
+
+    testWidgets('should pin caller content to minimumSize', (tester) async {
+      await pumpWidget(
+        tester,
+        const AppButton.content(
+          content: SizedBox.square(dimension: 10),
+          variant: AppButtonVariant.text,
+          padding: EdgeInsets.zero,
+          minimumSize: Size.square(48),
+        ),
+      );
+
+      expect(tester.getSize(find.byType(TextButton)), const Size.square(48));
     });
   });
 }

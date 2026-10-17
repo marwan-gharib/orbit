@@ -53,6 +53,10 @@ abstract final class AppAnimationConstants {
   /// Opacity [PulseWidget] fades to at the top of each breath (1.0 is rest).
   static const double pulseOpacityMin = 0.7;
 
+  /// Width of an active [PageIndicator] dot as a multiple of the dot size:
+  /// the pill the morph grows into (1.0 would be a plain circle).
+  static const double pageIndicatorActiveDotWidthFactor = 3.0;
+
   /// Peak scale of [BounceWidget]'s one-shot pop (1.0 is rest).
   static const double bounceScale = 1.12;
 
