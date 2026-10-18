@@ -1,0 +1,19 @@
+default_platform(:android)
+
+platform :android do
+  desc "Lane for Publishing Android App to Firebase App Distribution"
+  lane :publish do
+
+    sh "flutter clean"
+    sh "flutter build apk --release --split-per-abi"
+
+    firebase_app_distribution(
+      app: ENV["FIREBASE_APP_ID"],
+      firebase_cli_token: ENV["FIREBASE_TOKEN"],
+      android_artifact_type: "APK",
+      android_artifact_path: "../build/app/outputs/flutter-apk/app-arm64-v8a-release.apk",
+      groups: "orbit-testers",
+      release_notes_file: "../testers_release_note.txt"
+    )
+  end
+end

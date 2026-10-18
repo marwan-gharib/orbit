@@ -2,6 +2,7 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/intl.dart';
 import 'package:orbit/core/animations/state/animated_counter.dart';
+import 'package:orbit/core/animations/tokens/app_curves.dart';
 import 'package:orbit/core/animations/tokens/app_durations.dart';
 
 import 'harness.dart';
@@ -116,5 +117,65 @@ void main() {
     final style = tester.widget<Text>(find.byType(Text)).style;
 
     expect(style?.fontFeatures, contains(const FontFeature.tabularFigures()));
+  });
+
+  group('externally driven progress', () {
+    Widget driven(double progress, {Curve curve = AppCurves.enter}) =>
+        AnimatedCounter(
+          value: 75,
+          progress: progress,
+          interval: const (0.55, 1.0),
+          curve: curve,
+        );
+
+    testWidgets('should start and finish exactly outside the interval', (
+      tester,
+    ) async {
+      await pumpState(tester, driven(0.55));
+      expect(displayedNumber(tester), '0');
+
+      await pumpState(tester, driven(1.0));
+      expect(displayedNumber(tester), '75');
+    });
+
+    testWidgets('should ease the count through the interval', (tester) async {
+      await pumpState(tester, driven(0.775));
+
+      final expected = (75.0 * AppCurves.enter.transform(0.5)).round();
+      expect(displayedNumber(tester), expected.toString());
+    });
+
+    testWidgets('should count below the interval start and keep easing '
+        'inside it', (tester) async {
+      await pumpState(tester, driven(0.1));
+      expect(displayedNumber(tester), '0');
+
+      // Past 0.9 the interval still eases: the digits are not at the end yet.
+      await pumpState(tester, driven(0.9));
+      final eased = AppCurves.enter.transform((0.9 - 0.55) / 0.45);
+      expect(displayedNumber(tester), (75.0 * eased).round().toString());
+    });
+  });
+
+  group('text layout passthrough', () {
+    testWidgets('should forward maxLines and overflow to the rendered digit', (
+      tester,
+    ) async {
+      await pumpState(
+        tester,
+        const AnimatedCounter(
+          value: 75,
+          progress: 1.0,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: TextStyle(fontSize: 10),
+        ),
+      );
+
+      final text = tester.widget<Text>(find.byType(Text));
+      expect(text.maxLines, 1);
+      expect(text.overflow, TextOverflow.ellipsis);
+      expect(text.style?.fontSize, 10);
+    });
   });
 }

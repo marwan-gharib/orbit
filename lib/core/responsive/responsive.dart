@@ -10,7 +10,7 @@ import 'package:orbit/core/responsive/screen_util_scaler.dart'
 /// through unchanged and nothing throws.
 abstract final class Responsive {
   /// Design baseline in logical pixels (width x height, portrait phone).
-  static const Size designSize = Size(412, 917);
+  static const Size designSize = Size(375, 812);
 
   // Deliberate exception to ARCH-9: [ResponsiveScope] must swap the engine on
   // mount/unmount, so this cannot be final without turning the facade into an

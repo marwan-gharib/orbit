@@ -3,6 +3,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:orbit/core/theme/app_colors.dart';
 import 'package:orbit/core/theme/app_theme.dart';
 import 'package:orbit/core/theme/extensions/colors_extension.dart';
 
@@ -170,6 +171,61 @@ void main() {
       contrastOf(c.warning, c.background),
       greaterThanOrEqualTo(4.5),
       reason: 'warning text on background',
+    );
+  });
+
+  test('should expose the soft accent tokens per mode when built', () {
+    expect(AppColorsExtension.light.primarySoft, AppColors.primaryLightActive);
+    expect(AppColorsExtension.dark.primarySoft, AppColors.primarySoftDark);
+    expect(AppColorsExtension.light.successSoft, AppColors.successLightActive);
+    expect(AppColorsExtension.dark.successSoft, AppColors.successSoftDark);
+  });
+
+  test('should keep the soft accent fills visible on their dark surfaces', () {
+    const dark = AppColorsExtension.dark;
+
+    // Standalone chart bars and card dots sit directly on the card surface.
+    expect(
+      contrastOf(dark.primarySoft, dark.surface),
+      greaterThanOrEqualTo(3),
+      reason: 'primarySoft on the dark card surface',
+    );
+    expect(
+      contrastOf(dark.primarySoft, dark.background),
+      greaterThanOrEqualTo(3),
+      reason: 'primarySoft on the dark scaffold',
+    );
+
+    // Deliberately subtle: ~2.9:1 on the dark scaffold (light mode is ~1.3:1
+    // on the board); the success pill's inner dot carries the meaning.
+    expect(
+      contrastOf(dark.successSoft, dark.background),
+      greaterThanOrEqualTo(2.5),
+      reason: 'successSoft on the dark scaffold',
+    );
+  });
+
+  test('should clear 3:1 for on-color glyphs on every dark fill', () {
+    const dark = AppColorsExtension.dark;
+
+    // A single SVG placeholder color (0xFFFFFF -> onPrimary) draws the check,
+    // clock, exclamation, and icon-bar glyphs on the primary, success, and
+    // error fills. In dark mode those fills are light, so the glyphs render
+    // navy and must stay legible on each of them.
+    expect(
+      contrastOf(dark.onPrimary, dark.primary),
+      greaterThanOrEqualTo(3),
+      reason: 'glyph on the primary fill',
+    );
+    expect(
+      contrastOf(dark.onPrimary, dark.success),
+      greaterThanOrEqualTo(3),
+      reason: 'glyph on the success fill',
+    );
+    expect(
+      contrastOf(dark.onPrimary, dark.error),
+      greaterThanOrEqualTo(3),
+      reason: 'glyph on the error fill',
     );
   });
 

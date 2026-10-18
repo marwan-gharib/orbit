@@ -20,6 +20,10 @@ abstract final class AppCurves {
   /// Single gentle overshoot: spring feel without a physics simulation.
   static const Curve spring = Curves.easeOutBack;
 
+  /// Travel of an element from one resting spot to another: starts and ends
+  /// at rest, so the move reads as one connected motion.
+  static const Curve travel = Curves.easeInOutCubic;
+
   /// No easing. For looping sweeps and travels that must keep a constant
   /// speed, so a repeating cycle never hitches at its seams.
   static const Curve linear = Curves.linear;

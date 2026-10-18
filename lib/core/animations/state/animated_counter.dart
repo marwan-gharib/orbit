@@ -41,6 +41,10 @@ class AnimatedCounter extends StatefulWidget {
     this.animateFromZero = true,
     this.style,
     this.textAlign,
+    this.progress,
+    this.interval = const (0.0, 1.0),
+    this.maxLines,
+    this.overflow,
   }) : assert(decimalPlaces >= 0, 'decimalPlaces cannot be negative.');
 
   /// The number to end up at; animates from the previously displayed one.
@@ -75,6 +79,24 @@ class AnimatedCounter extends StatefulWidget {
 
   /// How the number sits inside the space it is given.
   final TextAlign? textAlign;
+
+  /// Externally driven progress (0..1) instead of a self-timed count. When
+  /// non-null the displayed value follows [progress] — eased over [interval]
+  /// with [curve], from zero up to [value] — so a parent timeline (an
+  /// entrance, a parallax) owns the pace and every rebuild redraws the
+  /// frame. Null keeps the self-timed count.
+  final double? progress;
+
+  /// Share of [progress] the count spreads over while driven externally;
+  /// before the window starts the value reads as the start (0), after it the
+  /// count is complete.
+  final (double, double) interval;
+
+  /// Line limit of the rendered number; text overflow behavior follows.
+  final int? maxLines;
+
+  /// Overflow behavior of the rendered number.
+  final TextOverflow? overflow;
 
   @override
   State<AnimatedCounter> createState() => _AnimatedCounterState();
@@ -179,13 +201,37 @@ class _AnimatedCounterState extends State<AnimatedCounter>
   @override
   Widget build(BuildContext context) {
     final style = _tabularStyle();
+    final progress = widget.progress;
+    if (progress != null) {
+      return Text(
+        _formattedDriven(progress),
+        style: style,
+        textAlign: widget.textAlign,
+        maxLines: widget.maxLines,
+        overflow: widget.overflow,
+      );
+    }
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, _) => Text(
         _formatter(_displayedValue.value),
         style: style,
         textAlign: widget.textAlign,
+        maxLines: widget.maxLines,
+        overflow: widget.overflow,
       ),
     );
+  }
+
+  /// Displayed value for a caller-driven [progress]: the same eased frame
+  /// the controller would drive, computed from the raw progress so every
+  /// rebuild (not every tick) redraws it.
+  String _formattedDriven(double progress) {
+    final (begin, end) = widget.interval;
+    final raw = end > begin
+        ? ((progress - begin) / (end - begin)).clamp(0.0, 1.0)
+        : (progress >= end ? 1.0 : 0.0);
+    final eased = widget.curve.transform(raw);
+    return _formatter(_from.toDouble() + (_to - _from) * eased);
   }
 }

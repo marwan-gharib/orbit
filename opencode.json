@@ -3,35 +3,81 @@
   "instructions": [
     ".opencode/rules/00-core.md"
   ],
-  "permission": {
-    "edit": {
-      "*": "allow",
-      "pubspec.yaml": "ask",
-      "pubspec.lock": "ask",
-      "analysis_options.yaml": "ask",
-      "**/*.g.dart": "deny",
-      "android/**": "ask",
-      "ios/**": "ask",
-      ".env*": "ask"
+  "permissions": [
+    {
+      "action": "edit",
+      "resource": "*",
+      "effect": "allow"
     },
-    "bash": {
-      "*": "ask",
-      "git status*": "allow",
-      "git diff*": "allow",
-      "git log*": "allow",
-      "dart format*": "allow",
-      "flutter analyze*": "allow",
-      "flutter test*": "allow",
-      "flutter pub get*": "allow",
-      "dart run slang*": "allow",
-      "flutter pub add*": "ask",
-      "flutter pub upgrade*": "ask",
-      "git commit*": "deny",
-      "git push*": "deny",
-      "rm *": "ask"
+    {
+      "action": "edit",
+      "resource": "pubspec.yaml",
+      "effect": "ask"
     },
-    "skill": {
-      "*": "allow"
+    {
+      "action": "edit",
+      "resource": "pubspec.lock",
+      "effect": "ask"
+    },
+    {
+      "action": "edit",
+      "resource": "analysis_options.yaml",
+      "effect": "ask"
+    },
+    {
+      "action": "edit",
+      "resource": "**/*.g.dart",
+      "effect": "deny"
+    },
+    {
+      "action": "edit",
+      "resource": "android/**",
+      "effect": "ask"
+    },
+    {
+      "action": "edit",
+      "resource": "ios/**",
+      "effect": "ask"
+    },
+    {
+      "action": "edit",
+      "resource": ".env*",
+      "effect": "ask"
+    },
+    {
+      "action": "bash",
+      "resource": "*",
+      "effect": "allow"
+    },
+    {
+      "action": "bash",
+      "resource": "flutter pub add*",
+      "effect": "ask"
+    },
+    {
+      "action": "bash",
+      "resource": "flutter pub upgrade*",
+      "effect": "ask"
+    },
+    {
+      "action": "bash",
+      "resource": "git commit*",
+      "effect": "deny"
+    },
+    {
+      "action": "bash",
+      "resource": "git push*",
+      "effect": "deny"
+    },
+    {
+      "action": "bash",
+      "resource": "rm *",
+      "effect": "ask"
+    },
+    {
+      "action": "skill",
+      "resource": "*",
+      "effect": "allow"
     }
-  }
+  ]
 }

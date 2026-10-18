@@ -26,6 +26,7 @@ class AppColorsExtension extends ThemeExtension<AppColorsExtension> {
     required this.onPrimary,
     required this.primaryContainer,
     required this.onPrimaryContainer,
+    required this.primarySoft,
     required this.secondary,
     required this.onSecondary,
     required this.secondaryContainer,
@@ -33,6 +34,7 @@ class AppColorsExtension extends ThemeExtension<AppColorsExtension> {
     required this.success,
     required this.successContainer,
     required this.onSuccessContainer,
+    required this.successSoft,
     required this.warning,
     required this.warningContainer,
     required this.onWarningContainer,
@@ -68,6 +70,10 @@ class AppColorsExtension extends ThemeExtension<AppColorsExtension> {
   final Color primaryContainer;
   final Color onPrimaryContainer;
 
+  /// Decorative brand tint: a pale accent fill in light mode, a mid-tone
+  /// accent fill in dark mode. Graphic-only, never used behind text.
+  final Color primarySoft;
+
   final Color secondary;
   final Color onSecondary;
   final Color secondaryContainer;
@@ -78,6 +84,10 @@ class AppColorsExtension extends ThemeExtension<AppColorsExtension> {
   final Color success;
   final Color successContainer;
   final Color onSuccessContainer;
+
+  /// Success sibling of [primarySoft]; same graphic-only treatment.
+  final Color successSoft;
+
   final Color warning;
   final Color warningContainer;
   final Color onWarningContainer;
@@ -112,6 +122,7 @@ class AppColorsExtension extends ThemeExtension<AppColorsExtension> {
     onPrimary: AppColors.white,
     primaryContainer: AppColors.primaryLight,
     onPrimaryContainer: AppColors.primaryDarker,
+    primarySoft: AppColors.primaryLightActive,
     secondary: AppColors.secondaryNormal,
     onSecondary: AppColors.white,
     secondaryContainer: AppColors.secondaryLight,
@@ -119,6 +130,7 @@ class AppColorsExtension extends ThemeExtension<AppColorsExtension> {
     success: AppColors.successNormalActive,
     successContainer: AppColors.successLight,
     onSuccessContainer: AppColors.successDarker,
+    successSoft: AppColors.successLightActive,
     warning: AppColors.warningDark,
     warningContainer: AppColors.warningLight,
     onWarningContainer: AppColors.warningDarker,
@@ -148,6 +160,7 @@ class AppColorsExtension extends ThemeExtension<AppColorsExtension> {
     onPrimary: AppColors.primaryDarker,
     primaryContainer: AppColors.primaryDarkHover,
     onPrimaryContainer: AppColors.primaryLight,
+    primarySoft: AppColors.primarySoftDark,
     secondary: AppColors.secondaryLightActive,
     onSecondary: AppColors.secondaryDarker,
     secondaryContainer: AppColors.secondaryDark,
@@ -155,6 +168,7 @@ class AppColorsExtension extends ThemeExtension<AppColorsExtension> {
     success: AppColors.successNormal,
     successContainer: AppColors.successDarker,
     onSuccessContainer: AppColors.successLightActive,
+    successSoft: AppColors.successSoftDark,
     warning: AppColors.warningNormal,
     warningContainer: AppColors.warningDarker,
     onWarningContainer: AppColors.warningLightActive,
@@ -185,6 +199,7 @@ class AppColorsExtension extends ThemeExtension<AppColorsExtension> {
     Color? onPrimary,
     Color? primaryContainer,
     Color? onPrimaryContainer,
+    Color? primarySoft,
     Color? secondary,
     Color? onSecondary,
     Color? secondaryContainer,
@@ -192,6 +207,7 @@ class AppColorsExtension extends ThemeExtension<AppColorsExtension> {
     Color? success,
     Color? successContainer,
     Color? onSuccessContainer,
+    Color? successSoft,
     Color? warning,
     Color? warningContainer,
     Color? onWarningContainer,
@@ -220,6 +236,7 @@ class AppColorsExtension extends ThemeExtension<AppColorsExtension> {
       onPrimary: onPrimary ?? this.onPrimary,
       primaryContainer: primaryContainer ?? this.primaryContainer,
       onPrimaryContainer: onPrimaryContainer ?? this.onPrimaryContainer,
+      primarySoft: primarySoft ?? this.primarySoft,
       secondary: secondary ?? this.secondary,
       onSecondary: onSecondary ?? this.onSecondary,
       secondaryContainer: secondaryContainer ?? this.secondaryContainer,
@@ -227,6 +244,7 @@ class AppColorsExtension extends ThemeExtension<AppColorsExtension> {
       success: success ?? this.success,
       successContainer: successContainer ?? this.successContainer,
       onSuccessContainer: onSuccessContainer ?? this.onSuccessContainer,
+      successSoft: successSoft ?? this.successSoft,
       warning: warning ?? this.warning,
       warningContainer: warningContainer ?? this.warningContainer,
       onWarningContainer: onWarningContainer ?? this.onWarningContainer,
@@ -275,6 +293,7 @@ class AppColorsExtension extends ThemeExtension<AppColorsExtension> {
       onPrimaryContainer:
           Color.lerp(onPrimaryContainer, other.onPrimaryContainer, t) ??
           onPrimaryContainer,
+      primarySoft: Color.lerp(primarySoft, other.primarySoft, t) ?? primarySoft,
       secondary: Color.lerp(secondary, other.secondary, t) ?? secondary,
       onSecondary: Color.lerp(onSecondary, other.onSecondary, t) ?? onSecondary,
       secondaryContainer:
@@ -290,6 +309,7 @@ class AppColorsExtension extends ThemeExtension<AppColorsExtension> {
       onSuccessContainer:
           Color.lerp(onSuccessContainer, other.onSuccessContainer, t) ??
           onSuccessContainer,
+      successSoft: Color.lerp(successSoft, other.successSoft, t) ?? successSoft,
       warning: Color.lerp(warning, other.warning, t) ?? warning,
       warningContainer:
           Color.lerp(warningContainer, other.warningContainer, t) ??

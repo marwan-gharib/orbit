@@ -67,4 +67,10 @@ abstract final class AppColors {
 
   /// Modal barrier behind dialogs and bottom sheets.
   static const Color scrim = Color(0x80000000);
+
+  // Dark-mode-only accent fills for the `primarySoft` / `successSoft` tokens.
+  // Each ramp has no step between its Dark:hover container and its Light:active
+  // tint, so these are purpose-built mid-tones, not ramp positions.
+  static const Color primarySoftDark = Color(0xFF3E7BE0);
+  static const Color successSoftDark = Color(0xFF0F6E32);
 }

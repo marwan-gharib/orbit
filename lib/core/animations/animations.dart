@@ -35,6 +35,8 @@ library;
 
 export '../constants/app_lottie_assets.dart';
 export 'entrance/blur_in.dart';
+export 'entrance/assembly_layer.dart';
+export 'entrance/clip_reveal.dart';
 export 'entrance/entrance.dart';
 export 'entrance/fade_in.dart';
 export 'entrance/fade_slide_in.dart';
@@ -71,6 +73,9 @@ export 'state/animated_size_wrapper.dart';
 export 'state/animated_visibility.dart';
 export 'state/app_animated_switcher.dart';
 export 'state/expandable_section.dart';
+export 'state/idle_loop.dart';
+export 'state/page_indicator.dart';
+export 'state/progress_driver.dart';
 export 'tokens/app_animation_constants.dart';
 export 'tokens/app_curves.dart';
 export 'tokens/app_durations.dart';

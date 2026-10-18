@@ -45,6 +45,8 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 	late final Translations$home$en home = Translations$home$en._(_root);
 	late final Translations$errors$en errors = Translations$errors$en._(_root);
 	late final Translations$validators$en validators = Translations$validators$en._(_root);
+	late final Translations$splash$en splash = Translations$splash$en._(_root);
+	late final Translations$onboarding$en onboarding = Translations$onboarding$en._(_root);
 }
 
 // Path: app
@@ -57,6 +59,9 @@ class Translations$app$en {
 
 	/// en: 'Orbit'
 	String get title => 'Orbit';
+
+	late final Translations$app$loginPlaceholder$en loginPlaceholder = Translations$app$loginPlaceholder$en._(_root);
+	late final Translations$app$homePlaceholder$en homePlaceholder = Translations$app$homePlaceholder$en._(_root);
 }
 
 // Path: home
@@ -209,6 +214,209 @@ class Translations$validators$en {
 	String get numeric => 'Enter numbers only.';
 }
 
+// Path: splash
+class Translations$splash$en {
+	Translations$splash$en._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Every project. Every team. One orbit.'
+	String get tagline => 'Every project. Every team. One orbit.';
+
+	List<String> get taglineWords => [
+		'Every',
+		'project.',
+		'Every',
+		'team.',
+		'One',
+		'orbit.',
+	];
+	late final Translations$splash$modules$en modules = Translations$splash$modules$en._(_root);
+
+	/// en: 'Orbit startup screen. Five modules orbit the logo and converge into one unified system. Every project. Every team. One orbit.'
+	String get accessibilityLabel => 'Orbit startup screen. Five modules orbit the logo and converge into one unified system. Every project. Every team. One orbit.';
+}
+
+// Path: onboarding
+class Translations$onboarding$en {
+	Translations$onboarding$en._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Skip'
+	String get skip => 'Skip';
+
+	/// en: 'Next'
+	String get next => 'Next';
+
+	/// en: 'Back'
+	String get back => 'Back';
+
+	/// en: 'Get started'
+	String get getStarted => 'Get started';
+
+	late final Translations$onboarding$illustration$en illustration = Translations$onboarding$illustration$en._(_root);
+	late final Translations$onboarding$slide1$en slide1 = Translations$onboarding$slide1$en._(_root);
+	late final Translations$onboarding$slide2$en slide2 = Translations$onboarding$slide2$en._(_root);
+	late final Translations$onboarding$slide3$en slide3 = Translations$onboarding$slide3$en._(_root);
+	late final Translations$onboarding$slide4$en slide4 = Translations$onboarding$slide4$en._(_root);
+	late final Translations$onboarding$a11y$en a11y = Translations$onboarding$a11y$en._(_root);
+}
+
+// Path: app.loginPlaceholder
+class Translations$app$loginPlaceholder$en {
+	Translations$app$loginPlaceholder$en._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Login (Placeholder)'
+	String get title => 'Login (Placeholder)';
+
+	/// en: 'Login screen not yet implemented'
+	String get body => 'Login screen not yet implemented';
+}
+
+// Path: app.homePlaceholder
+class Translations$app$homePlaceholder$en {
+	Translations$app$homePlaceholder$en._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Home (Placeholder)'
+	String get title => 'Home (Placeholder)';
+
+	/// en: 'Home screen not yet implemented'
+	String get body => 'Home screen not yet implemented';
+}
+
+// Path: splash.modules
+class Translations$splash$modules$en {
+	Translations$splash$modules$en._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Projects'
+	String get projects => 'Projects';
+
+	/// en: 'People'
+	String get people => 'People';
+
+	/// en: 'Finance'
+	String get finance => 'Finance';
+
+	/// en: 'Clients'
+	String get clients => 'Clients';
+
+	/// en: 'Insights'
+	String get insights => 'Insights';
+}
+
+// Path: onboarding.illustration
+class Translations$onboarding$illustration$en {
+	Translations$onboarding$illustration$en._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'EGP {amount}'
+	String profitNumber({required Object amount}) => 'EGP ${amount}';
+}
+
+// Path: onboarding.slide1
+class Translations$onboarding$slide1$en {
+	Translations$onboarding$slide1$en._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Every project, always in view'
+	String get headline => 'Every project, always in view';
+
+	/// en: 'Track tasks, timelines, and budgets in real time, and catch delays before they grow.'
+	String get body => 'Track tasks, timelines, and budgets in real time, and catch delays before they grow.';
+}
+
+// Path: onboarding.slide2
+class Translations$onboarding$slide2$en {
+	Translations$onboarding$slide2$en._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Your team, right in your pocket'
+	String get headline => 'Your team, right in your pocket';
+
+	/// en: 'Check in, request leave, and approve requests from anywhere, in seconds.'
+	String get body => 'Check in, request leave, and approve requests from anywhere, in seconds.';
+}
+
+// Path: onboarding.slide3
+class Translations$onboarding$slide3$en {
+	Translations$onboarding$slide3$en._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'From closed deal to real profit'
+	String get headline => 'From closed deal to real profit';
+
+	/// en: 'Won deals become projects automatically, and costs follow the hours your team logs.'
+	String get body => 'Won deals become projects automatically, and costs follow the hours your team logs.';
+}
+
+// Path: onboarding.slide4
+class Translations$onboarding$slide4$en {
+	Translations$onboarding$slide4$en._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Decisions backed by live data'
+	String get headline => 'Decisions backed by live data';
+
+	/// en: 'Dashboards and early-warning alerts keep you one step ahead of project risk.'
+	String get body => 'Dashboards and early-warning alerts keep you one step ahead of project risk.';
+}
+
+// Path: onboarding.a11y
+class Translations$onboarding$a11y$en {
+	Translations$onboarding$a11y$en._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Skip onboarding'
+	String get skipButton => 'Skip onboarding';
+
+	/// en: 'Go to next page'
+	String get nextButton => 'Go to next page';
+
+	/// en: 'Go to previous page'
+	String get backButton => 'Go to previous page';
+
+	/// en: 'Complete onboarding and continue to login'
+	String get getStartedButton => 'Complete onboarding and continue to login';
+
+	/// en: 'Page {current} of {total}'
+	String pageIndicator({required Object current, required Object total}) => 'Page ${current} of ${total}';
+}
+
 /// The flat map containing all translations for locale <en>.
 /// Only for edge cases! For simple maps, use the map function of this library.
 ///
@@ -218,6 +426,10 @@ extension on Translations {
 	dynamic _flatMapFunction(String path) {
 		return switch (path) {
 			'app.title' => 'Orbit',
+			'app.loginPlaceholder.title' => 'Login (Placeholder)',
+			'app.loginPlaceholder.body' => 'Login screen not yet implemented',
+			'app.homePlaceholder.title' => 'Home (Placeholder)',
+			'app.homePlaceholder.body' => 'Home screen not yet implemented',
 			'home.title' => 'Home',
 			'errors.offline' => 'You\'re offline. Check your internet connection and try again.',
 			'errors.unreachable' => 'We couldn\'t reach the server. Please try again in a moment.',
@@ -257,6 +469,37 @@ extension on Translations {
 			'validators.passwordMismatch' => 'Passwords do not match.',
 			'validators.phone' => 'Enter a valid phone number.',
 			'validators.numeric' => 'Enter numbers only.',
+			'splash.tagline' => 'Every project. Every team. One orbit.',
+			'splash.taglineWords.0' => 'Every',
+			'splash.taglineWords.1' => 'project.',
+			'splash.taglineWords.2' => 'Every',
+			'splash.taglineWords.3' => 'team.',
+			'splash.taglineWords.4' => 'One',
+			'splash.taglineWords.5' => 'orbit.',
+			'splash.modules.projects' => 'Projects',
+			'splash.modules.people' => 'People',
+			'splash.modules.finance' => 'Finance',
+			'splash.modules.clients' => 'Clients',
+			'splash.modules.insights' => 'Insights',
+			'splash.accessibilityLabel' => 'Orbit startup screen. Five modules orbit the logo and converge into one unified system. Every project. Every team. One orbit.',
+			'onboarding.skip' => 'Skip',
+			'onboarding.next' => 'Next',
+			'onboarding.back' => 'Back',
+			'onboarding.getStarted' => 'Get started',
+			'onboarding.illustration.profitNumber' => ({required Object amount}) => 'EGP ${amount}',
+			'onboarding.slide1.headline' => 'Every project, always in view',
+			'onboarding.slide1.body' => 'Track tasks, timelines, and budgets in real time, and catch delays before they grow.',
+			'onboarding.slide2.headline' => 'Your team, right in your pocket',
+			'onboarding.slide2.body' => 'Check in, request leave, and approve requests from anywhere, in seconds.',
+			'onboarding.slide3.headline' => 'From closed deal to real profit',
+			'onboarding.slide3.body' => 'Won deals become projects automatically, and costs follow the hours your team logs.',
+			'onboarding.slide4.headline' => 'Decisions backed by live data',
+			'onboarding.slide4.body' => 'Dashboards and early-warning alerts keep you one step ahead of project risk.',
+			'onboarding.a11y.skipButton' => 'Skip onboarding',
+			'onboarding.a11y.nextButton' => 'Go to next page',
+			'onboarding.a11y.backButton' => 'Go to previous page',
+			'onboarding.a11y.getStartedButton' => 'Complete onboarding and continue to login',
+			'onboarding.a11y.pageIndicator' => ({required Object current, required Object total}) => 'Page ${current} of ${total}',
 			_ => null,
 		};
 	}
