@@ -62,7 +62,7 @@ dart_defines*.json
 key.properties
 android/local.properties
 
-# Firebase / services config (لو بتستخدمهم ومش عايزهم ظاهرين)
+# Firebase / services config
 google-services.json
 GoogleService-Info.plist
 
@@ -74,3 +74,4 @@ CLAUDE.local.md
 .mcp.json
 
 preview_onboarding_slides
+firebase.json
