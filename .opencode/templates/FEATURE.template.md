@@ -14,6 +14,7 @@
 | Layer | Key files (relative to feature root) | Responsibility |
 |-------|--------------------------------------|----------------|
 | presentation | screens/…, cubits/…/…, view_models/…, mappers/… | |
+| presentation widgets | widgets/<name>.dart: one line each (feature-only widgets core lacks; promote when a 2nd feature needs one, WIDGET-3) | |
 | domain | entities/…, repositories/…, usecases/…, params/… | |
 | data | datasources/remote/…, datasources/local/…, models/…, repositories/… | |
 

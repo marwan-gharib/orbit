@@ -28,6 +28,10 @@ deleting files needs explicit instruction (CORE-9).
 
 | Smell | Refactoring |
 |---|---|
+| File over 300 lines (FILE-1, FILE-2) | Split by concern: one public widget per file, models/mappers/states/helpers in their own files, update imports, behavior unchanged |
+| A feature widget needed by a 2nd feature | Promote to `core/widgets/` and generalize (WIDGET-3, `/promote-widget`) |
+| Custom animation or raw `Animated*` in a feature | Replace with the core animation facade or widgets (ANIM-1, ANIM-2) |
+| Bare numeric sizes | Theme tokens or `Responsive` (RESP-2) |
 | Huge `build()` | Extract widget classes (not helper methods) with `const` constructors (UI-8) |
 | Long function | Extract function by intent; one level of abstraction |
 | Several positional primitives | Introduce a `Params` object (DOM-3) |

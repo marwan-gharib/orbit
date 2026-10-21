@@ -38,7 +38,8 @@ Body (optional): why, not what. Mention breaking changes with `BREAKING CHANGE:`
 ## Procedure
 1. `git status` and `git diff` to see exactly what changed. Never stage files you did not mean to (generated files, `.env`).
 2. **One logical change per commit.** Split unrelated changes. A feature commit includes its tests and its `FEATURE.md` update.
-3. Verify the Definition of Done passes before committing (CORE-24..31).
+3. Verify the Definition of Done passes before committing (CORE-24..33), including the rules script
+   and the tester release note. Never run `git commit` or `git push` (CORE-13): prepare the text.
 4. Give the user the exact `git add <files>` command for the specific files, not `git add .` blindly.
 5. Write the message and give the final `git commit -m "..."` command for the user to run.
 

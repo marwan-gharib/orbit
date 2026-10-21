@@ -23,6 +23,10 @@ Jank, slow screens, slow startup, memory growth, battery complaints, "optimize t
 
 ## Checklist by area
 
+**Core first**
+- Loading uses the core skeletons and `ShimmerScope`; motion comes from `core/animations/` (they honour `disableAnimations`).
+- Never fix jank by writing a custom animation or caching layout numbers in a feature (ANIM-3, RESP-3).
+
 **Rebuilds**
 - `const` constructors and widgets everywhere possible.
 - Split large widgets into classes so a rebuild touches a small subtree (UI-8).

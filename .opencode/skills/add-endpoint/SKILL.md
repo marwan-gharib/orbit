@@ -41,9 +41,10 @@ A feature needs one more API call. For a whole new feature use `feature-scaffold
 7. **Tests.** Model parsing (valid, missing key, wrong type) and `toEntity()`, datasource if it has
    logic, repository (success plus every mapped failure), usecase, Cubit transitions. Use the
    `write-tests` skill.
-8. **Docs.** Update `FEATURE.md` sections 4, 5, 6, 7, 11 and the changelog (use the `feature-doc`
+8. **Docs and note.** Update `testers_release_note.txt` if a tester can see the effect (`tester-release-notes` skill).
+   **Docs.** Update `FEATURE.md` sections 4, 5, 6, 7, 11 and the changelog (use the `feature-doc`
    skill). Add new constants to `docs/CORE_MAP.md` if a new constants file was created.
-9. **Verify.** Definition of Done (CORE-24..31).
+9. **Verify.** Definition of Done (CORE-24..33).
 
 ## Pitfalls checklist
 - [ ] No string literal for a path, key, header, or query name anywhere outside `core/constants/` (ARCH-10).

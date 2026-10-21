@@ -24,7 +24,7 @@ Sections in the template: 1 Purpose, 2 Screens & routes, 3 File map, 4 Entities 
 
 | You changed | Update section |
 |---|---|
-| Added, removed, or renamed a file | 3 File map |
+| Added, removed, or renamed a file, or a new feature-only widget (name + one line) | 3 File map |
 | Entity or model fields | 4 |
 | Usecase or params | 5 |
 | Endpoint, storage key, cache policy | 6 |

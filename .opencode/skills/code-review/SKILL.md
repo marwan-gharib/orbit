@@ -20,12 +20,14 @@ adds engineering judgment (bugs, design, risk). Use both on large changes.
 2. **Review in this order** (stop to flag blockers early):
    1. **Correctness:** logic errors, off-by-one, null handling, async races (state used after `await`),
       missing `isClosed` or `mounted` checks, wrong error mapping, edge cases (empty, huge, malformed, offline).
-   2. **Architecture:** layer boundaries (use the `clean-architecture` verify commands), responsibilities (`solid-principles`), string literals used as keys, paths, or routes (ARCH-10).
-   3. **Security:** secrets, tokens in logs, unvalidated input (see `security-review`).
-   4. **Tests:** every new or changed behavior covered? Failure paths? Would the tests fail if the code were wrong?
-   5. **Performance:** rebuild scope, work in `build()`, unbounded lists, repeated network calls (see `performance-audit`).
-   6. **Readability:** names, size, duplication (see `clean-code`).
-   7. **Docs:** `FEATURE.md` matches the change.
+   2. **Core-first:** core widgets, animations, and responsive reused (BASE-1..6, WIDGET-1..6, RESP-1..6,
+      ANIM-1..7); no file over 300 lines (FILE-1); run `bash .opencode/scripts/check_rules.sh`.
+   3. **Architecture:** layer boundaries (use the `clean-architecture` verify commands), responsibilities (`solid-principles`), string literals used as keys, paths, or routes (ARCH-10).
+   4. **Security:** secrets, tokens in logs, unvalidated input (see `security-review`).
+   5. **Tests:** every new or changed behavior covered? Failure paths? Would the tests fail if the code were wrong?
+   6. **Performance:** rebuild scope, work in `build()`, unbounded lists, repeated network calls (see `performance-audit`).
+   7. **Readability:** names, size, duplication (see `clean-code`).
+   8. **Docs and notes:** `FEATURE.md` matches the change; `testers_release_note.txt` is updated in tester language (NOTES-1..7).
 3. **Verify claims.** Run `flutter analyze` and the affected tests instead of assuming.
 4. **Report** in the format below.
 

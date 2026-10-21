@@ -1,6 +1,6 @@
 # Core Map
 
-Check this before writing anything reusable (ARCH-4, UI-2). Keep it short: name, path, one-line use.
+Read this before writing any code, in every layer (BASE-1), and before writing anything reusable (ARCH-4, UI-2). Keep it short: name, path, one-line use.
 Update it whenever `core/` gains, loses, or changes a reusable piece (DOC-6).
 
 ## Constants (ARCH-10: the ONLY place string keys, paths, routes, assets live)

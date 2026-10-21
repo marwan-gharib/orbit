@@ -19,6 +19,8 @@ Before any build that leaves the team, or "is it ready to release?".
 - [ ] `dart format --set-exit-if-changed .` clean.
 - [ ] `flutter analyze` zero issues.
 - [ ] `flutter test` all green (full suite, not only affected).
+- [ ] `bash .opencode/scripts/check_rules.sh --all` reports no leads (or each is justified); no file over 300 lines.
+- [ ] `testers_release_note.txt` matches this build: tester language, every item has Try and Expect, nothing stale (NOTES-1..7). After the build is sent, run `/release-notes new`.
 - [ ] Every feature has an up-to-date `FEATURE.md` and `docs/FEATURES_INDEX.md` is accurate (run `feature-doc` check script for each feature).
 
 **Versioning and config**
@@ -47,7 +49,7 @@ Before any build that leaves the team, or "is it ready to release?".
 **Store requirements**
 - [ ] Privacy policy URL, data safety / privacy nutrition labels match actual data collection.
 - [ ] Screenshots, description, release notes ready. Target SDK and minimum OS requirements met.
-- [ ] Release notes written from the feature changelogs.
+- [ ] Store release notes written from the feature changelogs (not the tester note, which is for testers).
 
 ## Report format
 ```text
@@ -57,7 +59,7 @@ Risks: <list>
 Passed: <short list>
 Needs human action: <signing, store console, approvals>
 ```
-Never claim a check passed without running or inspecting it (CORE-31). Mark unchecked items as `NOT VERIFIED`.
+Never claim a check passed without running or inspecting it (CORE-33). Mark unchecked items as `NOT VERIFIED`.
 
 ## Precedence
 `AGENTS.md` and `.opencode/rules/` override this skill. On conflict, cite the rule ID and follow the rule.

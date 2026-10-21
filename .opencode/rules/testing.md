@@ -24,3 +24,9 @@
 - TEST-7  Test code uses the same constants as production for JSON keys, endpoint paths, and
           storage keys (`ApiKeys`, `Endpoints`, ...). Literals are allowed only for test VALUES
           (names, ids, amounts).
+- TEST-8  UI tests: every widget or screen test pumps through the project's shared test app helper
+          (search `test/` first; create one helper only if none exists) so `ResponsiveScope`, the
+          theme with its extensions, and the slang provider are present (RESP-5). Screen tests
+          cover loading, success, empty, and error at a small-phone size and a tablet size and at
+          a large text scale (RESP-6, UI-6). Animated widgets are tested with animations disabled or
+          settled (`pumpAndSettle`), never with real delays.
