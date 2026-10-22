@@ -14,6 +14,17 @@ abstract final class AppConsts {
   /// Cache key for the cached user profile (non-token display data).
   static const String authUserCacheKey = 'auth_cached_user';
 
+  /// Cache key for the work email of an account created but not yet approved.
+  /// Read at startup so the router can resume the pending-approval flow.
+  static const String pendingSignupEmailKey = 'pending_signup_email';
+
+  /// Minimum wait between manual approval checks on the pending screen.
+  static const Duration pendingCheckCooldown = Duration(seconds: 30);
+
+  /// How long the approved/rejected moment stays before the pending screen
+  /// leaves for its next route.
+  static const Duration pendingMomentHold = Duration(seconds: 2);
+
   /// Key for onboarding completion flag in shared preferences (cache).
   /// Read by splash on startup; written by onboarding on completion/skip.
   static const String onboardingSeenKey = 'onboarding_seen';

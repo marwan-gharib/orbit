@@ -3,6 +3,7 @@ import 'package:orbit/core/constants/log_tags.dart';
 import 'package:orbit/core/errors/error_mapper.dart';
 import 'package:orbit/core/local/cache/cache_service.dart';
 import 'package:orbit/core/local/secure/secure_storage_client.dart';
+import 'package:orbit/core/router/pending_signup_session.dart';
 import 'package:orbit/core/utils/api_result.dart';
 import 'package:orbit/core/utils/logger.dart';
 
@@ -15,14 +16,21 @@ import '../../models/user_model.dart';
 ///   cache, never in logs, never inside the cached user JSON.
 /// - The cached user profile is non-token display data, kept in `CacheService`
 ///   where the cheap key/value store is appropriate.
+/// - The pending-signup email is persisted in the cache and mirrored into the
+///   in-memory [PendingSignupSession] the router listens to.
 ///
 /// Catches everything (Exception and Error): a storage failure must become a
 /// `Failure`, and a malformed cached payload must degrade, never crash.
 class AuthLocalDataSource {
-  AuthLocalDataSource({required this._cache, required this._secureStorage});
+  AuthLocalDataSource({
+    required this._cache,
+    required this._secureStorage,
+    required this._pendingSession,
+  });
 
   final CacheService _cache;
   final SecureStorageClient _secureStorage;
+  final PendingSignupSession _pendingSession;
 
   /// Persists the session; on ANY write failure, best-effort deletes what may
   /// have been written (B6), so the session is never half-saved.
@@ -37,22 +45,32 @@ class AuthLocalDataSource {
         AppConsts.authUserCacheKey,
         session.user.toJson(),
       );
-      return const Success<void>(null);
     } on Object catch (error, stackTrace) {
       await _rollback();
       return ResultFailure(ErrorMapper.toFailure(error, stackTrace));
     }
+
+    // A completed sign-in supersedes any pending signup. Cleanup is
+    // best-effort: routing already prefers a real session over a pending one,
+    // so a failed delete must not fail the sign-in itself.
+    await clearPendingSignup();
+    return const Success<void>(null);
   }
 
-  /// Deletes both tokens and the cached user; missing keys are not errors.
+  /// Deletes both tokens, the cached user and any pending signup; missing keys
+  /// are not errors. The in-memory pending session is always cleared, even
+  /// when a storage delete fails.
   Future<ApiResult<void>> clearSession() async {
     try {
       await _secureStorage.delete(AppConsts.accessTokenKey);
       await _secureStorage.delete(AppConsts.refreshTokenKey);
       await _cache.delete(AppConsts.authUserCacheKey);
+      await _cache.delete(AppConsts.pendingSignupEmailKey);
       return const Success<void>(null);
     } on Object catch (error, stackTrace) {
       return ResultFailure(ErrorMapper.toFailure(error, stackTrace));
+    } finally {
+      _pendingSession.clear();
     }
   }
 
@@ -81,6 +99,48 @@ class AuthLocalDataSource {
     } on Object catch (error, stackTrace) {
       return ResultFailure(ErrorMapper.toFailure(error, stackTrace));
     }
+  }
+
+  /// Persists the email of an account awaiting approval, then starts the
+  /// in-memory session. The session starts only after the write succeeds, so a
+  /// restart can never disagree with the cache.
+  Future<ApiResult<void>> savePendingSignupEmail(String email) async {
+    try {
+      await _cache.writeString(AppConsts.pendingSignupEmailKey, email);
+      _pendingSession.start(email);
+      return const Success<void>(null);
+    } on Object catch (error, stackTrace) {
+      return ResultFailure(ErrorMapper.toFailure(error, stackTrace));
+    }
+  }
+
+  /// The persisted pending-signup email, or `null` when none exists.
+  Future<ApiResult<String?>> readPendingSignupEmail() async {
+    try {
+      return Success(await _cache.readString(AppConsts.pendingSignupEmailKey));
+    } on Object catch (error, stackTrace) {
+      return ResultFailure(ErrorMapper.toFailure(error, stackTrace));
+    }
+  }
+
+  /// Deletes the persisted email but keeps the in-memory session, so the
+  /// pending screen can finish its terminal moment after an approved or
+  /// rejected status check.
+  Future<ApiResult<void>> clearCachedPendingSignupEmail() async {
+    try {
+      await _cache.delete(AppConsts.pendingSignupEmailKey);
+      return const Success<void>(null);
+    } on Object catch (error, stackTrace) {
+      return ResultFailure(ErrorMapper.toFailure(error, stackTrace));
+    }
+  }
+
+  /// Ends the pending signup in storage and in memory. Memory is cleared even
+  /// when the delete fails, so the running app never keeps a stale flow.
+  Future<ApiResult<void>> clearPendingSignup() async {
+    final result = await clearCachedPendingSignupEmail();
+    _pendingSession.clear();
+    return result;
   }
 
   /// A cached profile that fails to read or parse (corrupt JSON, shape

@@ -4,7 +4,7 @@ import '../entities/signup_result_entity.dart';
 import '../params/signup_params.dart';
 import '../repositories/auth_repository.dart';
 
-/// Creates a pending account; nothing is persisted (no tokens arrive).
+/// Creates a pending account and persists its email through the repository.
 class SignupUseCase {
   SignupUseCase(this._repository);
 

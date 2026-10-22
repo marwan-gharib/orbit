@@ -3,6 +3,7 @@ import 'package:get_it/get_it.dart';
 import 'package:orbit/core/local/cache/cache_service.dart';
 import 'package:orbit/core/local/secure/secure_storage_client.dart';
 import 'package:orbit/core/network/base_api_client.dart';
+import 'package:orbit/core/router/pending_signup_session.dart';
 import 'package:orbit/features/auth/data/datasources/local/auth_local_data_source.dart';
 import 'package:orbit/features/auth/data/datasources/remote/auth_remote_data_source.dart';
 import 'package:orbit/features/auth/data/repositories/auth_repository_impl.dart';
@@ -26,6 +27,7 @@ Future<void> initAuthModule(GetIt getIt) async {
     () => AuthLocalDataSource(
       cache: getIt<CacheService>(),
       secureStorage: getIt<SecureStorageClient>(),
+      pendingSession: getIt<PendingSignupSession>(),
     ),
   );
 
@@ -60,4 +62,12 @@ Future<void> initAuthModule(GetIt getIt) async {
   getIt.registerFactory<EmployeeStatusCubit>(
     () => EmployeeStatusCubit(getIt<GetEmployeeStatusUseCase>()),
   );
+
+  // Resume the pending-approval flow across launches. A failed read is not
+  // fatal: the app starts signed out and the user can sign in again.
+  final pending = await getIt<AuthLocalDataSource>().readPendingSignupEmail();
+  final pendingEmail = pending.dataOrNull;
+  if (pendingEmail != null && pendingEmail.isNotEmpty) {
+    getIt<PendingSignupSession>().start(pendingEmail);
+  }
 }

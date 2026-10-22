@@ -10,11 +10,11 @@ class EmployeeStatusCubit extends Cubit<EmployeeStatusState> {
 
   final GetEmployeeStatusUseCase _getEmployeeStatus;
 
-  Future<void> check({required String email}) async {
+  Future<void> check() async {
     if (state is EmployeeStatusLoading) return;
     emit(const EmployeeStatusLoading());
 
-    final result = await _getEmployeeStatus(email);
+    final result = await _getEmployeeStatus();
     if (isClosed) return;
 
     result.fold(

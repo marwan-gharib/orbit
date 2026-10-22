@@ -7,11 +7,14 @@ import 'package:orbit/core/local/secure/secure_storage_client.dart';
 import 'package:orbit/core/local/secure/secure_storage_impl.dart';
 import 'package:orbit/core/network/base_api_client.dart';
 import 'package:orbit/core/network/dio_api_client.dart';
+import 'package:orbit/core/router/pending_signup_session.dart';
 
 /// Registers the cross-feature services every feature builds on, in
 /// dependency order: storage first, then the API client that talks to secure
 /// storage (DI-5).
 Future<void> initCoreModule(GetIt getIt) async {
+  getIt.registerLazySingleton<PendingSignupSession>(PendingSignupSession.new);
+
   getIt.registerLazySingleton<SecureStorageClient>(SecureStorageImpl.new);
 
   // Loaded up front so the app fails fast at startup if persistence is

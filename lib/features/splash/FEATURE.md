@@ -3,17 +3,18 @@
 > Last verified: 2026-10-22
 
 ## 1 Purpose
-Entry-point animation and startup orchestration. Runs a 4000ms “Orbit” animation (logo reveal, 5 module nodes orbiting and converging, tagline + keyword reveals) in parallel with async startup checks (auth token in secure storage, onboarding flag in cache). Navigates to onboarding / login / home when both animation and checks complete.
+Entry-point animation and startup orchestration. Runs a 4000ms “Orbit” animation (logo reveal, 5 module nodes orbiting and converging, tagline + keyword reveals) in parallel with async startup checks (auth token in secure storage, onboarding flag and pending-signup email in cache). Navigates to onboarding / login / pending / home when both animation and checks complete.
 
 ## 2 Screens & Routes
 | Screen | Route | Transition |
 |--------|-------|------------|
 | SplashScreen | `splash` (RouteNames.splash) | `AppPageTransition.none` (native splash handles entry) |
 
-Placeholder routes used by the startup decision, both `AppPageTransition.fadeThrough`:
-`login` (`RouteNames.login`) → `_LoginPlaceholder`, `home` (`RouteNames.home`) → `_HomePlaceholder`.
-`onboarding` resolves to the real onboarding feature screen. The route table resolves
-`SplashCubit` / `OnboardingCubit` from GetIt.
+Placeholder routes used by the startup decision: `home` (`RouteNames.home`) → `_HomePlaceholder`.
+`login` (`RouteNames.login`), `signup` (`RouteNames.signup`) and `pending`
+(`RouteNames.pending`) resolve to the real auth screens; `onboarding` resolves to the
+real onboarding feature screen. All transitions are `AppPageTransition.fadeThrough`;
+the route table resolves the Cubits from GetIt.
 
 ## 3 File Map
 ```
@@ -69,20 +70,21 @@ DI registration lives in `lib/core/di/splash_injection.dart` (feature modules re
 ## 6 API & Storage
 - No network calls.
 - **SecureStorageClient**: reads `AppConsts.accessTokenKey` — the same key the auth feature writes, so startup reflects the real session.
-- **CacheService**: reads `AppConsts.onboardingSeenKey`.
+- **CacheService**: reads `AppConsts.onboardingSeenKey` and `AppConsts.pendingSignupEmailKey`.
 
 ## 7 State
 - **SplashLoading**: animation running, checks in progress.
 - **SplashReady(viewModel)**: both done → the screen's `BlocListener` (gated by an exhaustive `listenWhen` switch) calls `goNamed(viewModel.nextRoute)`.
 - **SplashError(failure)**: checks failed → the screen renders `ErrorState` with `context.failureText(failure)`; no retry, no navigation.
 
-Navigation decision (in `SplashViewModel.nextRoute`):
-| hasAuthToken | onboardingSeen | Route |
-|--------------|----------------|-------|
-| false        | false          | `onboarding` |
-| false        | true           | `login` |
-| true         | false          | `onboarding` |
-| true         | true           | `home` |
+Navigation decision (in `SplashViewModel.nextRoute`; precedence: real session → pending signup → onboarding → login):
+| hasAuthToken | hasPendingSignup | onboardingSeen | Route |
+|--------------|------------------|----------------|-------|
+| true         | any              | false          | `onboarding` |
+| true         | any              | true           | `home` |
+| false        | true             | any            | `pending` |
+| false        | false            | false          | `onboarding` |
+| false        | false            | true           | `login` |
 
 ## 8 Dependencies
 - **Core**: `CacheService`, `SecureStorageClient`, `Responsive`, `AppColorsExtension`/`AppTextStylesExtension`, `ErrorState`, `context.failureText`, `RouteNames`, `ApiResult`/`Failure`, `go_router`, `flutter_bloc`, `equatable`.
@@ -110,20 +112,23 @@ RTL-safe: copy reveals animate only opacity/transform inside centered `Wrap`s (n
 - If checks fail → localized `ErrorState` text (`context.failureText`); the animation keeps running but never navigates.
 - Reduced motion (`MediaQuery.disableAnimations`): show static final frame, navigate after a 500ms hold (stored timer, cancelled on dispose).
 - Native splash (`flutter_native_splash.yaml`) uses hardcoded light background `#F7F8F9` (mirrors `AppColors.neutralNormal`).
+- A persisted pending signup outranks onboarding/login when there is no session; a real
+  session outranks a pending signup.
 
 ## 11 Tests
 `test/features/splash/` — 44 tests (29 bodies; the layout suite runs 5 bodies × 4 screen sizes),
 mocktail + bloc_test, no added packages:
 - **Datasource** `data/datasources/local/splash_local_data_source_test.dart`: reads exactly
-  `AppConsts.accessTokenKey` (pin) and the onboarding key; failure path.
+  `AppConsts.accessTokenKey` (pin), the onboarding key and `AppConsts.pendingSignupEmailKey`; failure path.
 - **Model** `data/models/startup_status_model_test.dart`: `toEntity()` field by field.
 - **Usecase** `domain/usecases/check_startup_status_usecase_test.dart`: success / failure passthrough.
 - **Repository** `data/repositories/splash_repository_impl_test.dart`: datasource success → entity;
   exception → `Failure`.
 - **Cubit** `presentation/cubit/splash_cubit_test.dart`: `SplashReady` only after BOTH the animation
   and the checks finish (completer-driven, both orders), `[Loading, Error(failure)]` on check failure.
-- **Mapper** `presentation/mappers/splash_mapper_test.dart`: `toViewModel` fields + all 4 routing
-  outcomes of §7.
+- **Mapper** `presentation/mappers/splash_mapper_test.dart`: `toViewModel` fields + every
+  routing outcome of §7, including pending precedence over login/onboarding and a real
+  session winning over a pending signup.
 - **Widget** `presentation/screens/splash_screen_test.dart` (7): real `AppRouterRoutes` table with a
   real cubit (registered in GetIt, as the app does) over a mocked usecase — composition visible,
   no navigation before 4000ms, `goNamed` lands on login/home per status, localized error view,
@@ -138,6 +143,7 @@ mocktail + bloc_test, no added packages:
   rotates via `translateByDouble`/`rotateZ` on a `Matrix4`.
 
 ## 13 Changelog
+- 2026-10-22: Pending-aware startup — the checks now also read the pending-signup email; an unapproved account routes to the real `/pending` screen (session still wins), and the auth routes resolve to the real screens.
 - 2026-10-22: Token-key unification — startup checks read `AppConsts.accessTokenKey` (shared with the auth feature); `test/data/datasources/local` gained a datasource test pinning the key.
 - 2026-10-16: Synced with code — constants under `presentation/constants/`; storage keys referenced by constant name (ARCH-10).
 - 2026-10-16: Hardening after review — exhaustive state switches (`listenWhen` + listener + builder), `SplashError` carries the `Failure` (`ErrorState` + `context.failureText`), stored reduced-motion timer cancelled on dispose, DI moved to `lib/core/di/splash_injection.dart`, onboarding placeholder route removed, per-frame rebuild scoping restored; tests for cubit gating in both orders, failure passthrough, error view, timer cancel.

@@ -1,9 +1,11 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:orbit/core/config/app_env.dart';
+import 'package:orbit/core/constants/app_consts.dart';
 import 'package:orbit/core/di/injection_container.dart';
 import 'package:orbit/core/local/cache/cache_service.dart';
 import 'package:orbit/core/local/secure/secure_storage_client.dart';
 import 'package:orbit/core/network/base_api_client.dart';
+import 'package:orbit/core/router/pending_signup_session.dart';
 import 'package:orbit/features/auth/domain/repositories/auth_repository.dart';
 import 'package:orbit/features/auth/presentation/cubits/employee_status/employee_status_cubit.dart';
 import 'package:orbit/features/auth/presentation/cubits/login/login_cubit.dart';
@@ -37,6 +39,21 @@ void main() {
 
   test('should resolve the same api client instance when resolved twice', () {
     expect(getIt<BaseApiClient>(), same(getIt<BaseApiClient>()));
+  });
+
+  test('should register the pending signup session', () {
+    expect(getIt.isRegistered<PendingSignupSession>(), isTrue);
+    expect(getIt<PendingSignupSession>(), same(getIt<PendingSignupSession>()));
+  });
+
+  test('should resume a persisted pending signup at startup', () async {
+    await getIt.reset();
+    SharedPreferences.setMockInitialValues(<String, Object>{
+      AppConsts.pendingSignupEmailKey: 'adam@orbit.app',
+    });
+    await initDependencies();
+
+    expect(getIt<PendingSignupSession>().email, 'adam@orbit.app');
   });
 
   test('should register the auth repository when dependencies init', () {

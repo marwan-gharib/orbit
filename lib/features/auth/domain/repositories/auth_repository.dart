@@ -14,15 +14,17 @@ abstract interface class AuthRepository {
   /// when persistence fails — the session is never half-saved.
   Future<ApiResult<AuthSession>> login(LoginParams params);
 
-  /// Creates a pending account; nothing is persisted (no tokens arrive).
+  /// Creates a pending account and persists its email so the approval flow
+  /// resumes after a restart; nothing else is stored (no tokens arrive).
   Future<ApiResult<SignupResult>> signup(SignupParams params);
 
   /// Revokes the refresh token server-side (when one exists) and always
   /// clears the local session, even if the remote call fails.
   Future<ApiResult<void>> logout();
 
-  /// Checks an account's employment status by work email.
-  Future<ApiResult<EmployeeStatusInfo>> getEmployeeStatus(String email);
+  /// Checks the employment status of the account created from this device,
+  /// using the persisted pending-signup email.
+  Future<ApiResult<EmployeeStatusInfo>> getEmployeeStatus();
 
   /// Local-only snapshot for routing decisions; never fails for missing
   /// data (missing data means "not signed in").

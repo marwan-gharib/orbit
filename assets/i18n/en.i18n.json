@@ -1,13 +1,13 @@
 {
   "app": {
     "title": "Orbit",
-    "loginPlaceholder": {
-      "title": "Login (Placeholder)",
-      "body": "Login screen not yet implemented"
-    },
     "homePlaceholder": {
       "title": "Home (Placeholder)",
       "body": "Home screen not yet implemented"
+    },
+    "a11y": {
+      "showPassword": "Show password",
+      "hidePassword": "Hide password"
     }
   },
   "home": {
@@ -58,7 +58,9 @@
     "passwordUppercase": "Password must contain an uppercase letter.",
     "passwordLowercase": "Password must contain a lowercase letter.",
     "passwordDigit": "Password must contain a digit.",
+    "passwordSpecial": "Password must contain a special character.",
     "passwordMismatch": "Passwords do not match.",
+    "name": "Use letters only. Spaces, numbers, and symbols aren't allowed.",
     "phone": "Enter a valid phone number.",
     "numeric": "Enter numbers only."
   },
@@ -104,6 +106,89 @@
       "backButton": "Go to previous page",
       "getStartedButton": "Complete onboarding and continue to login",
       "pageIndicator": "Page {current} of {total}"
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Welcome back",
+      "subtitle": "Sign in to pick up where your team left off.",
+      "emailLabel": "Work email",
+      "emailHint": "you@company.com",
+      "passwordLabel": "Password",
+      "submit": "Sign in",
+      "noAccount": "New to Orbit?",
+      "createAccount": "Create an account",
+      "errorTitle": "Couldn't sign you in",
+      "a11y": {
+        "submit": "Sign in to your account"
+      }
+    },
+    "signup": {
+      "title": "Create your account",
+      "subtitle": "Tell us who you are. Your team will take it from there.",
+      "firstNameLabel": "First name",
+      "lastNameLabel": "Last name",
+      "workEmailLabel": "Work email",
+      "workEmailHint": "you@company.com",
+      "passwordLabel": "Password",
+      "confirmPasswordLabel": "Confirm password",
+      "submit": "Create account",
+      "haveAccount": "Already have an account?",
+      "signIn": "Sign in",
+      "errorTitle": "Couldn't create your account",
+      "checklistTitle": "Your password needs",
+      "strengthLabel": "Password strength",
+      "requirements": {
+        "minLength": "At least {n} characters",
+        "uppercase": "One uppercase letter",
+        "lowercase": "One lowercase letter",
+        "digit": "One number",
+        "special": "One special character"
+      },
+      "strength": {
+        "weak": "Weak",
+        "fair": "Fair",
+        "good": "Good",
+        "strong": "Strong"
+      },
+      "a11y": {
+        "submit": "Create your account",
+        "ruleMet": "Met",
+        "ruleNotMet": "Not met yet"
+      }
+    },
+    "pending": {
+      "title": "Your account is on its way",
+      "subtitle": "An admin needs to approve your request before you can sign in.",
+      "emailLabel": "Work email",
+      "statusLabel": "Approval status",
+      "statuses": {
+        "pending": "Pending approval",
+        "approved": "Approved",
+        "rejected": "Not approved",
+        "unknown": "Under review"
+      },
+      "lastCheckedNever": "Last checked: never",
+      "lastCheckedAt": "Last checked: {time}",
+      "checkStatus": "Check status",
+      "cooldown": "You can check again in a moment.",
+      "unchanged": "No change yet. Your request is still under review.",
+      "errorTitle": "Couldn't check your status",
+      "greeting": "Hi, {name}",
+      "stepper": {
+        "submitted": "Submitted",
+        "review": "In review",
+        "decision": "Decision"
+      },
+      "moments": {
+        "approved": "You're approved. Taking you to sign in.",
+        "rejected": "This request wasn't approved. Taking you back to sign up."
+      },
+      "a11y": {
+        "hero": "Orbit approval status",
+        "stepper": "Approval progress",
+        "checkStatus": "Check your approval status"
+      }
     }
   }
 }

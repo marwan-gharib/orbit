@@ -1,9 +1,11 @@
+import 'package:orbit/core/errors/failures.dart';
 import 'package:orbit/core/utils/api_result.dart';
 
 import '../../domain/entities/auth_session_entity.dart';
 import '../../domain/entities/employee_status_info_entity.dart';
 import '../../domain/entities/session_info_entity.dart';
 import '../../domain/entities/signup_result_entity.dart';
+import '../../domain/enums/employment_status.dart';
 import '../../domain/params/login_params.dart';
 import '../../domain/params/signup_params.dart';
 import '../../domain/repositories/auth_repository.dart';
@@ -37,10 +39,16 @@ class AuthRepositoryImpl implements AuthRepository {
   @override
   Future<ApiResult<SignupResult>> signup(SignupParams params) async {
     final result = await _remote.signup(params);
-    return result.fold(
-      (failure) => ResultFailure(failure),
-      (model) => Success(model.toEntity()),
-    );
+    return result.fold((failure) => ResultFailure(failure), (model) async {
+      final entity = model.toEntity();
+      // Fail loudly when the pending email cannot be persisted: without it
+      // the approval flow cannot resume after a restart.
+      final saved = await _local.savePendingSignupEmail(entity.email);
+      return saved.fold(
+        (failure) => ResultFailure(failure),
+        (_) => Success(entity),
+      );
+    });
   }
 
   @override
@@ -60,12 +68,29 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<ApiResult<EmployeeStatusInfo>> getEmployeeStatus(String email) async {
+  Future<ApiResult<EmployeeStatusInfo>> getEmployeeStatus() async {
+    final cached = await _local.readPendingSignupEmail();
+    if (cached case ResultFailure(:final failure)) {
+      return ResultFailure(failure);
+    }
+    final email = cached.dataOrNull;
+    if (email == null || email.isEmpty) {
+      return const ResultFailure(
+        NotFoundFailure(message: 'No pending signup email to check.'),
+      );
+    }
+
     final result = await _remote.getEmployeeStatus(email);
-    return result.fold(
-      (failure) => ResultFailure(failure),
-      (model) => Success(model.toEntity()),
-    );
+    return result.fold((failure) => ResultFailure(failure), (model) async {
+      final entity = model.toEntity();
+      // A terminal decision ends the persisted flow, but the in-memory
+      // session survives so the pending screen can play its moment.
+      if (entity.status == EmploymentStatus.approved ||
+          entity.status == EmploymentStatus.rejected) {
+        await _local.clearCachedPendingSignupEmail();
+      }
+      return Success(entity);
+    });
   }
 
   @override

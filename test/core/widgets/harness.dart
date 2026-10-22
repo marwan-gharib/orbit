@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
+import 'package:orbit/core/i18n/strings.g.dart';
 import 'package:orbit/core/responsive/responsive_scaler.dart';
 import 'package:orbit/core/theme/app_theme.dart';
 
@@ -69,11 +70,13 @@ Future<void> pumpWidget(
         ),
         child: Directionality(
           textDirection: textDirection,
-          child: MaterialApp(
-            theme: AppTheme.light,
-            darkTheme: AppTheme.dark,
-            themeMode: themeMode,
-            home: Scaffold(body: widget),
+          child: TranslationProvider(
+            child: MaterialApp(
+              theme: AppTheme.light,
+              darkTheme: AppTheme.dark,
+              themeMode: themeMode,
+              home: Scaffold(body: widget),
+            ),
           ),
         ),
       ),

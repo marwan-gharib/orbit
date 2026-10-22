@@ -47,6 +47,7 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 	late final Translations$validators$en validators = Translations$validators$en._(_root);
 	late final Translations$splash$en splash = Translations$splash$en._(_root);
 	late final Translations$onboarding$en onboarding = Translations$onboarding$en._(_root);
+	late final Translations$auth$en auth = Translations$auth$en._(_root);
 }
 
 // Path: app
@@ -60,8 +61,8 @@ class Translations$app$en {
 	/// en: 'Orbit'
 	String get title => 'Orbit';
 
-	late final Translations$app$loginPlaceholder$en loginPlaceholder = Translations$app$loginPlaceholder$en._(_root);
 	late final Translations$app$homePlaceholder$en homePlaceholder = Translations$app$homePlaceholder$en._(_root);
+	late final Translations$app$a11y$en a11y = Translations$app$a11y$en._(_root);
 }
 
 // Path: home
@@ -207,8 +208,14 @@ class Translations$validators$en {
 	/// en: 'Password must contain a digit.'
 	String get passwordDigit => 'Password must contain a digit.';
 
+	/// en: 'Password must contain a special character.'
+	String get passwordSpecial => 'Password must contain a special character.';
+
 	/// en: 'Passwords do not match.'
 	String get passwordMismatch => 'Passwords do not match.';
+
+	/// en: 'Use letters only. Spaces, numbers, and symbols aren't allowed.'
+	String get name => 'Use letters only. Spaces, numbers, and symbols aren\'t allowed.';
 
 	/// en: 'Enter a valid phone number.'
 	String get phone => 'Enter a valid phone number.';
@@ -270,19 +277,16 @@ class Translations$onboarding$en {
 	late final Translations$onboarding$a11y$en a11y = Translations$onboarding$a11y$en._(_root);
 }
 
-// Path: app.loginPlaceholder
-class Translations$app$loginPlaceholder$en {
-	Translations$app$loginPlaceholder$en._(this._root);
+// Path: auth
+class Translations$auth$en {
+	Translations$auth$en._(this._root);
 
 	final Translations _root; // ignore: unused_field
 
 	// Translations
-
-	/// en: 'Login (Placeholder)'
-	String get title => 'Login (Placeholder)';
-
-	/// en: 'Login screen not yet implemented'
-	String get body => 'Login screen not yet implemented';
+	late final Translations$auth$login$en login = Translations$auth$login$en._(_root);
+	late final Translations$auth$signup$en signup = Translations$auth$signup$en._(_root);
+	late final Translations$auth$pending$en pending = Translations$auth$pending$en._(_root);
 }
 
 // Path: app.homePlaceholder
@@ -298,6 +302,21 @@ class Translations$app$homePlaceholder$en {
 
 	/// en: 'Home screen not yet implemented'
 	String get body => 'Home screen not yet implemented';
+}
+
+// Path: app.a11y
+class Translations$app$a11y$en {
+	Translations$app$a11y$en._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Show password'
+	String get showPassword => 'Show password';
+
+	/// en: 'Hide password'
+	String get hidePassword => 'Hide password';
 }
 
 // Path: splash.modules
@@ -420,6 +439,294 @@ class Translations$onboarding$a11y$en {
 	String pageIndicator({required Object current, required Object total}) => 'Page ${current} of ${total}';
 }
 
+// Path: auth.login
+class Translations$auth$login$en {
+	Translations$auth$login$en._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Welcome back'
+	String get title => 'Welcome back';
+
+	/// en: 'Sign in to pick up where your team left off.'
+	String get subtitle => 'Sign in to pick up where your team left off.';
+
+	/// en: 'Work email'
+	String get emailLabel => 'Work email';
+
+	/// en: 'you@company.com'
+	String get emailHint => 'you@company.com';
+
+	/// en: 'Password'
+	String get passwordLabel => 'Password';
+
+	/// en: 'Sign in'
+	String get submit => 'Sign in';
+
+	/// en: 'New to Orbit?'
+	String get noAccount => 'New to Orbit?';
+
+	/// en: 'Create an account'
+	String get createAccount => 'Create an account';
+
+	/// en: 'Couldn't sign you in'
+	String get errorTitle => 'Couldn\'t sign you in';
+
+	late final Translations$auth$login$a11y$en a11y = Translations$auth$login$a11y$en._(_root);
+}
+
+// Path: auth.signup
+class Translations$auth$signup$en {
+	Translations$auth$signup$en._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Create your account'
+	String get title => 'Create your account';
+
+	/// en: 'Tell us who you are. Your team will take it from there.'
+	String get subtitle => 'Tell us who you are. Your team will take it from there.';
+
+	/// en: 'First name'
+	String get firstNameLabel => 'First name';
+
+	/// en: 'Last name'
+	String get lastNameLabel => 'Last name';
+
+	/// en: 'Work email'
+	String get workEmailLabel => 'Work email';
+
+	/// en: 'you@company.com'
+	String get workEmailHint => 'you@company.com';
+
+	/// en: 'Password'
+	String get passwordLabel => 'Password';
+
+	/// en: 'Confirm password'
+	String get confirmPasswordLabel => 'Confirm password';
+
+	/// en: 'Create account'
+	String get submit => 'Create account';
+
+	/// en: 'Already have an account?'
+	String get haveAccount => 'Already have an account?';
+
+	/// en: 'Sign in'
+	String get signIn => 'Sign in';
+
+	/// en: 'Couldn't create your account'
+	String get errorTitle => 'Couldn\'t create your account';
+
+	/// en: 'Your password needs'
+	String get checklistTitle => 'Your password needs';
+
+	/// en: 'Password strength'
+	String get strengthLabel => 'Password strength';
+
+	late final Translations$auth$signup$requirements$en requirements = Translations$auth$signup$requirements$en._(_root);
+	late final Translations$auth$signup$strength$en strength = Translations$auth$signup$strength$en._(_root);
+	late final Translations$auth$signup$a11y$en a11y = Translations$auth$signup$a11y$en._(_root);
+}
+
+// Path: auth.pending
+class Translations$auth$pending$en {
+	Translations$auth$pending$en._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Your account is on its way'
+	String get title => 'Your account is on its way';
+
+	/// en: 'An admin needs to approve your request before you can sign in.'
+	String get subtitle => 'An admin needs to approve your request before you can sign in.';
+
+	/// en: 'Work email'
+	String get emailLabel => 'Work email';
+
+	/// en: 'Approval status'
+	String get statusLabel => 'Approval status';
+
+	late final Translations$auth$pending$statuses$en statuses = Translations$auth$pending$statuses$en._(_root);
+
+	/// en: 'Last checked: never'
+	String get lastCheckedNever => 'Last checked: never';
+
+	/// en: 'Last checked: {time}'
+	String lastCheckedAt({required Object time}) => 'Last checked: ${time}';
+
+	/// en: 'Check status'
+	String get checkStatus => 'Check status';
+
+	/// en: 'You can check again in a moment.'
+	String get cooldown => 'You can check again in a moment.';
+
+	/// en: 'No change yet. Your request is still under review.'
+	String get unchanged => 'No change yet. Your request is still under review.';
+
+	/// en: 'Couldn't check your status'
+	String get errorTitle => 'Couldn\'t check your status';
+
+	/// en: 'Hi, {name}'
+	String greeting({required Object name}) => 'Hi, ${name}';
+
+	late final Translations$auth$pending$stepper$en stepper = Translations$auth$pending$stepper$en._(_root);
+	late final Translations$auth$pending$moments$en moments = Translations$auth$pending$moments$en._(_root);
+	late final Translations$auth$pending$a11y$en a11y = Translations$auth$pending$a11y$en._(_root);
+}
+
+// Path: auth.login.a11y
+class Translations$auth$login$a11y$en {
+	Translations$auth$login$a11y$en._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Sign in to your account'
+	String get submit => 'Sign in to your account';
+}
+
+// Path: auth.signup.requirements
+class Translations$auth$signup$requirements$en {
+	Translations$auth$signup$requirements$en._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'At least {n} characters'
+	String minLength({required Object n}) => 'At least ${n} characters';
+
+	/// en: 'One uppercase letter'
+	String get uppercase => 'One uppercase letter';
+
+	/// en: 'One lowercase letter'
+	String get lowercase => 'One lowercase letter';
+
+	/// en: 'One number'
+	String get digit => 'One number';
+
+	/// en: 'One special character'
+	String get special => 'One special character';
+}
+
+// Path: auth.signup.strength
+class Translations$auth$signup$strength$en {
+	Translations$auth$signup$strength$en._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Weak'
+	String get weak => 'Weak';
+
+	/// en: 'Fair'
+	String get fair => 'Fair';
+
+	/// en: 'Good'
+	String get good => 'Good';
+
+	/// en: 'Strong'
+	String get strong => 'Strong';
+}
+
+// Path: auth.signup.a11y
+class Translations$auth$signup$a11y$en {
+	Translations$auth$signup$a11y$en._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Create your account'
+	String get submit => 'Create your account';
+
+	/// en: 'Met'
+	String get ruleMet => 'Met';
+
+	/// en: 'Not met yet'
+	String get ruleNotMet => 'Not met yet';
+}
+
+// Path: auth.pending.statuses
+class Translations$auth$pending$statuses$en {
+	Translations$auth$pending$statuses$en._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Pending approval'
+	String get pending => 'Pending approval';
+
+	/// en: 'Approved'
+	String get approved => 'Approved';
+
+	/// en: 'Not approved'
+	String get rejected => 'Not approved';
+
+	/// en: 'Under review'
+	String get unknown => 'Under review';
+}
+
+// Path: auth.pending.stepper
+class Translations$auth$pending$stepper$en {
+	Translations$auth$pending$stepper$en._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Submitted'
+	String get submitted => 'Submitted';
+
+	/// en: 'In review'
+	String get review => 'In review';
+
+	/// en: 'Decision'
+	String get decision => 'Decision';
+}
+
+// Path: auth.pending.moments
+class Translations$auth$pending$moments$en {
+	Translations$auth$pending$moments$en._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'You're approved. Taking you to sign in.'
+	String get approved => 'You\'re approved. Taking you to sign in.';
+
+	/// en: 'This request wasn't approved. Taking you back to sign up.'
+	String get rejected => 'This request wasn\'t approved. Taking you back to sign up.';
+}
+
+// Path: auth.pending.a11y
+class Translations$auth$pending$a11y$en {
+	Translations$auth$pending$a11y$en._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Orbit approval status'
+	String get hero => 'Orbit approval status';
+
+	/// en: 'Approval progress'
+	String get stepper => 'Approval progress';
+
+	/// en: 'Check your approval status'
+	String get checkStatus => 'Check your approval status';
+}
+
 /// The flat map containing all translations for locale <en>.
 /// Only for edge cases! For simple maps, use the map function of this library.
 ///
@@ -429,10 +736,10 @@ extension on Translations {
 	dynamic _flatMapFunction(String path) {
 		return switch (path) {
 			'app.title' => 'Orbit',
-			'app.loginPlaceholder.title' => 'Login (Placeholder)',
-			'app.loginPlaceholder.body' => 'Login screen not yet implemented',
 			'app.homePlaceholder.title' => 'Home (Placeholder)',
 			'app.homePlaceholder.body' => 'Home screen not yet implemented',
+			'app.a11y.showPassword' => 'Show password',
+			'app.a11y.hidePassword' => 'Hide password',
 			'home.title' => 'Home',
 			'errors.offline' => 'You\'re offline. Check your internet connection and try again.',
 			'errors.unreachable' => 'We couldn\'t reach the server. Please try again in a moment.',
@@ -470,7 +777,9 @@ extension on Translations {
 			'validators.passwordUppercase' => 'Password must contain an uppercase letter.',
 			'validators.passwordLowercase' => 'Password must contain a lowercase letter.',
 			'validators.passwordDigit' => 'Password must contain a digit.',
+			'validators.passwordSpecial' => 'Password must contain a special character.',
 			'validators.passwordMismatch' => 'Passwords do not match.',
+			'validators.name' => 'Use letters only. Spaces, numbers, and symbols aren\'t allowed.',
 			'validators.phone' => 'Enter a valid phone number.',
 			'validators.numeric' => 'Enter numbers only.',
 			'splash.tagline' => 'Every project. Every team. One orbit.',
@@ -504,6 +813,65 @@ extension on Translations {
 			'onboarding.a11y.backButton' => 'Go to previous page',
 			'onboarding.a11y.getStartedButton' => 'Complete onboarding and continue to login',
 			'onboarding.a11y.pageIndicator' => ({required Object current, required Object total}) => 'Page ${current} of ${total}',
+			'auth.login.title' => 'Welcome back',
+			'auth.login.subtitle' => 'Sign in to pick up where your team left off.',
+			'auth.login.emailLabel' => 'Work email',
+			'auth.login.emailHint' => 'you@company.com',
+			'auth.login.passwordLabel' => 'Password',
+			'auth.login.submit' => 'Sign in',
+			'auth.login.noAccount' => 'New to Orbit?',
+			'auth.login.createAccount' => 'Create an account',
+			'auth.login.errorTitle' => 'Couldn\'t sign you in',
+			'auth.login.a11y.submit' => 'Sign in to your account',
+			'auth.signup.title' => 'Create your account',
+			'auth.signup.subtitle' => 'Tell us who you are. Your team will take it from there.',
+			'auth.signup.firstNameLabel' => 'First name',
+			'auth.signup.lastNameLabel' => 'Last name',
+			'auth.signup.workEmailLabel' => 'Work email',
+			'auth.signup.workEmailHint' => 'you@company.com',
+			'auth.signup.passwordLabel' => 'Password',
+			'auth.signup.confirmPasswordLabel' => 'Confirm password',
+			'auth.signup.submit' => 'Create account',
+			'auth.signup.haveAccount' => 'Already have an account?',
+			'auth.signup.signIn' => 'Sign in',
+			'auth.signup.errorTitle' => 'Couldn\'t create your account',
+			'auth.signup.checklistTitle' => 'Your password needs',
+			'auth.signup.strengthLabel' => 'Password strength',
+			'auth.signup.requirements.minLength' => ({required Object n}) => 'At least ${n} characters',
+			'auth.signup.requirements.uppercase' => 'One uppercase letter',
+			'auth.signup.requirements.lowercase' => 'One lowercase letter',
+			'auth.signup.requirements.digit' => 'One number',
+			'auth.signup.requirements.special' => 'One special character',
+			'auth.signup.strength.weak' => 'Weak',
+			'auth.signup.strength.fair' => 'Fair',
+			'auth.signup.strength.good' => 'Good',
+			'auth.signup.strength.strong' => 'Strong',
+			'auth.signup.a11y.submit' => 'Create your account',
+			'auth.signup.a11y.ruleMet' => 'Met',
+			'auth.signup.a11y.ruleNotMet' => 'Not met yet',
+			'auth.pending.title' => 'Your account is on its way',
+			'auth.pending.subtitle' => 'An admin needs to approve your request before you can sign in.',
+			'auth.pending.emailLabel' => 'Work email',
+			'auth.pending.statusLabel' => 'Approval status',
+			'auth.pending.statuses.pending' => 'Pending approval',
+			'auth.pending.statuses.approved' => 'Approved',
+			'auth.pending.statuses.rejected' => 'Not approved',
+			'auth.pending.statuses.unknown' => 'Under review',
+			'auth.pending.lastCheckedNever' => 'Last checked: never',
+			'auth.pending.lastCheckedAt' => ({required Object time}) => 'Last checked: ${time}',
+			'auth.pending.checkStatus' => 'Check status',
+			'auth.pending.cooldown' => 'You can check again in a moment.',
+			'auth.pending.unchanged' => 'No change yet. Your request is still under review.',
+			'auth.pending.errorTitle' => 'Couldn\'t check your status',
+			'auth.pending.greeting' => ({required Object name}) => 'Hi, ${name}',
+			'auth.pending.stepper.submitted' => 'Submitted',
+			'auth.pending.stepper.review' => 'In review',
+			'auth.pending.stepper.decision' => 'Decision',
+			'auth.pending.moments.approved' => 'You\'re approved. Taking you to sign in.',
+			'auth.pending.moments.rejected' => 'This request wasn\'t approved. Taking you back to sign up.',
+			'auth.pending.a11y.hero' => 'Orbit approval status',
+			'auth.pending.a11y.stepper' => 'Approval progress',
+			'auth.pending.a11y.checkStatus' => 'Check your approval status',
 			_ => null,
 		};
 	}

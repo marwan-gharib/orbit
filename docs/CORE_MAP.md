@@ -75,7 +75,7 @@ Update it whenever `core/` gains, loses, or changes a reusable piece (DOC-6).
 ## Theme / router / DI
 - `AppTheme.light/dark` — core/theme/app_theme.dart (Material 3; registers `AppColorsExtension` + `AppTextStylesExtension`, full component themes, per-mode system overlay style; every font size, spacing and radius goes through `Responsive`, so `ResponsiveScope` must wrap `MaterialApp` — see main.dart)
 - `context.colors` / `context.textStyles` — core/theme/extensions/…; raw palette `AppColors`, type scale `AppTextStyles`, `AppSpacing`, `AppRadius` — core/theme/…; font-family switch `Fonts.family` — core/constants/fonts.dart (placeholder, pubspec registers no font yet)
-- go_router configuration — core/router/… (route names in `route_names.dart`, paths in `route_paths.dart`, guards in `route_guards.dart`)
+- go_router configuration — core/router/… (route table in `app_router_routes.dart`, route names in `route_names.dart`, paths in `route_paths.dart`, auth guard `RouteGuards.authRedirect` in `route_guards.dart`, in-memory pending flow in `pending_signup_session.dart`)
 - Injection container — core/di/injection_container.dart (`initCoreModule` + one module file per feature: `splash_injection.dart`, `onboarding_injection.dart`, `auth_injection.dart`; the pattern is described in `feature_module_registry.md`)
 
 ## i18n

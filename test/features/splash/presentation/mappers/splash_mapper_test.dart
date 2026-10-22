@@ -11,6 +11,7 @@ void main() {
       const entity = SplashStateEntity(
         hasAuthToken: true,
         onboardingSeen: false,
+        hasPendingSignup: false,
       );
 
       final viewModel = entity.toViewModel();
@@ -18,6 +19,7 @@ void main() {
       expect(viewModel, isA<SplashViewModel>());
       expect(viewModel.hasAuthToken, true);
       expect(viewModel.onboardingSeen, false);
+      expect(viewModel.hasPendingSignup, false);
       expect(viewModel.nextRoute, RouteNames.onboarding);
     });
 
@@ -27,6 +29,7 @@ void main() {
         const entity = SplashStateEntity(
           hasAuthToken: false,
           onboardingSeen: false,
+          hasPendingSignup: false,
         );
 
         expect(entity.nextRoute, RouteNames.onboarding);
@@ -37,6 +40,7 @@ void main() {
       const entity = SplashStateEntity(
         hasAuthToken: false,
         onboardingSeen: true,
+        hasPendingSignup: false,
       );
 
       expect(entity.nextRoute, RouteNames.login);
@@ -46,6 +50,7 @@ void main() {
       const entity = SplashStateEntity(
         hasAuthToken: true,
         onboardingSeen: false,
+        hasPendingSignup: false,
       );
 
       expect(entity.nextRoute, RouteNames.onboarding);
@@ -55,6 +60,27 @@ void main() {
       const entity = SplashStateEntity(
         hasAuthToken: true,
         onboardingSeen: true,
+        hasPendingSignup: false,
+      );
+
+      expect(entity.nextRoute, RouteNames.home);
+    });
+
+    test('nextRoute returns pending when no auth and a signup is pending', () {
+      const entity = SplashStateEntity(
+        hasAuthToken: false,
+        onboardingSeen: true,
+        hasPendingSignup: true,
+      );
+
+      expect(entity.nextRoute, RouteNames.pending);
+    });
+
+    test('nextRoute prefers a real session over a pending signup', () {
+      const entity = SplashStateEntity(
+        hasAuthToken: true,
+        onboardingSeen: true,
+        hasPendingSignup: true,
       );
 
       expect(entity.nextRoute, RouteNames.home);

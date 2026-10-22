@@ -7,7 +7,6 @@ import 'package:orbit/core/local/secure/secure_storage_client.dart';
 import 'package:orbit/core/network/base_api_client.dart';
 import 'package:orbit/core/network/interceptors/auth_interceptor.dart';
 import 'package:orbit/core/network/interceptors/error_interceptor.dart';
-import 'package:orbit/core/network/interceptors/locale_interceptor.dart';
 import 'package:orbit/core/network/interceptors/network_logging_interceptor.dart';
 
 /// Dio-backed [BaseApiClient]: callers receive the decoded body on success
@@ -178,7 +177,6 @@ final class DioApiClient implements BaseApiClient {
       dio.interceptors.add(const NetworkLoggingInterceptor());
     }
     dio.interceptors.addAll(<Interceptor>[
-      LocaleInterceptor(localeProvider),
       AuthInterceptor(secureStorage),
       const ErrorInterceptor(),
     ]);

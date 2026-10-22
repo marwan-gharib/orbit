@@ -9,6 +9,12 @@ abstract final class RouteNames {
   /// Login screen route name.
   static const String login = 'login';
 
+  /// Sign-up screen route name.
+  static const String signup = 'signup';
+
+  /// Pending-approval screen route name.
+  static const String pending = 'pending';
+
   /// Home screen route name.
   static const String home = 'home';
 }

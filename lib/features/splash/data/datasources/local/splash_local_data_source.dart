@@ -14,22 +14,24 @@ class SplashLocalDataSource {
   final CacheService _cache;
   final SecureStorageClient _secureStorage;
 
-  /// Reads both auth token and onboarding flag.
+  /// Reads the auth token, onboarding flag and pending-signup email.
   Future<ApiResult<StartupStatusModel>> getStartupStatus() async {
     try {
-      // Read both in parallel
       final results = await Future.wait([
         _secureStorage.read(AppConsts.accessTokenKey),
         _cache.readBool(AppConsts.onboardingSeenKey),
+        _cache.readString(AppConsts.pendingSignupEmailKey),
       ]);
 
       final authToken = results[0] as String?;
       final onboardingSeen = results[1] as bool? ?? false;
+      final pendingEmail = results[2] as String?;
 
       return Success(
         StartupStatusModel(
           hasAuthToken: authToken != null && authToken.isNotEmpty,
           onboardingSeen: onboardingSeen,
+          hasPendingSignup: pendingEmail != null && pendingEmail.isNotEmpty,
         ),
       );
     } on Exception catch (e) {

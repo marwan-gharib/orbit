@@ -35,12 +35,15 @@ void main() {
           .thenAnswer((_) async => 'token');
       when(() => cache.readBool(AppConsts.onboardingSeenKey))
           .thenAnswer((_) async => true);
+      when(() => cache.readString(AppConsts.pendingSignupEmailKey))
+          .thenAnswer((_) async => null);
 
       final result = await dataSource.getStartupStatus();
 
       expect(result.isSuccess, isTrue);
       expect((result as Success).data.hasAuthToken, isTrue);
       expect((result as Success).data.onboardingSeen, isTrue);
+      expect((result as Success).data.hasPendingSignup, isFalse);
       verify(() => secureStorage.read(AppConsts.accessTokenKey)).called(1);
     },
   );
@@ -52,6 +55,8 @@ void main() {
           .thenAnswer((_) async => null);
       when(() => cache.readBool(AppConsts.onboardingSeenKey))
           .thenAnswer((_) async => true);
+      when(() => cache.readString(AppConsts.pendingSignupEmailKey))
+          .thenAnswer((_) async => null);
 
       final result = await dataSource.getStartupStatus();
 
@@ -59,11 +64,28 @@ void main() {
     },
   );
 
+  test('should report a pending signup when the cached email exists', () async {
+    when(() => secureStorage.read(AppConsts.accessTokenKey))
+        .thenAnswer((_) async => null);
+    when(() => cache.readBool(AppConsts.onboardingSeenKey))
+        .thenAnswer((_) async => true);
+    when(() => cache.readString(AppConsts.pendingSignupEmailKey))
+        .thenAnswer((_) async => 'adam@orbit.app');
+
+    final result = await dataSource.getStartupStatus();
+
+    final model = (result as Success).data;
+    expect(model.hasPendingSignup, isTrue);
+    expect(model.hasAuthToken, isFalse);
+  });
+
   test('should return a failure when secure storage throws', () async {
     when(() => secureStorage.read(AppConsts.accessTokenKey))
         .thenThrow(const SecureStorageException());
     when(() => cache.readBool(AppConsts.onboardingSeenKey))
         .thenAnswer((_) async => true);
+    when(() => cache.readString(AppConsts.pendingSignupEmailKey))
+        .thenAnswer((_) async => null);
 
     final result = await dataSource.getStartupStatus();
 
