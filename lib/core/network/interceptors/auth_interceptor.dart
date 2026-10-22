@@ -16,8 +16,7 @@ final class AuthInterceptor extends Interceptor {
     RequestOptions options,
     RequestInterceptorHandler handler,
   ) async {
-    if (options.extra[ApiKeys.requiresAuthExtraKey] == false ||
-        options.extra[ApiKeys.requiresAuthExtraKey] == null) {
+    if (options.extra[ApiKeys.requiresAuthExtraKey] == false) {
       handler.next(options);
       return;
     }
