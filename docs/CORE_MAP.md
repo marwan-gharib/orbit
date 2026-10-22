@@ -10,14 +10,21 @@ Update it whenever `core/` gains, loses, or changes a reusable piece (DOC-6).
 - `AppLottieAssets` — core/constants/app_lottie_assets.dart — Lottie file paths (`assets/animations/`), consumed by `AppLottie`.
 - `AppConsts` — core/constants/app_consts.dart — other shared constants (storage keys, env names, durations...).
 - `HeroTags` — core/constants/hero_tags.dart — the prefix that namespaces every `AppHero` flight tag.
+- `LogTags` — core/constants/log_tags.dart — `AppLogger` tags (`auth`), so a tag is never a literal at the call site.
 
 ## Network
-- `BaseApiClient` — core/network/… — abstract HTTP client; its implementation and interceptors are the only `dio` importers.
-- Interceptors — core/network/interceptors/… — auth token, logging, error mapping, locale.
+- `BaseApiClient` — core/network/… — abstract HTTP client; its implementation and interceptors are the only `dio` importers. GET accepts a request body (`data`) for GET-with-body APIs; every verb takes typed `extra` (interceptor opt-outs).
+- `DioApiClient.buildDio` — core/network/dio_api_client.dart (@visibleForTesting) — the single static stack builder (JSON defaults, `X-Client-Type: Flutter` header, interceptor chain, timeouts).
+- Interceptors — core/network/interceptors/… — auth token (reads `AppConsts.accessTokenKey`, `requiresAuthExtra` opt-out — flag and header names in `ApiKeys`), logging (masks token values before logging), error mapping, locale.
 
 ## Errors
-- `Failure` hierarchy — core/errors/failures.dart — list subtypes here.
+- `Failure` hierarchy — core/errors/failures.dart — list subtypes here (`InvalidCredentialsFailure` for a sign-in 401 vs. `UnauthorizedFailure` for other 401s).
 - Dio error classifier — core/errors/error_mapper.dart — maps exceptions to `Failure`.
+- `ErrorBodyParser` — core/errors/error_body_parser.dart — the one place an error body becomes (serverMessage, fieldErrors, errorCode); the Dio classifier delegates here; tested in `test/core/errors/error_body_parser_test.dart`.
+- `NetworkExceptionFactory` — core/errors/network_exception_factory.dart — builds `NetworkException`s (the only place the request-timeout 408 status is set) and resolves `NetworkErrorReason` from a wrapped cause chain; extracted from the Dio classifier, tested in `test/core/errors/network_exception_factory_test.dart`.
+
+## Config
+- `AppEnv` — core/config/app_env.dart — typed `.env` accessor (`BASE_URL`), loaded once in `main()` before DI; fail-fast when missing/empty; `debugSeed` is the test seam. `flutter_dotenv` is imported only here. `.env` is gitignored but bundled as an asset, so every build host must create it from `.env.example` first (a missing file fails the asset step); tests never need it.
 
 ## Utils
 - `ApiResult<T>` (with `fold`) — core/utils/api_result.dart
@@ -69,7 +76,7 @@ Update it whenever `core/` gains, loses, or changes a reusable piece (DOC-6).
 - `AppTheme.light/dark` — core/theme/app_theme.dart (Material 3; registers `AppColorsExtension` + `AppTextStylesExtension`, full component themes, per-mode system overlay style; every font size, spacing and radius goes through `Responsive`, so `ResponsiveScope` must wrap `MaterialApp` — see main.dart)
 - `context.colors` / `context.textStyles` — core/theme/extensions/…; raw palette `AppColors`, type scale `AppTextStyles`, `AppSpacing`, `AppRadius` — core/theme/…; font-family switch `Fonts.family` — core/constants/fonts.dart (placeholder, pubspec registers no font yet)
 - go_router configuration — core/router/… (route names in `route_names.dart`, paths in `route_paths.dart`, guards in `route_guards.dart`)
-- Injection container — core/di/injection_container.dart (`initCoreModule` + one module file per feature: `splash_injection.dart`, `onboarding_injection.dart`; the pattern is described in `feature_module_registry.md`)
+- Injection container — core/di/injection_container.dart (`initCoreModule` + one module file per feature: `splash_injection.dart`, `onboarding_injection.dart`, `auth_injection.dart`; the pattern is described in `feature_module_registry.md`)
 
 ## i18n
 - slang generated strings — core/i18n/strings.g.dart, strings_en.g.dart (keys in assets/i18n/…; run `dart run slang` to regenerate)

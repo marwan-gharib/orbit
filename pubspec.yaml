@@ -17,6 +17,7 @@ dependencies:
   flutter_secure_storage: ^11.2.0
   get_it: ^9.3.0
   dio: ^5.11.1
+  flutter_dotenv: ^5.2.1
   connectivity_plus: ^7.3.2
   shared_preferences: ^2.5.6
   flutter_screenutil: ^5.9.3
@@ -43,6 +44,7 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
+    - .env
     - assets/images/
     - assets/svgs/onboarding/slide_1_projects/
     - assets/svgs/onboarding/slide_2_people/

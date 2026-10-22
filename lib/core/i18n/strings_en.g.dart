@@ -102,6 +102,9 @@ class Translations$errors$en {
 	/// en: 'We couldn't verify your identity. Please sign in again.'
 	String get unauthorized => 'We couldn\'t verify your identity. Please sign in again.';
 
+	/// en: 'Your email or password is incorrect. Please check them and try again.'
+	String get invalidCredentials => 'Your email or password is incorrect. Please check them and try again.';
+
 	/// en: 'You don't have permission to do this.'
 	String get forbidden => 'You don\'t have permission to do this.';
 
@@ -437,6 +440,7 @@ extension on Translations {
 			'errors.certificate' => 'We couldn\'t make a secure connection. Check your network and your device\'s date and time, then try again.',
 			'errors.cancelled' => 'The request was cancelled.',
 			'errors.unauthorized' => 'We couldn\'t verify your identity. Please sign in again.',
+			'errors.invalidCredentials' => 'Your email or password is incorrect. Please check them and try again.',
 			'errors.forbidden' => 'You don\'t have permission to do this.',
 			'errors.notFound' => 'We couldn\'t find what you were looking for.',
 			'errors.gone' => 'This is no longer available.',

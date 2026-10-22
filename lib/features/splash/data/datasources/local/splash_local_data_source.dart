@@ -19,7 +19,7 @@ class SplashLocalDataSource {
     try {
       // Read both in parallel
       final results = await Future.wait([
-        _secureStorage.read(AppConsts.authTokenKey),
+        _secureStorage.read(AppConsts.accessTokenKey),
         _cache.readBool(AppConsts.onboardingSeenKey),
       ]);
 

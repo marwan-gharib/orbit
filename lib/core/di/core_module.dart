@@ -1,5 +1,5 @@
 import 'package:get_it/get_it.dart';
-import 'package:orbit/core/constants/app_consts.dart';
+import 'package:orbit/core/config/app_env.dart';
 import 'package:orbit/core/i18n/strings.g.dart';
 import 'package:orbit/core/local/cache/cache_service.dart';
 import 'package:orbit/core/local/cache/shared_preferences_service.dart';
@@ -22,7 +22,7 @@ Future<void> initCoreModule(GetIt getIt) async {
 
   getIt.registerLazySingleton<BaseApiClient>(
     () => DioApiClient.configured(
-      baseUrl: AppConsts.baseUrl,
+      baseUrl: AppEnv.baseUrl,
       secureStorage: getIt<SecureStorageClient>(),
       localeProvider: () =>
           LocaleSettings.currentLocale.flutterLocale.toString(),

@@ -55,6 +55,11 @@ void main() {
       const UnauthorizedFailure(message: 'x'),
       t.errors.unauthorized,
     ),
+    (
+      'invalid credentials',
+      const InvalidCredentialsFailure(message: 'x'),
+      t.errors.invalidCredentials,
+    ),
     ('forbidden', const ForbiddenFailure(message: 'x'), t.errors.forbidden),
     (
       'gone',

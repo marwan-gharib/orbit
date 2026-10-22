@@ -1,6 +1,6 @@
 # Splash Feature
 
-> Last verified: 2026-10-16
+> Last verified: 2026-10-22
 
 ## 1 Purpose
 Entry-point animation and startup orchestration. Runs a 4000ms “Orbit” animation (logo reveal, 5 module nodes orbiting and converging, tagline + keyword reveals) in parallel with async startup checks (auth token in secure storage, onboarding flag in cache). Navigates to onboarding / login / home when both animation and checks complete.
@@ -10,13 +10,10 @@ Entry-point animation and startup orchestration. Runs a 4000ms “Orbit” anima
 |--------|-------|------------|
 | SplashScreen | `splash` (RouteNames.splash) | `AppPageTransition.none` (native splash handles entry) |
 
-Placeholder routes (for routing decision):
-| Screen | Route | Transition |
-|--------|-------|------------|
-| _LoginPlaceholder | `login` (RouteNames.login) | `AppPageTransition.fadeThrough` |
-| _HomePlaceholder | `home` (RouteNames.home) | `AppPageTransition.fadeThrough` |
-
-`onboarding` resolves to the real onboarding feature screen (`fadeThrough`). The route table resolves `SplashCubit` / `OnboardingCubit` from GetIt.
+Placeholder routes used by the startup decision, both `AppPageTransition.fadeThrough`:
+`login` (`RouteNames.login`) → `_LoginPlaceholder`, `home` (`RouteNames.home`) → `_HomePlaceholder`.
+`onboarding` resolves to the real onboarding feature screen. The route table resolves
+`SplashCubit` / `OnboardingCubit` from GetIt.
 
 ## 3 File Map
 ```
@@ -71,7 +68,7 @@ DI registration lives in `lib/core/di/splash_injection.dart` (feature modules re
 
 ## 6 API & Storage
 - No network calls.
-- **SecureStorageClient**: reads `AppConsts.authTokenKey`.
+- **SecureStorageClient**: reads `AppConsts.accessTokenKey` — the same key the auth feature writes, so startup reflects the real session.
 - **CacheService**: reads `AppConsts.onboardingSeenKey`.
 
 ## 7 State
@@ -115,56 +112,36 @@ RTL-safe: copy reveals animate only opacity/transform inside centered `Wrap`s (n
 - Native splash (`flutter_native_splash.yaml`) uses hardcoded light background `#F7F8F9` (mirrors `AppColors.neutralNormal`).
 
 ## 11 Tests
-`test/features/splash/` — 41 tests, mocktail + bloc_test, no added packages:
-- **Model** `test/features/splash/data/models/startup_status_model_test.dart`: `toEntity()` field by field.
-- **Usecase** `test/features/splash/domain/usecases/check_startup_status_usecase_test.dart`: repository
-  success / failure passthrough.
-- **Repository** `test/features/splash/data/repositories/splash_repository_impl_test.dart`: datasource
-  success → entity; exception → `Failure`.
-- **Cubit** `test/features/splash/presentation/cubit/splash_cubit_test.dart`: `SplashReady` (with its
-  routing decision) only after BOTH the animation and the checks finish — tested with the animation
-  completing after and before the checks (completer-driven) — and `[Loading, Error(failure)]` when
-  the checks fail, still never ready.
-- **Mapper** `test/features/splash/presentation/mappers/splash_mapper_test.dart`: `toViewModel` fields
-  + all 4 routing outcomes of §7.
-- **Widget** `test/features/splash/presentation/screens/splash_screen_test.dart` (7 tests): pumps the
-  real `AppRouterRoutes` table with a real cubit (registered in GetIt, as the app does) over a mocked
-  usecase — composition visible when animations enabled, no navigation before the 4000ms animation
-  ends, `goNamed` lands on login/home per startup status, localized error view on check failure
-  (dispose cancels controller work), reduced-motion static frame, reduced-motion navigation after the
-  500ms hold (dispose cancels the hold timer).
-- **Layout** `test/features/splash/presentation/widgets/splash_layout_test.dart` (20 tests: 4 screen
-  sizes × 5 assertions, controllable clock): logo center X == screen center X at 0/1000/2000/3000/
-  3600/4000ms; logo/tagline/keywords non-overlapping and inside the safe area at the hold frame;
-  final frame's layout position+size identical to the hold frame; painted stage elements inside the
-  screen minus page padding; no content render object at the top-left corner at the final frame.
+`test/features/splash/` — 44 tests (29 bodies; the layout suite runs 5 bodies × 4 screen sizes),
+mocktail + bloc_test, no added packages:
+- **Datasource** `data/datasources/local/splash_local_data_source_test.dart`: reads exactly
+  `AppConsts.accessTokenKey` (pin) and the onboarding key; failure path.
+- **Model** `data/models/startup_status_model_test.dart`: `toEntity()` field by field.
+- **Usecase** `domain/usecases/check_startup_status_usecase_test.dart`: success / failure passthrough.
+- **Repository** `data/repositories/splash_repository_impl_test.dart`: datasource success → entity;
+  exception → `Failure`.
+- **Cubit** `presentation/cubit/splash_cubit_test.dart`: `SplashReady` only after BOTH the animation
+  and the checks finish (completer-driven, both orders), `[Loading, Error(failure)]` on check failure.
+- **Mapper** `presentation/mappers/splash_mapper_test.dart`: `toViewModel` fields + all 4 routing
+  outcomes of §7.
+- **Widget** `presentation/screens/splash_screen_test.dart` (7): real `AppRouterRoutes` table with a
+  real cubit (registered in GetIt, as the app does) over a mocked usecase — composition visible,
+  no navigation before 4000ms, `goNamed` lands on login/home per status, localized error view,
+  reduced-motion static frame and 500ms-hold navigation (both cancelled on dispose).
+- **Layout** `presentation/widgets/splash_layout_test.dart` (5 bodies × 4 screen sizes, controllable
+  clock): logo center X == screen center X across the timeline; logo/tagline/keywords non-overlapping
+  and inside the safe area at the hold frame; final frame's position+size identical to the hold
+  frame; painted stage elements inside the screen minus page padding.
 
 ## 12 Known Issues
 - (none) — the former `translate` deprecation note no longer applies: `orbit_rings_painter.dart`
   rotates via `translateByDouble`/`rotateZ` on a `Matrix4`.
 
 ## 13 Changelog
-- 2026-10-16: Synced FEATURE.md with code — constants listed under `presentation/constants/`; storage keys referenced by constant name (`AppConsts.authTokenKey`, `AppConsts.onboardingSeenKey`) per ARCH-10.
-- 2026-10-16: Hardening pass after review. States are consumed via exhaustive switches (`listenWhen` +
-  listener + builder); `SplashError` now carries the `Failure` and the screen renders `ErrorState`
-  with `context.failureText`; the reduced-motion hold is a stored `Timer` cancelled on dispose; DI
-  moved from the feature to `lib/core/di/splash_injection.dart`; the onboarding placeholder route was
-  removed (the real onboarding screen is registered). Composition fix: per-frame rebuilds are scoped
-  to the animating leaves, with the tagline/keyword `AnimatedBuilder`s restored after the scoping
-  left them static at opacity 0 (caught by the layout tests). Tests: cubit gating in both orders,
-  failure passthrough, widget error view, reduced-motion timer cancel.
-- 2026-10-16: Fixed splash layout/positioning/sizing. Root causes: a loose-constraint root Stack
-  (shrink-wrapped and pinned top-start), raw-pixel ring/node/lock-in geometry, and exit-phase
-  per-element transforms + layer unmount re-shrinking the tree (collapse to top-left at 4000ms).
-  Restructured to one layout root (`SafeArea` → `Center` → min-size `Column`: stage → gap → tagline →
-  gap → keywords) with all sizes as named ratios in `splash_layout_constants.dart`; painters compute
-  from the `paint()` `Size` with clamped progress; the stage center is measured post-frame so the
-  full-screen background glow centers on the stage; tagline/keywords always reserve their final size
-  (only transform/opacity animate); the exit scale+fade is applied once to the whole content via a
-  single `Transform.scale(alignment: center)` + `Opacity`. Timeline, curves, colors, and slang keys
-  are unchanged. Added 20 layout widget tests (4 screen sizes × 5 assertions) — FEATURE.md §11.
-  (Also: regenerated slang output and added its missing import in `core/router` so the app compiles,
-  and adapted `splash_screen_test` to the new route table which resolves `SplashCubit` from GetIt.)
-- 2026-10-15: Initial implementation — animation timeline, orbit rings, module nodes, logo reveal, tagline/keyword reveals, convergence, exit transition, parallel startup checks, routing decision, DI, routes, i18n, tests.
-- 2026-10-15: Changed routing from path-based (`context.go()`) to named routes (`context.goNamed()`). Updated `SplashMapper` to use `RouteNames` and `SplashScreen` to call `context.goNamed()`.
-- 2026-10-15: Added the full 20-test suite. The widget tests caught two bugs, fixed here: `AppRouterRoutes` entries lacked `name:` (so `goNamed` threw "unknown route name"), and `ConvergenceWidget._pulseProgress` overflowed the curve's [0,1] range at `progress == 1.0`.
+- 2026-10-22: Token-key unification — startup checks read `AppConsts.accessTokenKey` (shared with the auth feature); `test/data/datasources/local` gained a datasource test pinning the key.
+- 2026-10-16: Synced with code — constants under `presentation/constants/`; storage keys referenced by constant name (ARCH-10).
+- 2026-10-16: Hardening after review — exhaustive state switches (`listenWhen` + listener + builder), `SplashError` carries the `Failure` (`ErrorState` + `context.failureText`), stored reduced-motion timer cancelled on dispose, DI moved to `lib/core/di/splash_injection.dart`, onboarding placeholder route removed, per-frame rebuild scoping restored; tests for cubit gating in both orders, failure passthrough, error view, timer cancel.
+- 2026-10-16: Fixed layout/positioning/sizing — one layout root with named ratios in `splash_layout_constants.dart`, painters compute from `paint()` size, post-frame stage measurement, reserved final size for tagline/keywords, single whole-content exit scale+fade; 20 layout tests added. (Also regenerated slang output and adapted `splash_screen_test` to the GetIt-resolved route table.)
+- 2026-10-15: Initial implementation — animation timeline, orbit rings, module nodes, logo/tagline/keyword reveals, convergence, exit transition, parallel startup checks, routing decision, DI, routes, i18n, tests.
+- 2026-10-15: Routing switched from path-based (`context.go()`) to named routes (`context.goNamed()` + `RouteNames`).
+- 2026-10-15: Full 20-test suite added; it caught two bugs — `AppRouterRoutes` entries lacked `name:` (so `goNamed` threw), and `ConvergenceWidget._pulseProgress` overflowed the curve's [0,1] range at `progress == 1.0`.

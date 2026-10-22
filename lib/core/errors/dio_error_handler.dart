@@ -1,10 +1,11 @@
 import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
 
+import 'package:orbit/core/errors/error_body_parser.dart';
 import 'package:orbit/core/errors/exceptions.dart';
+import 'package:orbit/core/errors/network_exception_factory.dart';
 
 /// Classifies any Dio/platform error into an [AppException]. Exhaustive over
 /// `DioExceptionType` (no default) so a Dio upgrade that adds a type fails to
@@ -13,9 +14,7 @@ import 'package:orbit/core/errors/exceptions.dart';
 /// Error bodies are expected in the backend envelope `{status, message, data}`;
 /// a few common variants (`error`, `detail`, `errors`, message lists) are also
 /// tolerated.
-final class DioErrorHandler {
-  const DioErrorHandler._();
-
+abstract final class DioErrorHandler {
   /// Converts [error] into an [AppException]; [st] fills in when the error
   /// carries no stack trace of its own. Never throws.
   static AppException handle(Object error, [StackTrace? st]) {
@@ -33,15 +32,15 @@ final class DioErrorHandler {
         return ParsingException(cause: error, stackTrace: trace);
       }
       if (error is SocketException) {
-        return _network(
-          _networkReason(error),
+        return NetworkExceptionFactory.of(
+          NetworkExceptionFactory.reasonOf(error),
           'Socket error: $error',
           error,
           trace,
         );
       }
       if (error is TimeoutException) {
-        return _network(
+        return NetworkExceptionFactory.of(
           NetworkErrorReason.connectionTimeout,
           'The operation timed out.',
           error,
@@ -64,25 +63,25 @@ final class DioErrorHandler {
     return switch (error.type) {
       // The transformer's own deadline reads as "too slow" to the user.
       DioExceptionType.connectionTimeout ||
-      DioExceptionType.transformTimeout => _network(
+      DioExceptionType.transformTimeout => NetworkExceptionFactory.of(
         NetworkErrorReason.connectionTimeout,
         technical,
         carrier,
         st,
       ),
-      DioExceptionType.sendTimeout => _network(
+      DioExceptionType.sendTimeout => NetworkExceptionFactory.of(
         NetworkErrorReason.sendTimeout,
         technical,
         carrier,
         st,
       ),
-      DioExceptionType.receiveTimeout => _network(
+      DioExceptionType.receiveTimeout => NetworkExceptionFactory.of(
         NetworkErrorReason.receiveTimeout,
         technical,
         carrier,
         st,
       ),
-      DioExceptionType.badCertificate => _network(
+      DioExceptionType.badCertificate => NetworkExceptionFactory.of(
         NetworkErrorReason.badCertificate,
         technical,
         carrier,
@@ -94,8 +93,8 @@ final class DioErrorHandler {
         cause: carrier,
         stackTrace: st,
       ),
-      DioExceptionType.connectionError => _network(
-        _networkReason(carrier),
+      DioExceptionType.connectionError => NetworkExceptionFactory.of(
+        NetworkExceptionFactory.reasonOf(carrier),
         technical,
         carrier,
         st,
@@ -115,16 +114,16 @@ final class DioErrorHandler {
       );
     }
     if (cause is TimeoutException) {
-      return _network(
+      return NetworkExceptionFactory.of(
         NetworkErrorReason.connectionTimeout,
         technical,
         cause,
         st,
       );
     }
-    final reason = _networkReason(cause ?? error);
+    final reason = NetworkExceptionFactory.reasonOf(cause ?? error);
     if (cause is SocketException || reason == NetworkErrorReason.noInternet) {
-      return _network(reason, technical, cause ?? error, st);
+      return NetworkExceptionFactory.of(reason, technical, cause ?? error, st);
     }
     return UnknownException(
       message: technical,
@@ -132,19 +131,6 @@ final class DioErrorHandler {
       stackTrace: st,
     );
   }
-
-  static NetworkException _network(
-    NetworkErrorReason reason,
-    String technical,
-    Object? cause,
-    StackTrace? st,
-  ) => NetworkException(
-    reason: reason,
-    message: technical,
-    statusCode: reason == NetworkErrorReason.requestTimeout ? 408 : null,
-    cause: cause,
-    stackTrace: st,
-  );
 
   /// Dio's own text is developer-facing, so it only ever lands here.
   static String _technical(DioException error) {
@@ -158,7 +144,7 @@ final class DioErrorHandler {
     final status = response?.statusCode;
     final cause = error.error ?? error;
     if (status == null) {
-      return _network(
+      return NetworkExceptionFactory.of(
         NetworkErrorReason.serverUnreachable,
         'The response carried no status code.',
         cause,
@@ -166,14 +152,16 @@ final class DioErrorHandler {
       );
     }
     final data = response?.data;
-    final body = _asMap(data);
+    // A non-JSON, empty, or keyless body contributes nothing (A1): the
+    // status switch below still classifies the failure, with no server copy.
+    final body = ErrorBodyParser.tryAsMap(data);
     final technical = 'HTTP $status';
-    final serverMessage = body != null
-        ? _messageOf(body)
-        : (data is String ? _clean(data) : null);
-    final errorCode = body == null ? null : _errorCode(body);
+    final serverMessage = body == null
+        ? null
+        : ErrorBodyParser.serverMessageOf(body);
+    final errorCode = body == null ? null : ErrorBodyParser.errorCodeOf(body);
     final fieldErrors = body != null && (status == 400 || status == 422)
-        ? _fieldErrors(body)
+        ? ErrorBodyParser.fieldErrorsOf(body)
         : const <String, List<String>>{};
     final retryAfter = status == 429 || status == 503
         ? _retryAfter(response?.headers)
@@ -206,7 +194,12 @@ final class DioErrorHandler {
         cause: cause,
         stackTrace: st,
       ),
-      408 => _network(NetworkErrorReason.requestTimeout, technical, cause, st),
+      408 => NetworkExceptionFactory.of(
+        NetworkErrorReason.requestTimeout,
+        technical,
+        cause,
+        st,
+      ),
       422 => ValidationException(
         message: technical,
         fieldErrors: fieldErrors,
@@ -267,139 +260,6 @@ final class DioErrorHandler {
         stackTrace: st,
       ),
     };
-  }
-
-  /// `SocketException` is not always "no internet": only DNS/network-down
-  /// wording counts as offline; refused/reset/closed mean the server is the
-  /// problem. Walks the cause chain because Dio wraps the original error.
-  static NetworkErrorReason _networkReason(Object? error) {
-    Object? node = error;
-    for (var hops = 0; node != null && hops < 8; hops++) {
-      final text = node.toString().toLowerCase();
-      if (_offlineMarkers.any(text.contains)) {
-        return NetworkErrorReason.noInternet;
-      }
-      node = node is DioException ? node.error : null;
-    }
-    return NetworkErrorReason.serverUnreachable;
-  }
-
-  static const List<String> _offlineMarkers = [
-    'failed host lookup',
-    'network is unreachable',
-    'no address associated with hostname',
-    'no such host is known',
-    'nodename nor servname provided',
-  ];
-
-  /// The body as a map: Dio's decoded JSON, or a JSON string (plain
-  /// `responseType`, wrong content type). Anything else yields null.
-  static Map<String, dynamic>? _asMap(Object? data) {
-    try {
-      var value = data;
-      if (value is String) {
-        final trimmed = value.trim();
-        if (!trimmed.startsWith('{')) return null;
-        value = jsonDecode(trimmed);
-      }
-      return value is Map ? Map<String, dynamic>.from(value) : null;
-    } catch (_) {
-      return null;
-    }
-  }
-
-  /// Keys that may hold the human-readable message, in priority order.
-  static const List<String> _messageKeys = [
-    'message',
-    'error',
-    'detail',
-    'msg',
-  ];
-
-  static String? _messageOf(Map<String, dynamic> body) {
-    for (final key in _messageKeys) {
-      final text = _text(body[key]);
-      if (text != null) return text;
-    }
-    return null;
-  }
-
-  /// Reads a message from a string, a list of strings (NestJS-style
-  /// validation) or a nested `{message: ...}` map.
-  static String? _text(Object? value) {
-    if (value is String) return _clean(value);
-    if (value is List) {
-      final parts = value.map(_text).whereType<String>().toList();
-      return parts.isEmpty ? null : _clean(parts.join('; '));
-    }
-    if (value is Map) return _text(value['message']);
-    return null;
-  }
-
-  static final RegExp _spaces = RegExp(r'\s+');
-
-  /// Drops unusable text (HTML pages, bare status phrases), collapses
-  /// whitespace and caps the length.
-  static String? _clean(String raw) {
-    var text = raw.trim();
-    if (text.isEmpty) return null;
-    final lower = text.toLowerCase();
-    if (text.startsWith('<') ||
-        lower.contains('<html') ||
-        lower.contains('<!doctype')) {
-      return null;
-    }
-    text = text.replaceAll(_spaces, ' ');
-    if (text.length > 300) text = text.substring(0, 300).trimRight();
-    return _genericPhrases.contains(text.toLowerCase()) ? null : text;
-  }
-
-  /// Status phrases carry no information for a user, so they are dropped.
-  static const Set<String> _genericPhrases = {
-    'error',
-    'bad request',
-    'unauthorized',
-    'forbidden',
-    'not found',
-    'conflict',
-    'unprocessable entity',
-    'unprocessable content',
-    'too many requests',
-    'internal server error',
-    'bad gateway',
-    'service unavailable',
-    'gateway timeout',
-  };
-
-  static String? _errorCode(Map<String, dynamic> body) {
-    for (final key in ['code', 'error_code', 'errorCode']) {
-      final value = body[key];
-      if (value is String && value.trim().isNotEmpty) return value.trim();
-      if (value is int) return value.toString();
-    }
-    return null;
-  }
-
-  /// Per-field messages for 400/422, read from `errors` (or `data`) shaped
-  /// `{field: message}` or `{field: [messages]}`.
-  static Map<String, List<String>> _fieldErrors(Map<String, dynamic> body) {
-    for (final key in ['errors', 'data']) {
-      final container = body[key];
-      if (container is! Map) continue;
-      final result = <String, List<String>>{};
-      container.forEach((field, value) {
-        if (field is! String || field.trim().isEmpty) return;
-        final raw = value is List ? value : <Object?>[value];
-        final messages = <String>[];
-        for (final item in raw) {
-          final text = item is String ? _clean(item) : null;
-          if (text != null) messages.add(text);
-        }
-        if (messages.isNotEmpty) result[field.trim()] = messages;
-      });
-      if (result.isNotEmpty) return result;
-    }
-    return const <String, List<String>>{};
   }
 
   /// Delta-seconds only: the HTTP-date form depends on clock sync, so it is
