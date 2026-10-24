@@ -7,6 +7,7 @@ import 'package:orbit/core/errors/exceptions.dart';
 import 'package:orbit/core/errors/failures.dart';
 import 'package:orbit/core/local/cache/cache_service.dart';
 import 'package:orbit/core/local/secure/secure_storage_client.dart';
+import 'package:orbit/core/router/pending_signup_session.dart';
 import 'package:orbit/core/utils/api_result.dart';
 import 'package:orbit/features/auth/data/datasources/local/auth_local_data_source.dart';
 import 'package:orbit/features/auth/data/models/login_response_model.dart';
@@ -35,6 +36,7 @@ LoginResponseModel _tSession() {
 void main() {
   late _MockCacheService cache;
   late _MockSecureStorage secureStorage;
+  late PendingSignupSession pendingSession;
   late AuthLocalDataSource dataSource;
   late LoginResponseModel session;
 
@@ -45,15 +47,19 @@ void main() {
   setUp(() {
     cache = _MockCacheService();
     secureStorage = _MockSecureStorage();
+    pendingSession = PendingSignupSession();
     dataSource = AuthLocalDataSource(
       cache: cache,
       secureStorage: secureStorage,
+      pendingSession: pendingSession,
     );
     session = _tSession();
 
     when(() => secureStorage.write(any(), any())).thenAnswer((_) async => {});
     when(() => secureStorage.delete(any())).thenAnswer((_) async => {});
     when(() => cache.writeJsonMap(any(), any())).thenAnswer((_) async {});
+    when(() => cache.writeString(any(), any())).thenAnswer((_) async {});
+    when(() => cache.readString(any())).thenAnswer((_) async => null);
     when(() => cache.delete(any())).thenAnswer((_) async {});
   });
 
@@ -142,6 +148,16 @@ void main() {
 
       expect(result.isFailure, isTrue);
       expect((result as ResultFailure).failure, isA<StorageFailure>());
+    });
+
+    test('should also end a pending signup', () async {
+      pendingSession.start('adam@orbit.app');
+
+      final result = await dataSource.clearSession();
+
+      expect(result.isSuccess, isTrue);
+      verify(() => cache.delete(AppConsts.pendingSignupEmailKey)).called(1);
+      expect(pendingSession.hasPendingSignup, isFalse);
     });
   });
 

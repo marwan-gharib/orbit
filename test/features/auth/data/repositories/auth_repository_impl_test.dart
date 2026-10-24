@@ -130,33 +130,117 @@ void main() {
   });
 
   group('getEmployeeStatus', () {
-    test('should map the model to the entity', () async {
-      when(() => remote.getEmployeeStatus(any())).thenAnswer(
-        (_) async => Success(
+    const tPendingEmail = 'adam@orbit.app';
+
+    void stubPendingEmail(String? email) {
+      when(() => local.readPendingSignupEmail())
+          .thenAnswer((_) async => Success<String?>(email));
+    }
+
+    test(
+      'should check the persisted pending email and map the model',
+      () async {
+        stubPendingEmail(tPendingEmail);
+        when(() => remote.getEmployeeStatus(tPendingEmail)).thenAnswer(
+          (_) async => Success(
+            EmployeeStatusResponseModel(
+              firstName: 'Adam',
+              lastName: 'Orbit',
+              status: EmploymentStatus.pending,
+            ),
+          ),
+        );
+
+        final result = await repository.getEmployeeStatus();
+
+        expect(result.isSuccess, isTrue);
+        final entity = (result as Success).data;
+        expect(entity.status, EmploymentStatus.pending);
+        expect(entity.firstName, 'Adam');
+        verify(() => remote.getEmployeeStatus(tPendingEmail)).called(1);
+        verifyNever(() => local.clearCachedPendingSignupEmail());
+      },
+    );
+
+    test(
+      'should pass failures through without clearing the pending email',
+      () async {
+        stubPendingEmail(tPendingEmail);
+        const tFailure = NotFoundFailure(message: 'no account');
+        when(() => remote.getEmployeeStatus(tPendingEmail))
+            .thenAnswer((_) async => const ResultFailure(tFailure));
+
+        final result = await repository.getEmployeeStatus();
+
+        expect((result as ResultFailure).failure, tFailure);
+        verifyNever(() => local.clearCachedPendingSignupEmail());
+      },
+    );
+
+    test(
+      'should fail without a remote call when no email is persisted',
+      () async {
+        stubPendingEmail(null);
+
+        final result = await repository.getEmployeeStatus();
+
+        expect(result.isFailure, isTrue);
+        verifyNever(() => remote.getEmployeeStatus(any()));
+      },
+    );
+
+    test(
+      'should fail without a remote call when the email cannot be read',
+      () async {
+        const tFailure = StorageFailure(message: 'cache unavailable');
+        when(() => local.readPendingSignupEmail())
+            .thenAnswer((_) async => const ResultFailure<String?>(tFailure));
+
+        final result = await repository.getEmployeeStatus();
+
+        expect((result as ResultFailure).failure, tFailure);
+        verifyNever(() => remote.getEmployeeStatus(any()));
+      },
+    );
+
+    test('should clear the persisted email on an approved status', () async {
+      stubPendingEmail(tPendingEmail);
+      when(() => remote.getEmployeeStatus(tPendingEmail)).thenAnswer(
+        (_) async => const Success(
           EmployeeStatusResponseModel(
             firstName: 'Adam',
             lastName: 'Orbit',
-            status: EmploymentStatus.pending,
+            status: EmploymentStatus.approved,
           ),
         ),
       );
+      when(() => local.clearCachedPendingSignupEmail())
+          .thenAnswer((_) async => const Success<void>(null));
 
-      final result = await repository.getEmployeeStatus('adam@orbit.app');
+      final result = await repository.getEmployeeStatus();
 
       expect(result.isSuccess, isTrue);
-      final entity = (result as Success).data;
-      expect(entity.status, EmploymentStatus.pending);
-      expect(entity.firstName, 'Adam');
+      verify(() => local.clearCachedPendingSignupEmail()).called(1);
     });
 
-    test('should pass failures through', () async {
-      const tFailure = NotFoundFailure(message: 'no account');
-      when(() => remote.getEmployeeStatus(any()))
-          .thenAnswer((_) async => const ResultFailure(tFailure));
+    test('should clear the persisted email on a rejected status', () async {
+      stubPendingEmail(tPendingEmail);
+      when(() => remote.getEmployeeStatus(tPendingEmail)).thenAnswer(
+        (_) async => const Success(
+          EmployeeStatusResponseModel(
+            firstName: 'Adam',
+            lastName: 'Orbit',
+            status: EmploymentStatus.rejected,
+          ),
+        ),
+      );
+      when(() => local.clearCachedPendingSignupEmail())
+          .thenAnswer((_) async => const Success<void>(null));
 
-      final result = await repository.getEmployeeStatus('adam@orbit.app');
+      final result = await repository.getEmployeeStatus();
 
-      expect((result as ResultFailure).failure, tFailure);
+      expect(result.isSuccess, isTrue);
+      verify(() => local.clearCachedPendingSignupEmail()).called(1);
     });
   });
 

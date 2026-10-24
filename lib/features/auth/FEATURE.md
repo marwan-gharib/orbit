@@ -1,6 +1,6 @@
 # Auth Feature
 
-> Last verified: 2026-10-22
+> Last verified: 2026-10-23
 > Path: `lib/features/auth/`
 
 ## 1 Purpose
@@ -142,9 +142,9 @@ slang and no screen contains a user-facing literal.
 - **Local datasource**: `auth_local_data_source_test.dart` — write order, no-token-keys-in-cache pin, rollback on every write stage (B6), clear, refresh-token read, session snapshot incl. corrupt-user degradation (B5). `auth_local_data_source_pending_test.dart` — pending email round-trip, write/read failures, cached-only vs full clear, and sign-in ending the pending flow.
 - **Repository impl**: login persists then returns entity; save failure propagates (B6); remote failures pass through without persisting; signup persists the pending email; logout B10 semantics — remote skipped without token or when the token read fails, cleared even on remote failure, clear failure returned; status reads the email, clears the cache only on approved/rejected, and maps/session snapshot.
 - **Cubits** ×3: initial state, [Loading, Success/Error], re-entrancy guard (completer-driven), post-failure resubmission, login carries `InvalidCredentialsFailure`.
-- **Presentation mappers**: `signup_field_errors_mapper_test.dart` (known keys, first message, unknown/empty fallback, banner decision); `employment_status_view` is covered through the pending screen.
-- **Shared widgets**: brand header, error banner, navigation link, page scaffold, password checklist/rules/strength bar.
-- **Screens**: `login_screen_test.dart` (7) render, required fields, invalid email, inline banner, no duplicate submit while loading, success → home, footer → signup; `signup_screen_test.dart` (9) render, required + name/password policy, mismatch, trimmed submit → pending, mapped field error inline, unmapped banner, loading guard, footer → login; `pending_screen_test.dart` (6) entry state/no auto check/PopScope, check once + unchanged + last-checked + 15 s cooldown, failure banner, approved → login, rejected → signup, unknown stays.
+- **Presentation mappers**: `signup_field_errors_mapper_test.dart` (known keys, first message, unknown/empty fallback, banner decision); `employment_status_view_test.dart` (terminal set, localized labels, badge severity).
+- **Shared widgets**: brand header, error banner, navigation link, page scaffold, password checklist/rules/rule row/strength bar; pending cluster (hero, stepper, status card, moment, info notice, check-status cooldown) at widget level.
+- **Screens**: `login_screen_test.dart` (7) render, required fields, invalid email, inline banner, no duplicate submit while loading, success → home, footer → signup; `login_screen_validation_test.dart` (7) no errors while typing, unfocus + errors on a failed submit, errors persist until the next resubmit, next-key move, 3 layout surfaces. `signup_screen_test.dart` (9) render, required + name/password policy, mismatch, trimmed submit → pending, mapped field error inline, unmapped banner, loading guard, footer → login; `signup_screen_validation_test.dart` (10) same validation contract, checklist live mid-typing, mismatch persists until resubmit, server-error clearing; `pending_screen_test.dart` (6) entry state/no auto check/PopScope, check once + unchanged + last-checked + 15 s cooldown, failure banner, approved → login, rejected → signup, unknown stays.
 - **Core tests covering this feature's wiring**: `test/core/di/injection_container_test.dart` (auth registrations + factory scopes), splash datasource test pins the shared token/pending keys and mapper covers pending precedence, `test/core/config/app_env_test.dart` covers `.env` loading/fail-fast.
 
 ## 11 Known issues
@@ -162,3 +162,4 @@ slang and no screen contains a user-facing literal.
   guard and splash pending-aware routing; screen, mapper and widget tests.
 - 2026-10-21: Feature created — domain (entities/enums/params/repository/5 use cases), models, remote + local data sources, repository impl, three Cubits, DI module; core additions: error-body parser, `InvalidCredentialsFailure`, token log redaction, `AppEnv` (.env BASE_URL), `get(data)` seam + `X-Client-Type` header, first-of-name constants.
 - 2026-10-22: Review pass — states renamed to the STATE-5 naming, logout folds the token read instead of unwrapping (ERR-3), core `AppEnv`/`ErrorBodyParser` as `abstract final`, request header/extra names moved to `ApiKeys` and the log tag to `LogTags`.
+- 2026-10-23: Test pass — screen validation tests re-anchored to the shipped validator-on-submit behavior (no idle revalidation after `AutovalidateMode.onUserInteraction` was dropped); unit tests added for the pending widget cluster, password rule row and the status view mapper.

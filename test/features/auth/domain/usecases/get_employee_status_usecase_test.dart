@@ -25,25 +25,22 @@ void main() {
     useCase = GetEmployeeStatusUseCase(repository);
   });
 
-  test(
-    'should pass the email through and return the repository result',
-    () async {
-      when(() => repository.getEmployeeStatus(any()))
-          .thenAnswer((_) async => const Success(tInfo));
+  test('should return the repository result without any input', () async {
+    when(() => repository.getEmployeeStatus())
+        .thenAnswer((_) async => const Success(tInfo));
 
-      final result = await useCase('adam@orbit.app');
+    final result = await useCase();
 
-      expect(result, const Success(tInfo));
-      verify(() => repository.getEmployeeStatus('adam@orbit.app')).called(1);
-    },
-  );
+    expect(result, const Success(tInfo));
+    verify(() => repository.getEmployeeStatus()).called(1);
+  });
 
   test('should return the repository failure untouched', () async {
     const tFailure = NotFoundFailure(message: 'unknown account');
-    when(() => repository.getEmployeeStatus(any()))
+    when(() => repository.getEmployeeStatus())
         .thenAnswer((_) async => const ResultFailure(tFailure));
 
-    final result = await useCase('unknown@orbit.app');
+    final result = await useCase();
 
     expect(result, const ResultFailure<EmployeeStatusInfo>(tFailure));
   });

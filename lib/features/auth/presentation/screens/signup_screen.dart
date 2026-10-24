@@ -37,11 +37,11 @@ class SignupScreen extends StatefulWidget {
 
 class _SignupScreenState extends State<SignupScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _firstNameController = TextEditingController(text: "sacs");
-  final _lastNameController = TextEditingController(text: "asedcaedcesc");
-  final _emailController = TextEditingController(text: "cursorone39@gmail.com");
-  final _passwordController = TextEditingController(text: "Marwan@12");
-  final _confirmPasswordController = TextEditingController(text: "Marwan@12");
+  final _firstNameController = TextEditingController();
+  final _lastNameController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
 
   final _firstNameFocus = FocusNode();
   final _lastNameFocus = FocusNode();
@@ -178,7 +178,6 @@ class _SignupScreenState extends State<SignupScreen> {
               valueListenable: _serverErrors,
               builder: (context, serverErrors, _) => Form(
                 key: _formKey,
-                autovalidateMode: AutovalidateMode.onUserInteraction,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [

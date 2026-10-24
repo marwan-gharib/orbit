@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
-
 import 'package:orbit/core/animations/animations.dart';
 import 'package:orbit/core/errors/failures.dart';
 import 'package:orbit/core/extensions/context_extensions.dart';
@@ -35,8 +34,8 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
-  final _emailController = TextEditingController(text: "cursorone39@gmail.com");
-  final _passwordController = TextEditingController(text: "Marwan@12");
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
   final _passwordFocus = FocusNode();
   final _shake = ShakeController();
 
@@ -116,7 +115,6 @@ class _LoginScreenState extends State<LoginScreen> {
             controller: _shake,
             child: Form(
               key: _formKey,
-              autovalidateMode: AutovalidateMode.onUserInteraction,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [

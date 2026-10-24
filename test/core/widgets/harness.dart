@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:orbit/core/i18n/strings.g.dart';
+import 'package:orbit/core/responsive/responsive_scope.dart';
 import 'package:orbit/core/responsive/responsive_scaler.dart';
 import 'package:orbit/core/theme/app_theme.dart';
 
@@ -77,6 +78,59 @@ Future<void> pumpWidget(
               themeMode: themeMode,
               home: Scaffold(body: widget),
             ),
+          ),
+        ),
+      ),
+    ),
+  );
+  if (settle) {
+    await tester.pumpAndSettle();
+  }
+}
+
+/// Pumps a screen or router app the way `main.dart` mounts it: [ResponsiveScope]
+/// outside [MaterialApp], then the slang provider and the theme with its
+/// extensions. Use [surfaceSize] and [textScaleFactor] to cover RESP-6.
+Future<void> pumpApp(
+  WidgetTester tester, {
+  Widget? home,
+  RouterConfig<Object>? routerConfig,
+  Size surfaceSize = const Size(800, 1000),
+  double textScaleFactor = 1,
+  ThemeMode themeMode = ThemeMode.light,
+  bool settle = true,
+}) async {
+  assert(
+    (home == null) != (routerConfig == null),
+    'Provide exactly one of home or routerConfig.',
+  );
+
+  tester.view.physicalSize = surfaceSize;
+  tester.view.devicePixelRatio = 1;
+  addTearDown(tester.view.reset);
+
+  await tester.pumpWidget(
+    Builder(
+      builder: (context) => MediaQuery(
+        data: MediaQuery.of(context).copyWith(
+          textScaler: TextScaler.linear(textScaleFactor),
+          disableAnimations: true,
+        ),
+        child: TranslationProvider(
+          child: ResponsiveScope(
+            child: routerConfig == null
+                ? MaterialApp(
+                    theme: AppTheme.light,
+                    darkTheme: AppTheme.dark,
+                    themeMode: themeMode,
+                    home: home,
+                  )
+                : MaterialApp.router(
+                    theme: AppTheme.light,
+                    darkTheme: AppTheme.dark,
+                    themeMode: themeMode,
+                    routerConfig: routerConfig,
+                  ),
           ),
         ),
       ),

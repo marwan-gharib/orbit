@@ -42,11 +42,11 @@ void main() {
     blocTest<EmployeeStatusCubit, EmployeeStatusState>(
       'should emit Loading then Success carrying the status info',
       build: () {
-        when(() => getEmployeeStatus(any()))
+        when(() => getEmployeeStatus())
             .thenAnswer((_) async => const Success(tInfo));
         return newCubit();
       },
-      act: (cubit) => cubit.check(email: 'adam@orbit.app'),
+      act: (cubit) => cubit.check(),
       expect: () => [
         isA<EmployeeStatusLoading>(),
         isA<EmployeeStatusSuccess>().having((s) => s.info, 'info', tInfo),
@@ -56,11 +56,11 @@ void main() {
     blocTest<EmployeeStatusCubit, EmployeeStatusState>(
       'should emit Loading then Failure carrying the failure',
       build: () {
-        when(() => getEmployeeStatus(any()))
+        when(() => getEmployeeStatus())
             .thenAnswer((_) async => const ResultFailure(tFailure));
         return newCubit();
       },
-      act: (cubit) => cubit.check(email: 'unknown@orbit.app'),
+      act: (cubit) => cubit.check(),
       expect: () => [
         isA<EmployeeStatusLoading>(),
         isA<EmployeeStatusError>().having(
@@ -74,14 +74,13 @@ void main() {
     blocTest<EmployeeStatusCubit, EmployeeStatusState>(
       'should ignore a second check while one is in flight',
       build: () {
-        when(() => getEmployeeStatus(any()))
-            .thenAnswer((_) async => pending.future);
+        when(() => getEmployeeStatus()).thenAnswer((_) async => pending.future);
         return newCubit();
       },
       act: (cubit) async {
-        final first = cubit.check(email: 'adam@orbit.app');
+        final first = cubit.check();
         await Future<void>.delayed(Duration.zero);
-        await cubit.check(email: 'adam@orbit.app');
+        await cubit.check();
         pending.complete(const Success(tInfo));
         await first;
       },
@@ -89,7 +88,7 @@ void main() {
         isA<EmployeeStatusLoading>(),
         isA<EmployeeStatusSuccess>().having((s) => s.info, 'info', tInfo),
       ],
-      verify: (_) => verify(() => getEmployeeStatus(any())).called(1),
+      verify: (_) => verify(() => getEmployeeStatus()).called(1),
     );
   });
 }

@@ -130,7 +130,41 @@ void main() {
   });
 
   group('signup', () {
-    test('should return the echo entity without persisting anything', () async {
+    const tSignupParams = SignupParams(
+      firstName: 'Adam',
+      lastName: 'Orbit',
+      workEmail: 'adam@orbit.app',
+      password: 'secret',
+    );
+
+    test(
+      'should persist the pending email and return the echo entity',
+      () async {
+        when(() => remote.signup(any())).thenAnswer(
+          (_) async => const Success(
+            SignupResponseModel(
+              firstName: 'Adam',
+              lastName: 'Orbit',
+              email: 'adam@orbit.app',
+            ),
+          ),
+        );
+        when(() => local.savePendingSignupEmail(any()))
+            .thenAnswer((_) async => const Success<void>(null));
+
+        final result = await repository.signup(tSignupParams);
+
+        expect(result.isSuccess, isTrue);
+        final entity = (result as Success).data;
+        expect(entity.firstName, 'Adam');
+        expect(entity.email, 'adam@orbit.app');
+        verify(() => local.savePendingSignupEmail('adam@orbit.app')).called(1);
+        verifyNever(() => local.saveSession(any()));
+        verifyNever(() => local.clearSession());
+      },
+    );
+
+    test('should fail when the pending email cannot be persisted', () async {
       when(() => remote.signup(any())).thenAnswer(
         (_) async => const Success(
           SignupResponseModel(
@@ -140,22 +174,13 @@ void main() {
           ),
         ),
       );
+      const tFailure = CacheFailure(message: 'cache full');
+      when(() => local.savePendingSignupEmail(any()))
+          .thenAnswer((_) async => const ResultFailure<void>(tFailure));
 
-      final result = await repository.signup(
-        const SignupParams(
-          firstName: 'Adam',
-          lastName: 'Orbit',
-          workEmail: 'adam@orbit.app',
-          password: 'secret',
-        ),
-      );
+      final result = await repository.signup(tSignupParams);
 
-      expect(result.isSuccess, isTrue);
-      final entity = (result as Success).data;
-      expect(entity.firstName, 'Adam');
-      expect(entity.email, 'adam@orbit.app');
-      verifyNever(() => local.saveSession(any()));
-      verifyNever(() => local.clearSession());
+      expect((result as ResultFailure).failure, tFailure);
     });
 
     test('should pass failures through without touching storage', () async {
@@ -163,16 +188,10 @@ void main() {
       when(() => remote.signup(any()))
           .thenAnswer((_) async => const ResultFailure(tFailure));
 
-      final result = await repository.signup(
-        const SignupParams(
-          firstName: 'Adam',
-          lastName: 'Orbit',
-          workEmail: 'adam@orbit.app',
-          password: 'secret',
-        ),
-      );
+      final result = await repository.signup(tSignupParams);
 
       expect((result as ResultFailure).failure, tFailure);
+      verifyNever(() => local.savePendingSignupEmail(any()));
       verifyNever(() => local.saveSession(any()));
     });
   });
