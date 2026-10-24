@@ -1,6 +1,8 @@
+import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
 
 import 'package:orbit/core/di/injection_container.dart';
+import 'package:orbit/core/network/session/session_expired_notifier.dart';
 import 'package:orbit/core/router/app_router_routes.dart';
 import 'package:orbit/core/router/pending_signup_session.dart';
 import 'package:orbit/core/router/route_guards.dart';
@@ -16,7 +18,11 @@ abstract final class AppRouter {
     redirect: (context, state) => RouteGuards.authRedirect(
       location: state.matchedLocation,
       isPendingSignup: getIt<PendingSignupSession>().hasPendingSignup,
+      isSessionExpired: getIt<SessionExpiredNotifier>().isExpired,
     ),
-    refreshListenable: getIt<PendingSignupSession>(),
+    refreshListenable: Listenable.merge([
+      getIt<PendingSignupSession>(),
+      getIt<SessionExpiredNotifier>(),
+    ]),
   );
 }

@@ -9,6 +9,9 @@ abstract final class Endpoints {
   /// Revoke the refresh token; requires the Bearer access token.
   static const String authLogout = '/api/auth/logout/';
 
+  /// Exchange an existing refresh token for a fresh access token.
+  static const String authRefresh = '/api/auth/refresh/';
+
   /// Check an account's employment status by email (GET with a JSON body —
   /// isolated in `AuthRemoteDataSource` so it can change in one place).
   static const String authEmployeeStatus = '/api/auth/get_employee_status/';

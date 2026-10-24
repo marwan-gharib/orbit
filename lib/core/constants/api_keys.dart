@@ -37,6 +37,7 @@ abstract final class ApiKeys {
   static const String workEmailKey = 'work_email';
   static const String passwordKey = 'password';
   static const String refreshKey = 'refresh';
+  static const String refreshAccessKey = 'access';
   static const String statusKey = 'status';
 
   // ---------------------------------------------------------------------------

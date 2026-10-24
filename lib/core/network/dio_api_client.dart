@@ -8,6 +8,10 @@ import 'package:orbit/core/network/base_api_client.dart';
 import 'package:orbit/core/network/interceptors/auth_interceptor.dart';
 import 'package:orbit/core/network/interceptors/error_interceptor.dart';
 import 'package:orbit/core/network/interceptors/network_logging_interceptor.dart';
+import 'package:orbit/core/network/interceptors/token_refresh_interceptor.dart';
+import 'package:orbit/core/network/refresh/token_refresh_service.dart';
+import 'package:orbit/core/network/session/session_cleaner.dart';
+import 'package:orbit/core/network/session/session_expired_notifier.dart';
 
 /// Dio-backed [BaseApiClient]: callers receive the decoded body on success
 /// or an [AppException] subtype on failure — never a raw `DioException`.
@@ -22,6 +26,9 @@ final class DioApiClient implements BaseApiClient {
     required String baseUrl,
     required SecureStorageClient secureStorage,
     required String Function() localeProvider,
+    required TokenRefreshService tokenRefreshService,
+    required SessionCleaner sessionCleaner,
+    required SessionExpiredNotifier sessionExpiredNotifier,
     Duration connectTimeout = const Duration(seconds: 30),
     Duration receiveTimeout = const Duration(seconds: 30),
     Duration sendTimeout = const Duration(seconds: 30),
@@ -30,6 +37,9 @@ final class DioApiClient implements BaseApiClient {
            baseUrl: baseUrl,
            secureStorage: secureStorage,
            localeProvider: localeProvider,
+           tokenRefreshService: tokenRefreshService,
+           sessionCleaner: sessionCleaner,
+           sessionExpiredNotifier: sessionExpiredNotifier,
            connectTimeout: connectTimeout,
            receiveTimeout: receiveTimeout,
            sendTimeout: sendTimeout,
@@ -150,6 +160,9 @@ final class DioApiClient implements BaseApiClient {
     required String baseUrl,
     required SecureStorageClient secureStorage,
     required String Function() localeProvider,
+    required TokenRefreshService tokenRefreshService,
+    required SessionCleaner sessionCleaner,
+    required SessionExpiredNotifier sessionExpiredNotifier,
     Duration connectTimeout = const Duration(seconds: 30),
     Duration receiveTimeout = const Duration(seconds: 30),
     Duration sendTimeout = const Duration(seconds: 30),
@@ -171,13 +184,19 @@ final class DioApiClient implements BaseApiClient {
             status != null && status >= 200 && status < 300,
       ),
     );
-    // Order matters: onRequest runs top-down, onResponse/onError bottom-up,
-    // so logging first sees the final classified outcome.
+    // Order matters: onRequest, onResponse, and onError all run FIFO (0 to N-1).
     if (kDebugMode) {
       dio.interceptors.add(const NetworkLoggingInterceptor());
     }
     dio.interceptors.addAll(<Interceptor>[
       AuthInterceptor(secureStorage),
+      TokenRefreshInterceptor(
+        dio: dio,
+        secureStorage: secureStorage,
+        refreshService: tokenRefreshService,
+        sessionCleaner: sessionCleaner,
+        sessionExpiredNotifier: sessionExpiredNotifier,
+      ),
       const ErrorInterceptor(),
     ]);
     return dio;

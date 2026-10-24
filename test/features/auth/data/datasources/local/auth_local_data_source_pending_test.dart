@@ -11,6 +11,7 @@ import 'package:orbit/core/router/pending_signup_session.dart';
 import 'package:orbit/core/utils/api_result.dart';
 import 'package:orbit/features/auth/data/datasources/local/auth_local_data_source.dart';
 import 'package:orbit/features/auth/data/models/login_response_model.dart';
+import 'package:orbit/core/network/session/session_expired_notifier.dart';
 
 class _MockCacheService extends Mock implements CacheService {}
 
@@ -33,10 +34,12 @@ LoginResponseModel _tSession() {
   });
 }
 
+
 void main() {
   late _MockCacheService cache;
   late _MockSecureStorage secureStorage;
   late PendingSignupSession pendingSession;
+  late SessionExpiredNotifier sessionNotifier;
   late AuthLocalDataSource dataSource;
   late LoginResponseModel session;
 
@@ -48,10 +51,12 @@ void main() {
     cache = _MockCacheService();
     secureStorage = _MockSecureStorage();
     pendingSession = PendingSignupSession();
+    sessionNotifier = SessionExpiredNotifier();
     dataSource = AuthLocalDataSource(
       cache: cache,
       secureStorage: secureStorage,
       pendingSession: pendingSession,
+      sessionNotifier: sessionNotifier,
     );
     session = _tSession();
 

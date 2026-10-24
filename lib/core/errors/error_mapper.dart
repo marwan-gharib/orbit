@@ -55,6 +55,19 @@ final class ErrorMapper {
         serverMessage: server,
         errorCode: code,
       ),
+      SessionExpiredException() => SessionExpiredFailure(
+        message: 'Your session has expired. Please sign in again.',
+        statusCode: status,
+        serverMessage: server,
+        errorCode: code,
+      ),
+      StaleSessionException() => NetworkFailure(
+        message: 'The request was cancelled.',
+        reason: NetworkErrorReason.connectionTimeout,
+        statusCode: status,
+        serverMessage: server,
+        errorCode: code,
+      ),
       ForbiddenException() => ForbiddenFailure(
         message: "You don't have permission to do this.",
         statusCode: status,
@@ -148,6 +161,8 @@ final class ErrorMapper {
       NetworkException() ||
       RequestCancelledException() ||
       UnauthorizedException() ||
+      SessionExpiredException() ||
+      StaleSessionException() ||
       ForbiddenException() ||
       NotFoundException() ||
       ValidationException() ||

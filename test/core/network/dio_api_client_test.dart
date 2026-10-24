@@ -8,7 +8,13 @@ import 'package:orbit/core/constants/endpoints.dart';
 import 'package:orbit/core/local/secure/secure_storage_client.dart';
 import 'package:orbit/core/network/dio_api_client.dart';
 
+import 'package:orbit/core/network/refresh/token_refresh_service.dart';
+import 'package:orbit/core/network/session/session_cleaner.dart';
+import 'package:orbit/core/network/session/session_expired_notifier.dart';
+
 class _MockSecureStorage extends Mock implements SecureStorageClient {}
+class _MockTokenRefreshService extends Mock implements TokenRefreshService {}
+class _MockSessionCleaner extends Mock implements SessionCleaner {}
 
 /// Records the outgoing request; the body/headers are asserted in tests.
 class _RecordingAdapter implements HttpClientAdapter {
@@ -35,11 +41,12 @@ class _RecordingAdapter implements HttpClientAdapter {
 }
 
 void main() {
-  // The interceptor reads the token from the shared secure-storage constant
-  // (AppConsts.accessTokenKey); the mock answers for exactly that key.
   final secureStorage = _MockSecureStorage();
   late _RecordingAdapter adapter;
   late DioApiClient client;
+  late TokenRefreshService refreshService;
+  late SessionCleaner sessionCleaner;
+  late SessionExpiredNotifier sessionExpiredNotifier;
 
   setUpAll(() {
     when(() => secureStorage.read(any())).thenAnswer((_) async => 'token');
@@ -47,10 +54,17 @@ void main() {
 
   setUp(() {
     adapter = _RecordingAdapter();
+    refreshService = _MockTokenRefreshService();
+    sessionCleaner = _MockSessionCleaner();
+    sessionExpiredNotifier = SessionExpiredNotifier();
+
     final dio = DioApiClient.buildDio(
       baseUrl: 'https://api.example.com',
       secureStorage: secureStorage,
       localeProvider: () => 'en',
+      tokenRefreshService: refreshService,
+      sessionCleaner: sessionCleaner,
+      sessionExpiredNotifier: sessionExpiredNotifier,
     );
     dio.httpClientAdapter = adapter;
     client = DioApiClient(dio);

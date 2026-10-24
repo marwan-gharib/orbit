@@ -15,10 +15,15 @@ Update it whenever `core/` gains, loses, or changes a reusable piece (DOC-6).
 ## Network
 - `BaseApiClient` — core/network/… — abstract HTTP client; its implementation and interceptors are the only `dio` importers. GET accepts a request body (`data`) for GET-with-body APIs; every verb takes typed `extra` (interceptor opt-outs).
 - `DioApiClient.buildDio` — core/network/dio_api_client.dart (@visibleForTesting) — the single static stack builder (JSON defaults, `X-Client-Type: Flutter` header, interceptor chain, timeouts).
-- Interceptors — core/network/interceptors/… — auth token (reads `AppConsts.accessTokenKey`, `requiresAuthExtra` opt-out — flag and header names in `ApiKeys`), logging (masks token values before logging), error mapping, locale.
+- `RefreshDioClient.create` — core/network/refresh/refresh_dio_client.dart — minimal isolated Dio client (no interceptors) for token refresh calls.
+- `TokenRefreshService` — core/network/refresh/token_refresh_service.dart (+ impl) — executes refresh endpoint call, token rotation, and atomic secure storage update.
+- `SessionCleaner` — core/network/session/session_cleaner.dart — core interface for wiping local session data without feature coupling.
+- `SessionExpiredNotifier` — core/network/session/session_expired_notifier.dart — signals session expiration and tracks generation counters against logout races.
+- Interceptors — core/network/interceptors/… — auth token (reads `AppConsts.accessTokenKey`, `requiresAuthExtra` opt-out — flag and header names in `ApiKeys`), token refresh (catches 401, single-flight refresh, retry, session expiry), logging (masks token values and Authorization headers before logging), error mapping.
 
 ## Errors
-- `Failure` hierarchy — core/errors/failures.dart — list subtypes here (`InvalidCredentialsFailure` for a sign-in 401 vs. `UnauthorizedFailure` for other 401s).
+- `Failure` hierarchy — core/errors/failures.dart — list subtypes here (`InvalidCredentialsFailure` for a sign-in 401 vs. `UnauthorizedFailure` for other 401s vs. `SessionExpiredFailure` for terminal refresh rejection).
+- `AppException` hierarchy — core/errors/exceptions.dart — typed errors including `SessionExpiredException` and `StaleSessionException`.
 - Dio error classifier — core/errors/error_mapper.dart — maps exceptions to `Failure`.
 - `ErrorBodyParser` — core/errors/error_body_parser.dart — the one place an error body becomes (serverMessage, fieldErrors, errorCode); the Dio classifier delegates here; tested in `test/core/errors/error_body_parser_test.dart`.
 - `NetworkExceptionFactory` — core/errors/network_exception_factory.dart — builds `NetworkException`s (the only place the request-timeout 408 status is set) and resolves `NetworkErrorReason` from a wrapped cause chain; extracted from the Dio classifier, tested in `test/core/errors/network_exception_factory_test.dart`.

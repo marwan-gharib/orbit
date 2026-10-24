@@ -42,7 +42,7 @@ redirects to `/login`. The router listens to `PendingSignupSession`
 | domain | usecases/*.dart (6) | Thin use cases over the repository |
 | data | datasources/google/google_auth_client.dart | GoogleSignIn v7 plugin isolation, token retrieval, cancellation mapping |
 | data | datasources/remote/auth_remote_data_source.dart | The whole auth API: login, signup, logout, employee status, Google SSO mobile |
-| data | datasources/local/auth_local_data_source.dart | Token persistence (secure storage), cached user, pending email + Google flag, rollback |
+| data | datasources/local/auth_local_data_source.dart | Token persistence (secure storage), cached user, pending email + Google flag, rollback, implements core SessionCleaner, resets SessionExpiredNotifier on login, increments session generation on clearSession |
 | data | models/*.dart (7) | Hand-written JSON mapping: login, signup, employee status, session info, GoogleSsoResponseModel |
 | data | repositories/auth_repository_impl.dart | Orchestration: login/Google persistence, pending signup flag, rollback, session cleanup |
 

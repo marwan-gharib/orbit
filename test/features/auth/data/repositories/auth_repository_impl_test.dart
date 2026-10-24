@@ -45,7 +45,7 @@ void main() {
             .thenAnswer((_) async => const Success('refresh-1'));
         when(() => remote.logout(any()))
             .thenAnswer((_) async => const Success<void>(null));
-        when(() => local.clearSession())
+        when(() => local.clearSessionWithResult())
             .thenAnswer((_) async => const Success<void>(null));
 
         final result = await repository.logout();
@@ -54,7 +54,7 @@ void main() {
         verifyInOrder([
           () => local.readRefreshToken(),
           () => remote.logout('refresh-1'),
-          () => local.clearSession(),
+          () => local.clearSessionWithResult(),
         ]);
       },
     );
@@ -69,7 +69,7 @@ void main() {
             RequestFailure(message: 'revocation failed'),
           ),
         );
-        when(() => local.clearSession())
+        when(() => local.clearSessionWithResult())
             .thenAnswer((_) async => const Success<void>(null));
 
         final result = await repository.logout();
@@ -77,7 +77,7 @@ void main() {
         expect(result.isSuccess, isTrue);
         verifyInOrder([
           () => remote.logout('refresh-1'),
-          () => local.clearSession(),
+          () => local.clearSessionWithResult(),
         ]);
       },
     );
@@ -85,14 +85,14 @@ void main() {
     test('should skip the remote phase when no refresh token exists', () async {
       when(() => local.readRefreshToken())
           .thenAnswer((_) async => const Success<String?>(null));
-      when(() => local.clearSession())
+      when(() => local.clearSessionWithResult())
           .thenAnswer((_) async => const Success<void>(null));
 
       final result = await repository.logout();
 
       expect(result.isSuccess, isTrue);
       verifyNever(() => remote.logout(any()));
-      verify(() => local.clearSession()).called(1);
+      verify(() => local.clearSessionWithResult()).called(1);
     });
 
     test(
@@ -102,14 +102,14 @@ void main() {
         when(
           () => local.readRefreshToken(),
         ).thenAnswer((_) async => const ResultFailure<String?>(tReadFailure));
-        when(() => local.clearSession())
+        when(() => local.clearSessionWithResult())
             .thenAnswer((_) async => const Success<void>(null));
 
         final result = await repository.logout();
 
         expect(result.isSuccess, isTrue);
         verifyNever(() => remote.logout(any()));
-        verify(() => local.clearSession()).called(1);
+        verify(() => local.clearSessionWithResult()).called(1);
       },
     );
 
@@ -119,7 +119,7 @@ void main() {
         when(() => local.readRefreshToken())
             .thenAnswer((_) async => const Success<String?>(null));
         const tClearFailure = StorageFailure(message: 'wiped');
-        when(() => local.clearSession())
+        when(() => local.clearSessionWithResult())
             .thenAnswer((_) async => const ResultFailure<void>(tClearFailure));
 
         final result = await repository.logout();

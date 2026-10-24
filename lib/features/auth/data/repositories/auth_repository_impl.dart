@@ -94,7 +94,7 @@ class AuthRepositoryImpl implements AuthRepository {
       // Outcome ignored (§9/B10): the local clear below always proceeds.
       await _remote.logout(token);
     }
-    return _local.clearSession();
+    return _local.clearSessionWithResult();
   }
 
   @override

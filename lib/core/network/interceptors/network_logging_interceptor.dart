@@ -16,10 +16,22 @@ final class NetworkLoggingInterceptor extends Interceptor {
     AppLogger.logNetworkRequest(
       method: options.method,
       uri: options.uri.toString(),
-      headers: options.headers,
+      headers: sanitizeHeaders(options.headers),
       data: redactTokens(options.data),
     );
     handler.next(options);
+  }
+
+  /// Masks sensitive headers (Authorization Bearer token) before logging.
+  @visibleForTesting
+  static Map<String, dynamic> sanitizeHeaders(Map<String, dynamic> headers) {
+    if (!headers.containsKey(ApiKeys.authorizationHeaderKey)) {
+      return headers;
+    }
+    return <String, dynamic>{
+      ...headers,
+      ApiKeys.authorizationHeaderKey: 'Bearer $_maskedValue',
+    };
   }
 
   @override
@@ -64,5 +76,8 @@ final class NetworkLoggingInterceptor extends Interceptor {
   }
 
   static bool _isTokenKey(Object? key) =>
-      key == ApiKeys.accessTokenKey || key == ApiKeys.refreshTokenKey;
+      key == ApiKeys.accessTokenKey ||
+      key == ApiKeys.refreshTokenKey ||
+      key == ApiKeys.refreshAccessKey ||
+      key == ApiKeys.refreshKey;
 }

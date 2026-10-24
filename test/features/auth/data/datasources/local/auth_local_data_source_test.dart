@@ -7,6 +7,7 @@ import 'package:orbit/core/errors/exceptions.dart';
 import 'package:orbit/core/errors/failures.dart';
 import 'package:orbit/core/local/cache/cache_service.dart';
 import 'package:orbit/core/local/secure/secure_storage_client.dart';
+import 'package:orbit/core/network/session/session_expired_notifier.dart';
 import 'package:orbit/core/router/pending_signup_session.dart';
 import 'package:orbit/core/utils/api_result.dart';
 import 'package:orbit/features/auth/data/datasources/local/auth_local_data_source.dart';
@@ -37,6 +38,7 @@ void main() {
   late _MockCacheService cache;
   late _MockSecureStorage secureStorage;
   late PendingSignupSession pendingSession;
+  late SessionExpiredNotifier sessionNotifier;
   late AuthLocalDataSource dataSource;
   late LoginResponseModel session;
 
@@ -48,10 +50,12 @@ void main() {
     cache = _MockCacheService();
     secureStorage = _MockSecureStorage();
     pendingSession = PendingSignupSession();
+    sessionNotifier = SessionExpiredNotifier();
     dataSource = AuthLocalDataSource(
       cache: cache,
       secureStorage: secureStorage,
       pendingSession: pendingSession,
+      sessionNotifier: sessionNotifier,
     );
     session = _tSession();
 
@@ -71,6 +75,7 @@ void main() {
         final userMap = session.user.toJson();
 
         expect(result.isSuccess, isTrue);
+        expect(sessionNotifier.isExpired, isFalse);
         verifyInOrder([
           () => secureStorage.write(AppConsts.accessTokenKey, 'access-1'),
           () => secureStorage.write(AppConsts.refreshTokenKey, 'refresh-1'),
@@ -129,10 +134,16 @@ void main() {
   });
 
   group('clearSession', () {
-    test('should delete both tokens and the cached user', () async {
-      final result = await dataSource.clearSession();
+    // clearSession() satisfies the SessionCleaner interface (Future<void>).
+    // clearSessionWithResult() is the testable surface that exposes ApiResult.
+
+    test('should delete both tokens and the cached user and increment generation', () async {
+      expect(sessionNotifier.currentGeneration, 0);
+
+      final result = await dataSource.clearSessionWithResult();
 
       expect(result.isSuccess, isTrue);
+      expect(sessionNotifier.currentGeneration, 1);
       verifyInOrder([
         () => secureStorage.delete(AppConsts.accessTokenKey),
         () => secureStorage.delete(AppConsts.refreshTokenKey),
@@ -140,11 +151,17 @@ void main() {
       ]);
     });
 
+    test('clearSession (SessionCleaner override) completes without throwing', () async {
+      // Verifies that the void wrapper delegates correctly and does not throw.
+      await expectLater(dataSource.clearSession(), completes);
+      expect(sessionNotifier.currentGeneration, 1);
+    });
+
     test('should map a delete failure to a failure result', () async {
       when(() => secureStorage.delete(AppConsts.accessTokenKey))
           .thenThrow(const SecureStorageException());
 
-      final result = await dataSource.clearSession();
+      final result = await dataSource.clearSessionWithResult();
 
       expect(result.isFailure, isTrue);
       expect((result as ResultFailure).failure, isA<StorageFailure>());
@@ -153,7 +170,7 @@ void main() {
     test('should also end a pending signup', () async {
       pendingSession.start('adam@orbit.app');
 
-      final result = await dataSource.clearSession();
+      final result = await dataSource.clearSessionWithResult();
 
       expect(result.isSuccess, isTrue);
       verify(() => cache.delete(AppConsts.pendingSignupEmailKey)).called(1);

@@ -34,4 +34,7 @@ abstract final class AppConsts {
   /// Key for onboarding completion flag in shared preferences (cache).
   /// Read by splash on startup; written by onboarding on completion/skip.
   static const String onboardingSeenKey = 'onboarding_seen';
+
+  /// Extra key used by TokenRefreshInterceptor to prevent infinite retry loops.
+  static const String retryAttemptedExtraKey = 'retry_attempted';
 }

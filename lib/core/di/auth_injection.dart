@@ -5,6 +5,8 @@ import 'package:orbit/core/constants/log_tags.dart';
 import 'package:orbit/core/local/cache/cache_service.dart';
 import 'package:orbit/core/local/secure/secure_storage_client.dart';
 import 'package:orbit/core/network/base_api_client.dart';
+import 'package:orbit/core/network/session/session_cleaner.dart';
+import 'package:orbit/core/network/session/session_expired_notifier.dart';
 import 'package:orbit/core/router/pending_signup_session.dart';
 import 'package:orbit/core/utils/logger.dart';
 import 'package:orbit/features/auth/data/datasources/google/google_auth_client.dart';
@@ -47,7 +49,11 @@ Future<void> initAuthModule(GetIt getIt) async {
       cache: getIt<CacheService>(),
       secureStorage: getIt<SecureStorageClient>(),
       pendingSession: getIt<PendingSignupSession>(),
+      sessionNotifier: getIt<SessionExpiredNotifier>(),
     ),
+  );
+  getIt.registerLazySingleton<SessionCleaner>(
+    () => getIt<AuthLocalDataSource>(),
   );
 
   // Repository

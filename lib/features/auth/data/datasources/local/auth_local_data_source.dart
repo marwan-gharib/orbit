@@ -3,6 +3,8 @@ import 'package:orbit/core/constants/log_tags.dart';
 import 'package:orbit/core/errors/error_mapper.dart';
 import 'package:orbit/core/local/cache/cache_service.dart';
 import 'package:orbit/core/local/secure/secure_storage_client.dart';
+import 'package:orbit/core/network/session/session_cleaner.dart';
+import 'package:orbit/core/network/session/session_expired_notifier.dart';
 import 'package:orbit/core/router/pending_signup_session.dart';
 import 'package:orbit/core/utils/api_result.dart';
 import 'package:orbit/core/utils/logger.dart';
@@ -21,16 +23,18 @@ import '../../models/user_model.dart';
 ///
 /// Catches everything (Exception and Error): a storage failure must become a
 /// `Failure`, and a malformed cached payload must degrade, never crash.
-class AuthLocalDataSource {
+class AuthLocalDataSource implements SessionCleaner {
   AuthLocalDataSource({
     required this._cache,
     required this._secureStorage,
     required this._pendingSession,
+    required this._sessionNotifier,
   });
 
   final CacheService _cache;
   final SecureStorageClient _secureStorage;
   final PendingSignupSession _pendingSession;
+  final SessionExpiredNotifier _sessionNotifier;
 
   /// Persists the session; on ANY write failure, best-effort deletes what may
   /// have been written (B6), so the session is never half-saved.
@@ -54,13 +58,23 @@ class AuthLocalDataSource {
     // best-effort: routing already prefers a real session over a pending one,
     // so a failed delete must not fail the sign-in itself.
     await clearPendingSignup();
+    _sessionNotifier.reset();
     return const Success<void>(null);
   }
 
   /// Deletes both tokens, the cached user and any pending signup; missing keys
   /// are not errors. The in-memory pending session is always cleared, even
   /// when a storage delete fails.
-  Future<ApiResult<void>> clearSession() async {
+  ///
+  /// Implements [SessionCleaner]: storage errors are logged via [ErrorMapper]
+  /// but do not propagate — the network layer must not need to branch on them.
+  @override
+  Future<void> clearSession() => clearSessionWithResult();
+
+  /// Same as [clearSession] but surfaces storage errors as a [Failure] for
+  /// callers that need to surface them (e.g. [LogoutUseCase]).
+  Future<ApiResult<void>> clearSessionWithResult() async {
+    _sessionNotifier.incrementGeneration();
     try {
       await _secureStorage.delete(AppConsts.accessTokenKey);
       await _secureStorage.delete(AppConsts.refreshTokenKey);

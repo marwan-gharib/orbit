@@ -67,6 +67,18 @@ final class UnauthorizedFailure extends Failure {
   });
 }
 
+/// The backend definitively rejected the refresh token (expired, invalid,
+/// blacklisted) or the session was terminally revoked. The local session has
+/// been cleared and the user must sign in again.
+final class SessionExpiredFailure extends Failure {
+  const SessionExpiredFailure({
+    required super.message,
+    super.statusCode,
+    super.serverMessage,
+    super.errorCode,
+  });
+}
+
 /// Authenticated, but not allowed to perform this action.
 final class ForbiddenFailure extends Failure {
   const ForbiddenFailure({

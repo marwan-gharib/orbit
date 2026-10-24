@@ -50,4 +50,29 @@ void main() {
       expect(body[ApiKeys.accessTokenKey], 'secret-access');
     });
   });
+
+  group('NetworkLoggingInterceptor.sanitizeHeaders', () {
+    test('should mask Authorization Bearer token in headers', () {
+      final headers = <String, dynamic>{
+        'Accept': 'application/json',
+        ApiKeys.authorizationHeaderKey: 'Bearer secret_token_xyz',
+      };
+
+      final sanitized = NetworkLoggingInterceptor.sanitizeHeaders(headers);
+
+      expect(sanitized[ApiKeys.authorizationHeaderKey], 'Bearer ***');
+      expect(sanitized['Accept'], 'application/json');
+    });
+
+    test('should leave headers untouched if Authorization header is absent', () {
+      final headers = <String, dynamic>{
+        'Accept': 'application/json',
+        'X-Client-Type': 'Flutter',
+      };
+
+      final sanitized = NetworkLoggingInterceptor.sanitizeHeaders(headers);
+
+      expect(sanitized, equals(headers));
+    });
+  });
 }

@@ -20,6 +20,7 @@
     "certificate": "We couldn't make a secure connection. Check your network and your device's date and time, then try again.",
     "cancelled": "The request was cancelled.",
     "unauthorized": "We couldn't verify your identity. Please sign in again.",
+    "sessionExpired": "Your session has expired. Please sign in again.",
     "invalidCredentials": "Your email or password is incorrect. Please check them and try again.",
     "forbidden": "You don't have permission to do this.",
     "notFound": "We couldn't find what you were looking for.",
