@@ -31,10 +31,12 @@ Writing or editing any code; "clean this up"; "simplify"; "make it readable"; be
    - Maximum two nesting levels. Beyond that, extract or use a `switch` expression.
 4. **No duplication, no premature abstraction.**
    - Extract on the third occurrence. A wrong abstraction costs more than duplication.
-   - Reusable across features: move to `core/` (ARCH-4). Check `docs/CORE_MAP.md` first.
+   - Reusable across features: move to `core/` (ARCH-4, WIDGET-3 for widgets). Check `docs/CORE_MAP.md` first (BASE-1).
 5. **No magic values.** Every key, path, route, asset, and meaningful repeated number or string
    becomes a constant in `core/constants/` (ARCH-10). No exceptions: never a literal at the
-   usage, never a private `const` next to it. User-facing strings go to i18n (UI-4).
+   usage, never a private `const` next to it. User-facing strings go to i18n (UI-4). UI sizes are
+   not constants files: they are theme tokens or `Responsive` (RESP-2); durations and curves come
+   from the animation tokens (ANIM-1).
 6. **No dead code.** Delete it, never comment it out. No unused parameters, imports, or fields.
 7. **Comments** follow CORE-14..16: explain why, never what.
 8. **Nulls and errors.**
@@ -45,7 +47,9 @@ Writing or editing any code; "clean this up"; "simplify"; "make it readable"; be
 10. **Dart 3 idioms.** `switch` expressions, pattern matching, records for small ad-hoc
     tuples (at most 3 fields, else a class), collection `if`/`for`/spread, `sealed` for
     closed hierarchies, extensions for small helpers.
-11. **Small, cohesive classes.** No god Cubit, no god widget. Avoid train wrecks like
+11. **Keep files under 300 lines (FILE-1).** One public widget or class per file; extract helpers,
+    private widgets, and mappers into their own files before a file grows past the limit.
+12. **Small, cohesive classes.** No god Cubit, no god widget. Avoid train wrecks like
     `a.b.c.d.value`; expose what callers need.
 
 ## Before / after

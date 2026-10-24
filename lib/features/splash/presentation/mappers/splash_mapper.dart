@@ -9,13 +9,16 @@ extension SplashMapper on SplashStateEntity {
     nextRoute: nextRoute,
     hasAuthToken: hasAuthToken,
     onboardingSeen: onboardingSeen,
+    hasPendingSignup: hasPendingSignup,
   );
 
-  /// Computes the next route name based on auth and onboarding status.
+  /// Computes the next route name. A real session wins over everything, then
+  /// an unapproved account, then first-run onboarding, then login.
   String get nextRoute {
-    if (!hasAuthToken) {
-      return onboardingSeen ? RouteNames.login : RouteNames.onboarding;
+    if (hasAuthToken) {
+      return onboardingSeen ? RouteNames.home : RouteNames.onboarding;
     }
-    return onboardingSeen ? RouteNames.home : RouteNames.onboarding;
+    if (hasPendingSignup) return RouteNames.pending;
+    return onboardingSeen ? RouteNames.login : RouteNames.onboarding;
   }
 }

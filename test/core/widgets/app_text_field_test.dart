@@ -61,6 +61,47 @@ void main() {
       expect(find.byIcon(Icons.visibility), findsOneWidget);
     });
 
+    testWidgets('should expose localized eye tooltips and toggle obscuring', (
+      tester,
+    ) async {
+      await pumpWidget(
+        tester,
+        const AppTextField(label: 'Password', obscureText: true),
+      );
+
+      expect(find.byTooltip('Show password'), findsOneWidget);
+      expect(
+        tester.widget<EditableText>(find.byType(EditableText)).obscureText,
+        isTrue,
+      );
+
+      await tester.tap(find.byTooltip('Show password'));
+      await tester.pump();
+
+      expect(find.byTooltip('Hide password'), findsOneWidget);
+      expect(
+        tester.widget<EditableText>(find.byType(EditableText)).obscureText,
+        isFalse,
+      );
+    });
+
+    testWidgets('should forward textCapitalization and autofocus', (
+      tester,
+    ) async {
+      await pumpWidget(
+        tester,
+        const AppTextField(
+          label: 'First name',
+          textCapitalization: TextCapitalization.words,
+          autofocus: true,
+        ),
+      );
+
+      final editable = tester.widget<EditableText>(find.byType(EditableText));
+      expect(editable.textCapitalization, TextCapitalization.words);
+      expect(editable.focusNode.hasFocus, isTrue);
+    });
+
     testWidgets('should call onChanged when text changes', (tester) async {
       var changedValue = '';
       await pumpWidget(

@@ -112,7 +112,9 @@ testWidgets('should show the product name when state is success', (tester) async
   expect(find.text(tProductViewModel.name), findsOneWidget);
 });
 ```
-Test each screen in loading, success, empty, error. Also test one interaction per important
+Wrap every UI test in `ResponsiveScope` (inside the project's test app), pump at least two
+surface sizes (small phone, tablet) and one large text scale, and assert no overflow exception
+(TEST-8, RESP-6). Test each screen in loading, success, empty, error. Also test one interaction per important
 control (tap, submit) and verify the Cubit method was called.
 
 ## Coverage check

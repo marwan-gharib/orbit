@@ -26,10 +26,13 @@ Placing new code; creating a feature; reviewing imports; fixing a boundary viola
 | Convert entity -> UI shape | `presentation/view_models/` + `presentation/mappers/` |
 | Hold screen state | `presentation/cubits/<name>/` (cubit + sealed state) |
 | Draw UI | `presentation/screens/`, `presentation/widgets/` |
-| Reuse across 2+ features | `core/` (check `docs/CORE_MAP.md` first) |
+| Reuse across 2+ features | `core/` (check `docs/CORE_MAP.md` first); a feature widget a 2nd feature needs is promoted to `core/widgets/` (WIDGET-3) |
+| A widget core does not have | `features/<feature>/presentation/widgets/` (WIDGET-2), built from core pieces |
+| Motion, loading placeholder, overlay | only `core/animations/` pieces (ANIM-1..3), never in a feature |
+| A size, breakpoint, or scale | theme tokens or `core/responsive/` (RESP-2) |
 | Name a key, endpoint, route, storage key, asset, or env variable | `core/constants/<purpose>.dart` (ARCH-10) |
 | Wire dependencies | `core/di/<feature>_injection.dart` |
-| Declare routes | `core/router/` |
+| Declare routes | `core/router/` (`AppRoute.create`; names and paths in `route_names.dart` and `route_paths.dart`) |
 
 ## Data flow for one request
 Widget event -> Cubit method -> UseCase -> Repository contract -> RepositoryImpl ->
@@ -64,6 +67,8 @@ grep -rn "package:dio" lib --include=*.dart | grep -vE "lib/core/(network|errors
 # No literal JSON keys or endpoint paths outside core/constants (ARCH-10)
 grep -rnE "json\[['\"]" lib --include=*.dart | grep -v "lib/core/constants" && echo "VIOLATION" || echo "json keys ok"
 grep -rnE "\.(get|post|put|patch|delete)\(\s*['\"]" lib --include=*.dart | grep -v "lib/core/constants" && echo "VIOLATION" || echo "endpoints ok"
+# Rules script: file size, constants, raw widgets, raw animation, bare sizes, layers
+bash .opencode/scripts/check_rules.sh
 # Cubits must not import repositories or datasources
 grep -rEn "(repositories|datasources)/" lib/features/*/presentation/cubits && echo "VIOLATION" || echo "cubits ok"
 ```

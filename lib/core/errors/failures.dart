@@ -4,7 +4,9 @@ import 'package:orbit/core/errors/exceptions.dart';
 
 /// User-facing outcome of a failed operation. Only [message] may reach the
 /// screen; [statusCode]/[serverMessage]/[errorCode] exist for logs, tests and
-/// branching, so equality covers them too.
+/// branching, so equality covers them too. Exception: a caller may choose to
+/// display [serverMessage] — e.g. a login screen showing the backend's own
+/// invalid-credentials text — as long as it screens the text it renders.
 sealed class Failure extends Equatable {
   const Failure({
     required this.message,
@@ -18,7 +20,9 @@ sealed class Failure extends Equatable {
 
   final int? statusCode;
 
-  /// Backend text, logging/debug only — never display it.
+  /// Backend text, logging/debug only — never displayed by default. A caller
+  /// may deliberately render it after screening it (e.g. a login screen
+  /// showing the backend invalid-credentials text); see the class doc.
   final String? serverMessage;
 
   final String? errorCode;
@@ -63,9 +67,34 @@ final class UnauthorizedFailure extends Failure {
   });
 }
 
+/// The backend definitively rejected the refresh token (expired, invalid,
+/// blacklisted) or the session was terminally revoked. The local session has
+/// been cleared and the user must sign in again.
+final class SessionExpiredFailure extends Failure {
+  const SessionExpiredFailure({
+    required super.message,
+    super.statusCode,
+    super.serverMessage,
+    super.errorCode,
+  });
+}
+
 /// Authenticated, but not allowed to perform this action.
 final class ForbiddenFailure extends Failure {
   const ForbiddenFailure({
+    required super.message,
+    super.statusCode,
+    super.serverMessage,
+    super.errorCode,
+  });
+}
+
+/// 401 on a sign-in attempt: the credentials themselves are wrong. Distinct
+/// from [UnauthorizedFailure] so the sign-in flow can show "wrong
+/// email/password" copy instead of "sign in again"; the backend's original
+/// text stays available through [serverMessage].
+final class InvalidCredentialsFailure extends Failure {
+  const InvalidCredentialsFailure({
     required super.message,
     super.statusCode,
     super.serverMessage,

@@ -1,7 +1,12 @@
 {
   "$schema": "https://opencode.ai/config.json",
   "instructions": [
-    ".opencode/rules/00-core.md"
+    ".opencode/rules/00-core.md",
+    ".opencode/rules/00-style.md",
+    ".opencode/rules/00-done.md",
+    ".opencode/rules/core-first.md",
+    ".opencode/rules/file-size.md",
+    ".opencode/rules/release-notes.md"
   ],
   "permissions": [
     {

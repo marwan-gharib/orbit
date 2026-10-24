@@ -19,11 +19,13 @@
 
 - NAV-1  `go_router` only. No `Navigator.push` / `pop` / `showDialog`-based flows that
          bypass the router for screens.
-- NAV-2  Routes are declared in `core/router/`. Route names and paths are manual constants
-         kept in `core/constants/` (`AppRoutes`, ARCH-10); typed routes need build_runner and
-         are not allowed.
+- NAV-2  Routes are declared in `core/router/` through `AppRoute.create` (ANIM-7). Route names and
+         paths are manual constants in `core/router/route_names.dart` and `route_paths.dart`
+         (ARCH-10); typed routes need build_runner and are not allowed.
 - NAV-3  A Cubit never navigates. It emits a state (e.g. `LoginSuccess`); a `BlocListener`
          in the widget reacts and calls `context.go` / `context.push` through the `BuildContext`
          extension. Use `listenWhen` so only the intended state triggers navigation.
 - NAV-4  Pass only IDs and primitives between routes (path/query params). Never pass an
          entity, model, or view model as `extra`. The destination loads its own data.
+- NAV-5  Guards and redirects live in `core/router/route_guards.dart`. A feature never
+         re-implements a redirect or an auth check inline in a screen.

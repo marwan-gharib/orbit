@@ -8,11 +8,13 @@ void main() {
     const tModel = StartupStatusModel(
       hasAuthToken: true,
       onboardingSeen: false,
+      hasPendingSignup: true,
     );
 
     const tEntity = SplashStateEntity(
       hasAuthToken: true,
       onboardingSeen: false,
+      hasPendingSignup: true,
     );
 
     test('toEntity returns correct entity', () {
@@ -23,6 +25,7 @@ void main() {
       final entity = tModel.toEntity();
       expect(entity.hasAuthToken, tModel.hasAuthToken);
       expect(entity.onboardingSeen, tModel.onboardingSeen);
+      expect(entity.hasPendingSignup, tModel.hasPendingSignup);
     });
   });
 }

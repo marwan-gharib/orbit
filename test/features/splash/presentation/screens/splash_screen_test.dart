@@ -10,6 +10,12 @@ import 'package:orbit/core/router/route_paths.dart';
 import 'package:orbit/core/theme/app_theme.dart';
 import 'package:orbit/core/utils/api_result.dart';
 import 'package:orbit/core/widgets/error_state.dart';
+import 'package:bloc_test/bloc_test.dart';
+import 'package:orbit/features/auth/domain/usecases/login_usecase.dart';
+import 'package:orbit/features/auth/presentation/cubits/google_sign_in/google_sign_in_cubit.dart';
+import 'package:orbit/features/auth/presentation/cubits/google_sign_in/google_sign_in_state.dart';
+import 'package:orbit/features/auth/presentation/cubits/login/login_cubit.dart';
+import 'package:orbit/features/auth/presentation/screens/login_screen.dart';
 import 'package:orbit/features/splash/domain/entities/splash_state_entity.dart';
 import 'package:orbit/features/splash/domain/usecases/check_startup_status_usecase.dart';
 import 'package:orbit/features/splash/presentation/constants/splash_animation_constants.dart';
@@ -20,19 +26,24 @@ import 'package:orbit/features/splash/presentation/widgets/splash_composition.da
 class MockCheckStartupStatusUseCase extends Mock
     implements CheckStartupStatusUseCase {}
 
-// Labels of the placeholder destinations in AppRouterRoutes (the widgets are
-// private), kept as constants so no test hunts a raw string.
-const String loginPlaceholderText = 'Login (Placeholder)';
+class MockLoginUseCase extends Mock implements LoginUseCase {}
+
+class MockGoogleSignInCubit extends MockCubit<GoogleSignInState>
+    implements GoogleSignInCubit {}
+
+// The home destination in AppRouterRoutes is still a private placeholder.
 const String homePlaceholderText = 'Home (Placeholder)';
 
 // Startup statuses from the routing decision table (FEATURE.md §7).
 const SplashStateEntity noAuthOnboardingSeen = SplashStateEntity(
   hasAuthToken: false,
   onboardingSeen: true,
+  hasPendingSignup: false,
 );
 const SplashStateEntity authOnboardingSeen = SplashStateEntity(
   hasAuthToken: true,
   onboardingSeen: true,
+  hasPendingSignup: false,
 );
 
 void main() {
@@ -56,6 +67,13 @@ void main() {
     // there for the life of the test.
     getIt.registerSingleton<SplashCubit>(cubit);
     addTearDown(() => getIt.unregister<SplashCubit>());
+    getIt.registerSingleton<LoginCubit>(LoginCubit(MockLoginUseCase()));
+    addTearDown(() => getIt.unregister<LoginCubit>());
+    final googleCubit = MockGoogleSignInCubit();
+    when(() => googleCubit.state).thenReturn(const GoogleSignInIdle());
+    when(() => googleCubit.stream).thenAnswer((_) => const Stream.empty());
+    getIt.registerSingleton<GoogleSignInCubit>(googleCubit);
+    addTearDown(() => getIt.unregister<GoogleSignInCubit>());
 
     final router = GoRouter(
       initialLocation: RoutePaths.splash,
@@ -104,7 +122,7 @@ void main() {
         );
 
         expect(find.byType(SplashScreen), findsOneWidget);
-        expect(find.text(loginPlaceholderText), findsNothing);
+        expect(find.byType(LoginScreen), findsNothing);
       },
     );
 
@@ -116,7 +134,7 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(find.byType(SplashScreen), findsNothing);
-        expect(find.text(loginPlaceholderText), findsOneWidget);
+        expect(find.byType(LoginScreen), findsOneWidget);
       },
     );
 
@@ -178,7 +196,7 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(find.byType(SplashScreen), findsNothing);
-        expect(find.text(loginPlaceholderText), findsOneWidget);
+        expect(find.byType(LoginScreen), findsOneWidget);
       },
     );
   });

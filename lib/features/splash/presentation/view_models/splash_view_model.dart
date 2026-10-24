@@ -6,6 +6,7 @@ class SplashViewModel extends Equatable {
     required this.nextRoute,
     required this.hasAuthToken,
     required this.onboardingSeen,
+    required this.hasPendingSignup,
   });
 
   /// The route to navigate to after splash completes.
@@ -17,6 +18,14 @@ class SplashViewModel extends Equatable {
   /// Whether onboarding was completed (for debugging/display).
   final bool onboardingSeen;
 
+  /// Whether an account is still awaiting approval.
+  final bool hasPendingSignup;
+
   @override
-  List<Object?> get props => [nextRoute, hasAuthToken, onboardingSeen];
+  List<Object?> get props => [
+    nextRoute,
+    hasAuthToken,
+    onboardingSeen,
+    hasPendingSignup,
+  ];
 }

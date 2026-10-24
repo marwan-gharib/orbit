@@ -18,7 +18,11 @@ void main() {
     useCase = CheckStartupStatusUseCase(repository);
   });
 
-  const tEntity = SplashStateEntity(hasAuthToken: true, onboardingSeen: false);
+  const tEntity = SplashStateEntity(
+    hasAuthToken: true,
+    onboardingSeen: false,
+    hasPendingSignup: false,
+  );
 
   test('should return entity when repository succeeds', () async {
     when(() => repository.checkStartupStatus())

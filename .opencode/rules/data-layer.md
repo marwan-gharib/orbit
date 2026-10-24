@@ -32,7 +32,7 @@
           `pageSize` and returns a `PagedResult<T>` (items, `hasMore`, next page/cursor).
           The Cubit keeps the accumulated list and the next page/cursor, renders `hasMore`,
           and never computes offsets or builds query params itself. `PagedResult<T>` lives in
-          `core/utils/`; create it there if it does not exist yet.
+          `core/utils/`.
 - DATA-8  Caching policy (TTL, stale-while-revalidate, invalidation) lives only in the
           repository implementation, using the cache abstraction from `core/local/cache/`.
           The UI never caches data.

@@ -16,7 +16,8 @@
            Widgets use `BlocBuilder`, `BlocSelector`, `BlocListener`, or `BlocConsumer`.
 - STATE-5  Every list/detail screen has explicit states: loading, success, empty, error
            (error carries a `Failure`, mapped to text per ERR-4). Naming:
-           `XInitial`, `XLoading`, `XSuccess`, `XEmpty`, `XError`.
+           `XInitial`, `XLoading`, `XSuccess`, `XEmpty`, `XError`. How the screen shows the
+           change: ANIM-4.
 - STATE-6  Async safety:
            - After every `await` in a Cubit, `if (isClosed) return;` before `emit`.
            - Cancel subscriptions and timers in `close()`.

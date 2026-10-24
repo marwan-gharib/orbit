@@ -33,6 +33,8 @@ extension AppContext on BuildContext {
     NetworkFailure(:final reason) => _networkText(this, reason),
     CancelledFailure() => t.errors.cancelled,
     UnauthorizedFailure() => t.errors.unauthorized,
+    SessionExpiredFailure() => t.errors.sessionExpired,
+    InvalidCredentialsFailure() => t.errors.invalidCredentials,
     ForbiddenFailure() => t.errors.forbidden,
     NotFoundFailure(:final statusCode) =>
       statusCode == 410 ? t.errors.gone : t.errors.notFound,

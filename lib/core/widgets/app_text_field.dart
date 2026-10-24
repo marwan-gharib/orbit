@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
+import 'package:orbit/core/animations/animations.dart';
+import 'package:orbit/core/i18n/strings.g.dart';
 import 'package:orbit/core/responsive/responsive.dart';
 import 'package:orbit/core/theme/extensions/colors_extension.dart';
 
@@ -17,6 +18,8 @@ class AppTextField extends StatefulWidget {
     this.errorText,
     this.keyboardType,
     this.textInputAction,
+    this.textCapitalization = TextCapitalization.none,
+    this.autofocus = false,
     this.enabled = true,
     this.readOnly = false,
     this.autofillHints,
@@ -40,6 +43,8 @@ class AppTextField extends StatefulWidget {
   final String? errorText;
   final TextInputType? keyboardType;
   final TextInputAction? textInputAction;
+  final TextCapitalization textCapitalization;
+  final bool autofocus;
   final bool enabled;
   final bool readOnly;
   final Iterable<String>? autofillHints;
@@ -78,12 +83,15 @@ class _AppTextFieldState extends State<AppTextField> {
     final colors = context.colors;
 
     return TextFormField(
+      onTapOutside: (_) => FocusManager.instance.primaryFocus?.unfocus(),
       controller: widget.controller,
       focusNode: _focusNode,
       obscureText: _obscureText,
       validator: widget.validator,
       keyboardType: widget.keyboardType,
       textInputAction: widget.textInputAction,
+      textCapitalization: widget.textCapitalization,
+      autofocus: widget.autofocus,
       enabled: widget.enabled,
       readOnly: widget.readOnly,
       autofillHints: widget.autofillHints,
@@ -106,15 +114,20 @@ class _AppTextFieldState extends State<AppTextField> {
             : null,
         suffixIcon: widget.obscureText
             ? IconButton(
-                icon: Icon(
-                  _obscureText ? Icons.visibility_off : Icons.visibility,
-                  color: colors.textSecondary,
-                  size: Responsive.adapt(24),
+                icon: AppAnimatedSwitcher(
+                  child: Icon(
+                    _obscureText ? Icons.visibility_off : Icons.visibility,
+                    key: ValueKey(_obscureText),
+                    color: colors.textSecondary,
+                    size: Responsive.adapt(24),
+                  ),
                 ),
                 onPressed: () {
                   setState(() => _obscureText = !_obscureText);
                 },
-                tooltip: _obscureText ? 'Show password' : 'Hide password',
+                tooltip: _obscureText
+                    ? context.t.app.a11y.showPassword
+                    : context.t.app.a11y.hidePassword,
               )
             : widget.suffixIcon,
         counterText: '',

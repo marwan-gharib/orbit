@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:orbit/core/config/app_env.dart';
 import 'package:orbit/core/di/injection_container.dart';
 import 'package:orbit/core/i18n/strings.g.dart';
 import 'package:orbit/core/responsive/responsive_scope.dart';
@@ -8,6 +9,7 @@ import 'package:orbit/core/theme/app_theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await AppEnv.load();
   await initDependencies();
   // ResponsiveScope binds/configures the scaling engine before the first
   // build and rebuilds the app on resize, so theme text/spacing/radius scale.

@@ -28,8 +28,8 @@
          New `Failure` subtypes are added only in `core/errors/`.
 - ERR-3  Consume results with `fold()`, never by unwrapping. The domain layer propagates
          `ApiResult` unchanged. The Cubit maps it to a state; widgets never see raw exceptions.
-- ERR-4  A `Failure` becomes user text through ONE shared mapping (extension in
-         `core/extensions/`, localized via slang). Never show `failure.toString()` or
-         `exception.message` to the user, never build error strings inline in a Cubit.
+- ERR-4  A `Failure` becomes user text through ONE shared mapping: `context.failureText(failure)`
+         (extension in `core/extensions/`, localized via slang). Never show `failure.toString()`
+         or `exception.message` to the user, never build error strings inline in a Cubit.
 - ERR-5  Global concerns (401 → refresh/logout, offline detection, retry, logging) live in
          core interceptors/services. A feature never re-implements them.

@@ -1,13 +1,17 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import 'package:orbit/core/constants/api_keys.dart';
 import 'package:orbit/core/errors/dio_error_handler.dart';
 import 'package:orbit/core/errors/exceptions.dart';
 import 'package:orbit/core/local/secure/secure_storage_client.dart';
 import 'package:orbit/core/network/base_api_client.dart';
 import 'package:orbit/core/network/interceptors/auth_interceptor.dart';
 import 'package:orbit/core/network/interceptors/error_interceptor.dart';
-import 'package:orbit/core/network/interceptors/locale_interceptor.dart';
 import 'package:orbit/core/network/interceptors/network_logging_interceptor.dart';
+import 'package:orbit/core/network/interceptors/token_refresh_interceptor.dart';
+import 'package:orbit/core/network/refresh/token_refresh_service.dart';
+import 'package:orbit/core/network/session/session_cleaner.dart';
+import 'package:orbit/core/network/session/session_expired_notifier.dart';
 
 /// Dio-backed [BaseApiClient]: callers receive the decoded body on success
 /// or an [AppException] subtype on failure — never a raw `DioException`.
@@ -22,16 +26,24 @@ final class DioApiClient implements BaseApiClient {
     required String baseUrl,
     required SecureStorageClient secureStorage,
     required String Function() localeProvider,
+    required TokenRefreshService tokenRefreshService,
+    required SessionCleaner sessionCleaner,
+    required SessionExpiredNotifier sessionExpiredNotifier,
     Duration connectTimeout = const Duration(seconds: 30),
     Duration receiveTimeout = const Duration(seconds: 30),
     Duration sendTimeout = const Duration(seconds: 30),
-  }) : _dio = _buildDio(
-         baseUrl: baseUrl,
-         secureStorage: secureStorage,
-         localeProvider: localeProvider,
-         connectTimeout: connectTimeout,
-         receiveTimeout: receiveTimeout,
-         sendTimeout: sendTimeout,
+  }) : this(
+         buildDio(
+           baseUrl: baseUrl,
+           secureStorage: secureStorage,
+           localeProvider: localeProvider,
+           tokenRefreshService: tokenRefreshService,
+           sessionCleaner: sessionCleaner,
+           sessionExpiredNotifier: sessionExpiredNotifier,
+           connectTimeout: connectTimeout,
+           receiveTimeout: receiveTimeout,
+           sendTimeout: sendTimeout,
+         ),
        );
 
   final Dio _dio;
@@ -41,13 +53,15 @@ final class DioApiClient implements BaseApiClient {
     String path, {
     Map<String, dynamic>? queryParameters,
     Map<String, String>? headers,
-    Map<String, String>? extra,
+    Map<String, Object>? extra,
+    Object? data,
   }) => _request(
     path,
     method: 'GET',
     queryParameters: queryParameters,
     headers: headers,
     extra: extra,
+    data: data,
   );
 
   @override
@@ -56,7 +70,7 @@ final class DioApiClient implements BaseApiClient {
     Object? data,
     Map<String, dynamic>? queryParameters,
     Map<String, String>? headers,
-    Map<String, String>? extra,
+    Map<String, Object>? extra,
   }) => _request(
     path,
     method: 'POST',
@@ -72,7 +86,7 @@ final class DioApiClient implements BaseApiClient {
     Object? data,
     Map<String, dynamic>? queryParameters,
     Map<String, String>? headers,
-    Map<String, String>? extra,
+    Map<String, Object>? extra,
   }) => _request(
     path,
     method: 'PUT',
@@ -88,7 +102,7 @@ final class DioApiClient implements BaseApiClient {
     Object? data,
     Map<String, dynamic>? queryParameters,
     Map<String, String>? headers,
-    Map<String, String>? extra,
+    Map<String, Object>? extra,
   }) => _request(
     path,
     method: 'PATCH',
@@ -104,7 +118,7 @@ final class DioApiClient implements BaseApiClient {
     Object? data,
     Map<String, dynamic>? queryParameters,
     Map<String, String>? headers,
-    Map<String, String>? extra,
+    Map<String, Object>? extra,
   }) => _request(
     path,
     method: 'DELETE',
@@ -122,7 +136,7 @@ final class DioApiClient implements BaseApiClient {
     Object? data,
     Map<String, dynamic>? queryParameters,
     Map<String, String>? headers,
-    Map<String, String>? extra,
+    Map<String, Object>? extra,
   }) async {
     try {
       final response = await _dio.request<dynamic>(
@@ -139,13 +153,19 @@ final class DioApiClient implements BaseApiClient {
     }
   }
 
-  static Dio _buildDio({
+  /// Builds the full stack (defaults + interceptors); test-visible so tests
+  /// can assert the static defaults and interceptor behavior deterministically.
+  @visibleForTesting
+  static Dio buildDio({
     required String baseUrl,
     required SecureStorageClient secureStorage,
     required String Function() localeProvider,
-    required Duration connectTimeout,
-    required Duration receiveTimeout,
-    required Duration sendTimeout,
+    required TokenRefreshService tokenRefreshService,
+    required SessionCleaner sessionCleaner,
+    required SessionExpiredNotifier sessionExpiredNotifier,
+    Duration connectTimeout = const Duration(seconds: 30),
+    Duration receiveTimeout = const Duration(seconds: 30),
+    Duration sendTimeout = const Duration(seconds: 30),
   }) {
     final dio = Dio(
       BaseOptions(
@@ -155,19 +175,28 @@ final class DioApiClient implements BaseApiClient {
         sendTimeout: sendTimeout,
         responseType: ResponseType.json,
         contentType: 'application/json; charset=utf-8',
-        headers: <String, dynamic>{Headers.acceptHeader: 'application/json'},
+        headers: <String, dynamic>{
+          Headers.acceptHeader: 'application/json',
+          // Static identity header set once here — every request carries it.
+          ApiKeys.clientTypeHeaderKey: ApiKeys.clientTypeHeaderValue,
+        },
         validateStatus: (status) =>
             status != null && status >= 200 && status < 300,
       ),
     );
-    // Order matters: onRequest runs top-down, onResponse/onError bottom-up,
-    // so logging first sees the final classified outcome.
+    // Order matters: onRequest, onResponse, and onError all run FIFO (0 to N-1).
     if (kDebugMode) {
       dio.interceptors.add(const NetworkLoggingInterceptor());
     }
     dio.interceptors.addAll(<Interceptor>[
-      LocaleInterceptor(localeProvider),
       AuthInterceptor(secureStorage),
+      TokenRefreshInterceptor(
+        dio: dio,
+        secureStorage: secureStorage,
+        refreshService: tokenRefreshService,
+        sessionCleaner: sessionCleaner,
+        sessionExpiredNotifier: sessionExpiredNotifier,
+      ),
       const ErrorInterceptor(),
     ]);
     return dio;

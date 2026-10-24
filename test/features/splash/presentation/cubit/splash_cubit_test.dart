@@ -16,7 +16,11 @@ class MockCheckStartupStatusUseCase extends Mock
 
 void main() {
   const tFailure = CacheFailure(message: 'Startup checks unavailable');
-  const tEntity = SplashStateEntity(hasAuthToken: true, onboardingSeen: false);
+  const tEntity = SplashStateEntity(
+    hasAuthToken: true,
+    onboardingSeen: false,
+    hasPendingSignup: false,
+  );
 
   late MockCheckStartupStatusUseCase checkStartupStatus;
   late Completer<ApiResult<SplashStateEntity>> checksCompleter;

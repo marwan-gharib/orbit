@@ -8,6 +8,7 @@ class SplashStateEntity extends Equatable {
   const SplashStateEntity({
     required this.hasAuthToken,
     required this.onboardingSeen,
+    required this.hasPendingSignup,
   });
 
   /// Whether a valid auth token exists in secure storage.
@@ -16,6 +17,9 @@ class SplashStateEntity extends Equatable {
   /// Whether the user has completed onboarding (cached flag).
   final bool onboardingSeen;
 
+  /// Whether an account was created and is still awaiting approval.
+  final bool hasPendingSignup;
+
   @override
-  List<Object?> get props => [hasAuthToken, onboardingSeen];
+  List<Object?> get props => [hasAuthToken, onboardingSeen, hasPendingSignup];
 }

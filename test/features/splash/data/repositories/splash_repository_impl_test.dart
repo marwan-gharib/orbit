@@ -19,9 +19,17 @@ void main() {
     repository = SplashRepositoryImpl(localDataSource);
   });
 
-  const tModel = StartupStatusModel(hasAuthToken: true, onboardingSeen: false);
+  const tModel = StartupStatusModel(
+    hasAuthToken: true,
+    onboardingSeen: false,
+    hasPendingSignup: false,
+  );
 
-  const tEntity = SplashStateEntity(hasAuthToken: true, onboardingSeen: false);
+  const tEntity = SplashStateEntity(
+    hasAuthToken: true,
+    onboardingSeen: false,
+    hasPendingSignup: false,
+  );
 
   test('should return entity when data source succeeds', () async {
     when(() => localDataSource.getStartupStatus())

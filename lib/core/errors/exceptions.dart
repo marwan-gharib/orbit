@@ -35,22 +35,11 @@ sealed class AppException implements Exception {
   @override
   String toString() {
     final buffer = StringBuffer(runtimeType);
-    final status = statusCode;
-    if (status != null) {
-      buffer.write('($status)');
-    }
+    if (statusCode != null) buffer.write('($statusCode)');
     buffer.write(': $message');
-    final server = serverMessage;
-    if (server != null) {
-      buffer.write(' | server: $server');
-    }
-    final code = errorCode;
-    if (code != null) {
-      buffer.write(' | code: $code');
-    }
-    if (cause != null) {
-      buffer.write(' | cause: $cause');
-    }
+    if (serverMessage != null) buffer.write(' | server: $serverMessage');
+    if (errorCode != null) buffer.write(' | code: $errorCode');
+    if (cause != null) buffer.write(' | cause: $cause');
     return buffer.toString();
   }
 }
@@ -114,6 +103,34 @@ final class UnauthorizedException extends AppException {
   const UnauthorizedException({
     super.message = 'The server rejected the credentials.',
     super.statusCode = 401,
+    super.serverMessage,
+    super.errorCode,
+    super.data,
+    super.cause,
+    super.stackTrace,
+  });
+}
+
+/// Refresh token was rejected by the backend (401/400), was absent, or the
+/// session was terminally revoked. Signals that the user must log in again.
+final class SessionExpiredException extends AppException {
+  const SessionExpiredException({
+    super.message = 'The session has expired and could not be refreshed.',
+    super.statusCode = 401,
+    super.serverMessage,
+    super.errorCode,
+    super.data,
+    super.cause,
+    super.stackTrace,
+  });
+}
+
+/// Internal exception thrown when a token refresh completes after the local
+/// session has already changed (e.g. user logged out or switched accounts).
+final class StaleSessionException extends AppException {
+  const StaleSessionException({
+    super.message = 'The token refresh completed after the session changed.',
+    super.statusCode,
     super.serverMessage,
     super.errorCode,
     super.data,

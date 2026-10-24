@@ -9,6 +9,12 @@ abstract final class RoutePaths {
   /// Login screen.
   static const String login = '/login';
 
+  /// Sign-up screen.
+  static const String signup = '/signup';
+
+  /// Pending-approval screen (account created, awaiting an admin decision).
+  static const String pending = '/pending';
+
   /// Home screen (main app after auth).
   static const String home = '/home';
 }

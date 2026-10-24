@@ -28,6 +28,12 @@ reading ~100 lines instead of scanning dozens of files.
          `docs/CORE_MAP.md`. Cross-feature dependencies are recorded in BOTH features'
          `FEATURE.md` (Depends on / Used by).
 
+- DOC-7  Docs obey FILE-1 too: `FEATURE.md` stays at 150 lines or fewer (DOC-5); `docs/CORE_MAP.md`,
+         `docs/FEATURES_INDEX.md`, and any README stay at 300 or fewer. When one nears the limit,
+         split it by area (e.g. `docs/core-map/<area>.md`) and keep the original file as the index.
+         Feature-only widgets are listed in `FEATURE.md` section 3 (WIDGET-2); a promoted widget moves
+         to `docs/CORE_MAP.md` (WIDGET-3).
+
 ## Index row format (`docs/FEATURES_INDEX.md`)
 
 `| <feature> | <one-line purpose> | <path to FEATURE.md> | <routes> | <depends on> |`
