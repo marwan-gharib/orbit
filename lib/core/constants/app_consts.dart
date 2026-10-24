@@ -4,6 +4,9 @@ abstract final class AppConsts {
   /// hold non-secret configuration — real secrets never go there.
   static const String envBaseUrlKey = 'BASE_URL';
 
+  /// Key of the Google Server Client ID in `.env`.
+  static const String envGoogleServerClientIdKey = 'GOOGLE_SERVER_CLIENT_ID';
+
   /// Secure-storage keys for the auth tokens (A2: tokens live ONLY in secure
   /// storage — never in the cache, never in logs, never inside cached user
   /// data). Shared by `AuthInterceptor` (core/network), the auth feature and
@@ -17,6 +20,9 @@ abstract final class AppConsts {
   /// Cache key for the work email of an account created but not yet approved.
   /// Read at startup so the router can resume the pending-approval flow.
   static const String pendingSignupEmailKey = 'pending_signup_email';
+
+  /// Cache key for the flag indicating whether pending signup was via Google SSO.
+  static const String pendingSignupGoogleKey = 'pending_signup_google';
 
   /// Minimum wait between manual approval checks on the pending screen.
   static const Duration pendingCheckCooldown = Duration(seconds: 30);

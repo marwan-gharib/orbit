@@ -8,21 +8,29 @@ import 'package:mocktail/mocktail.dart';
 
 import 'package:orbit/core/errors/failures.dart';
 import 'package:orbit/core/i18n/strings.g.dart';
+import 'package:orbit/core/router/pending_signup_session.dart';
 import 'package:orbit/core/router/route_names.dart';
 import 'package:orbit/core/router/route_paths.dart';
 import 'package:orbit/core/theme/app_theme.dart';
 import 'package:orbit/core/utils/api_result.dart';
 import 'package:orbit/core/widgets/app_button.dart';
+import 'package:orbit/features/auth/data/datasources/google/google_auth_client.dart';
 import 'package:orbit/features/auth/domain/entities/auth_session_entity.dart';
 import 'package:orbit/features/auth/domain/entities/permission_entity.dart';
 import 'package:orbit/features/auth/domain/entities/user_entity.dart';
 import 'package:orbit/features/auth/domain/enums/user_role.dart';
+import 'package:orbit/features/auth/domain/params/google_payload.dart';
 import 'package:orbit/features/auth/domain/params/login_params.dart';
 import 'package:orbit/features/auth/domain/usecases/login_usecase.dart';
+import 'package:orbit/features/auth/domain/usecases/sign_in_with_google_usecase.dart';
+import 'package:orbit/features/auth/presentation/cubits/google_sign_in/google_sign_in_cubit.dart';
 import 'package:orbit/features/auth/presentation/cubits/login/login_cubit.dart';
 import 'package:orbit/features/auth/presentation/screens/login_screen.dart';
+import 'package:orbit/features/auth/presentation/widgets/google_sign_in_button.dart';
 
 class MockLoginUseCase extends Mock implements LoginUseCase {}
+class MockSignInWithGoogleUseCase extends Mock implements SignInWithGoogleUseCase {}
+class MockGoogleAuthClient extends Mock implements GoogleAuthClient {}
 
 const tUser = User(
   firstName: 'Adam',
@@ -43,20 +51,47 @@ const tSession = AuthSession(
 void main() {
   setUpAll(() {
     registerFallbackValue(const LoginParams(email: '', password: ''));
+    registerFallbackValue(
+      const GooglePayload(
+        idToken: '',
+        email: '',
+        givenName: '',
+        familyName: '',
+        sub: '',
+        iss: '',
+      ),
+    );
   });
 
   /// Pumps [LoginScreen] under its real provider shape with a tiny router so
   /// `goNamed` targets resolve without pulling the whole app route table.
-  Future<void> pumpLogin(WidgetTester tester, LoginCubit cubit) async {
+  Future<void> pumpLogin(
+    WidgetTester tester,
+    LoginCubit cubit, {
+    GoogleSignInCubit? googleCubit,
+  }) async {
     addTearDown(cubit.close);
+    final effectiveGoogleCubit =
+        googleCubit ??
+        GoogleSignInCubit(
+          MockGoogleAuthClient(),
+          MockSignInWithGoogleUseCase(),
+        );
+    addTearDown(effectiveGoogleCubit.close);
+
     final router = GoRouter(
       initialLocation: RoutePaths.login,
       routes: [
         GoRoute(
           path: RoutePaths.login,
           name: RouteNames.login,
-          builder: (_, _) =>
-              BlocProvider.value(value: cubit, child: const LoginScreen()),
+          builder: (_, _) => MultiBlocProvider(
+            providers: [
+              BlocProvider.value(value: cubit),
+              BlocProvider.value(value: effectiveGoogleCubit),
+            ],
+            child: const LoginScreen(),
+          ),
         ),
         GoRoute(
           path: RoutePaths.home,
@@ -67,6 +102,15 @@ void main() {
           path: RoutePaths.signup,
           name: RouteNames.signup,
           builder: (_, _) => const Scaffold(body: Text('Signup destination')),
+        ),
+        GoRoute(
+          path: RoutePaths.pending,
+          name: RouteNames.pending,
+          builder: (_, state) => Scaffold(
+            body: Text(
+              'Pending destination: ${(state.extra as PendingSignupSession?)?.email}',
+            ),
+          ),
         ),
       ],
     );
@@ -158,11 +202,15 @@ void main() {
       await tester.tap(submitButton());
       await tester.pump();
 
-      final button = tester.widget<AppButton>(find.byType(AppButton));
+      final button = tester.widget<AppButton>(find.byType(AppButton).first);
       expect(button.isLoading, isTrue);
       expect(button.onPressed, isNull);
 
-      await tester.tap(find.byType(AppButton));
+      final googleButton =
+          tester.widget<GoogleSignInButton>(find.byType(GoogleSignInButton));
+      expect(googleButton.onPressed, isNull);
+
+      await tester.tap(find.byType(AppButton).first);
       await tester.pump();
       verify(() => useCase(any())).called(1);
 

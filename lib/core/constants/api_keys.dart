@@ -40,6 +40,15 @@ abstract final class ApiKeys {
   static const String statusKey = 'status';
 
   // ---------------------------------------------------------------------------
+  // Google SSO request wire keys.
+  // ---------------------------------------------------------------------------
+  static const String issKey = 'iss';
+  static const String subKey = 'sub';
+  static const String givenNameKey = 'given_name';
+  static const String familyNameKey = 'family_name';
+  static const String idTokenKey = 'id_token';
+
+  // ---------------------------------------------------------------------------
   // Error response body keys.
   // ---------------------------------------------------------------------------
   static const String errorMessageKey = 'message';

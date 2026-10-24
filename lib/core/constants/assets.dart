@@ -3,6 +3,9 @@ abstract final class Assets {
   /// Splash screen logo (transparent background PNG).
   static const String splashLogo =
       'assets/images/orbit_logo_whiting_backround.png';
+
+  /// Google brand logo for authentication.
+  static const String googleLogo = 'assets/images/google.png';
 }
 
 /// Layered onboarding illustration assets (400x400 SVG layers, one element per

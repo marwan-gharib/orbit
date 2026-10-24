@@ -474,6 +474,18 @@ class Translations$auth$login$en {
 	/// en: 'Couldn't sign you in'
 	String get errorTitle => 'Couldn\'t sign you in';
 
+	/// en: 'or'
+	String get orDivider => 'or';
+
+	/// en: 'Continue with Google'
+	String get googleSignIn => 'Continue with Google';
+
+	/// en: 'Signing in…'
+	String get googleSignInLoading => 'Signing in…';
+
+	/// en: 'Couldn't sign you in with Google'
+	String get googleSignInError => 'Couldn\'t sign you in with Google';
+
 	late final Translations$auth$login$a11y$en a11y = Translations$auth$login$a11y$en._(_root);
 }
 
@@ -549,6 +561,9 @@ class Translations$auth$pending$en {
 	/// en: 'Work email'
 	String get emailLabel => 'Work email';
 
+	/// en: 'Registered with Google'
+	String get registeredWithGoogle => 'Registered with Google';
+
 	/// en: 'Approval status'
 	String get statusLabel => 'Approval status';
 
@@ -590,6 +605,9 @@ class Translations$auth$login$a11y$en {
 
 	/// en: 'Sign in to your account'
 	String get submit => 'Sign in to your account';
+
+	/// en: 'Sign in with your Google account'
+	String get googleSignIn => 'Sign in with your Google account';
 }
 
 // Path: auth.signup.requirements
@@ -822,7 +840,12 @@ extension on Translations {
 			'auth.login.noAccount' => 'New to Orbit?',
 			'auth.login.createAccount' => 'Create an account',
 			'auth.login.errorTitle' => 'Couldn\'t sign you in',
+			'auth.login.orDivider' => 'or',
+			'auth.login.googleSignIn' => 'Continue with Google',
+			'auth.login.googleSignInLoading' => 'Signing in…',
+			'auth.login.googleSignInError' => 'Couldn\'t sign you in with Google',
 			'auth.login.a11y.submit' => 'Sign in to your account',
+			'auth.login.a11y.googleSignIn' => 'Sign in with your Google account',
 			'auth.signup.title' => 'Create your account',
 			'auth.signup.subtitle' => 'Tell us who you are. Your team will take it from there.',
 			'auth.signup.firstNameLabel' => 'First name',
@@ -852,6 +875,7 @@ extension on Translations {
 			'auth.pending.title' => 'Your account is on its way',
 			'auth.pending.subtitle' => 'An admin needs to approve your request before you can sign in.',
 			'auth.pending.emailLabel' => 'Work email',
+			'auth.pending.registeredWithGoogle' => 'Registered with Google',
 			'auth.pending.statusLabel' => 'Approval status',
 			'auth.pending.statuses.pending' => 'Pending approval',
 			'auth.pending.statuses.approved' => 'Approved',

@@ -9,23 +9,29 @@ import 'package:flutter/foundation.dart';
 /// across app launches.
 class PendingSignupSession extends ChangeNotifier {
   String? _email;
+  bool _registeredWithGoogle = false;
 
   /// Work email awaiting approval, or `null` when no signup is pending.
   String? get email => _email;
 
+  /// Whether the pending account was created via Google SSO.
+  bool get registeredWithGoogle => _registeredWithGoogle;
+
   bool get hasPendingSignup => _email != null;
 
   /// Starts (or replaces) the pending session for [email].
-  void start(String email) {
-    if (_email == email) return;
+  void start(String email, {bool registeredWithGoogle = false}) {
+    if (_email == email && _registeredWithGoogle == registeredWithGoogle) return;
     _email = email;
+    _registeredWithGoogle = registeredWithGoogle;
     notifyListeners();
   }
 
   /// Ends the pending session (approved, rejected, or a cleared auth session).
   void clear() {
-    if (_email == null) return;
+    if (_email == null && !_registeredWithGoogle) return;
     _email = null;
+    _registeredWithGoogle = false;
     notifyListeners();
   }
 }

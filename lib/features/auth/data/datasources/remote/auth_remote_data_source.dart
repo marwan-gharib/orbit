@@ -5,9 +5,11 @@ import 'package:orbit/core/errors/failures.dart';
 import 'package:orbit/core/network/base_api_client.dart';
 import 'package:orbit/core/utils/api_result.dart';
 
+import '../../../domain/params/google_payload.dart';
 import '../../../domain/params/login_params.dart';
 import '../../../domain/params/signup_params.dart';
 import '../../models/employee_status_response_model.dart';
+import '../../models/google_sso_response_model.dart';
 import '../../models/login_response_model.dart';
 import '../../models/signup_response_model.dart';
 
@@ -57,6 +59,29 @@ class AuthRemoteDataSource {
         extra: _publicRequest,
       );
       return Success(SignupResponseModel.fromJson(_asMap(body)));
+    } on Object catch (error, stackTrace) {
+      return ResultFailure(_failure(error, stackTrace, isLogin: false));
+    }
+  }
+
+  Future<ApiResult<GoogleSsoResponseModel>> signInWithGoogle(
+    GooglePayload payload,
+  ) async {
+    try {
+      final body = await _client.post(
+        Endpoints.authSsoMobile,
+        data: <String, Object>{
+          ApiKeys.issKey: payload.iss,
+          ApiKeys.subKey: payload.sub,
+          ApiKeys.emailKey: payload.email,
+          ApiKeys.givenNameKey: payload.givenName,
+          ApiKeys.familyNameKey: payload.familyName,
+          if (GoogleSsoResponseModel.sendIdToken)
+            ApiKeys.idTokenKey: payload.idToken,
+        },
+        extra: _publicRequest,
+      );
+      return Success(GoogleSsoResponseModel.fromJson(_asMap(body)));
     } on Object catch (error, stackTrace) {
       return ResultFailure(_failure(error, stackTrace, isLogin: false));
     }

@@ -63,5 +63,41 @@ void main() {
 
       expect(find.text(t.auth.pending.statuses.approved), findsOneWidget);
     });
+
+    testWidgets('should show Google badge instead of email when registeredWithGoogle is true', (
+      tester,
+    ) async {
+      await pumpWidget(
+        tester,
+        const PendingStatusCard(
+          email: 'google_user@orbit.app',
+          status: EmploymentStatus.pending,
+          lastCheckedAt: null,
+          registeredWithGoogle: true,
+        ),
+      );
+
+      expect(find.text(t.auth.pending.registeredWithGoogle), findsOneWidget);
+      expect(find.text(t.auth.pending.emailLabel), findsNothing);
+      expect(find.text('google_user@orbit.app'), findsOneWidget);
+    });
+
+    testWidgets('should show email when registeredWithGoogle is false', (
+      tester,
+    ) async {
+      await pumpWidget(
+        tester,
+        const PendingStatusCard(
+          email: 'standard_user@orbit.app',
+          status: EmploymentStatus.pending,
+          lastCheckedAt: null,
+          registeredWithGoogle: false,
+        ),
+      );
+
+      expect(find.text(t.auth.pending.registeredWithGoogle), findsNothing);
+      expect(find.text(t.auth.pending.emailLabel), findsOneWidget);
+      expect(find.text('standard_user@orbit.app'), findsOneWidget);
+    });
   });
 }

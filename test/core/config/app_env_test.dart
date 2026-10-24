@@ -10,34 +10,54 @@ void main() {
     dotenv.testLoad();
   });
 
-  test('should expose the base url when tests seed it directly', () {
-    AppEnv.debugSeed(baseUrl: 'https://test.local');
+  test('should expose values when tests seed them directly', () {
+    AppEnv.debugSeed(
+      baseUrl: 'https://test.local',
+      googleServerClientId: 'test-google-client-id',
+    );
 
     expect(AppEnv.isLoaded, isTrue);
     expect(AppEnv.baseUrl, 'https://test.local');
+    expect(AppEnv.googleServerClientId, 'test-google-client-id');
   });
 
   test(
-    'should throw when the base url is read before the environment loads',
+    'should throw when values are read before the environment loads',
     () {
       expect(() => AppEnv.baseUrl, throwsStateError);
+      expect(() => AppEnv.googleServerClientId, throwsStateError);
     },
   );
 
   group('load', () {
-    test('should read the base url from a seeded environment', () async {
+    test('should read values from a seeded environment', () async {
       dotenv.testLoad(
-        fileInput: '${AppConsts.envBaseUrlKey}=https://test.local',
+        fileInput:
+            '${AppConsts.envBaseUrlKey}=https://test.local\n'
+            '${AppConsts.envGoogleServerClientIdKey}=test-google-client-id',
       );
 
       await AppEnv.load();
 
       expect(AppEnv.isLoaded, isTrue);
       expect(AppEnv.baseUrl, 'https://test.local');
+      expect(AppEnv.googleServerClientId, 'test-google-client-id');
     });
 
     test('should throw when the base url key is missing', () async {
-      dotenv.testLoad(fileInput: 'SOME_OTHER_KEY=1');
+      dotenv.testLoad(
+        fileInput: '${AppConsts.envGoogleServerClientIdKey}=test-google-client-id',
+      );
+
+      await expectLater(AppEnv.load(), throwsStateError);
+
+      expect(AppEnv.isLoaded, isFalse);
+    });
+
+    test('should throw when the google client id key is missing', () async {
+      dotenv.testLoad(
+        fileInput: '${AppConsts.envBaseUrlKey}=https://test.local',
+      );
 
       await expectLater(AppEnv.load(), throwsStateError);
 
@@ -45,7 +65,23 @@ void main() {
     });
 
     test('should throw when the base url value is blank', () async {
-      dotenv.testLoad(fileInput: '${AppConsts.envBaseUrlKey}=   ');
+      dotenv.testLoad(
+        fileInput:
+            '${AppConsts.envBaseUrlKey}=   \n'
+            '${AppConsts.envGoogleServerClientIdKey}=test-google-client-id',
+      );
+
+      await expectLater(AppEnv.load(), throwsStateError);
+
+      expect(AppEnv.isLoaded, isFalse);
+    });
+
+    test('should throw when the google client id value is blank', () async {
+      dotenv.testLoad(
+        fileInput:
+            '${AppConsts.envBaseUrlKey}=https://test.local\n'
+            '${AppConsts.envGoogleServerClientIdKey}=   ',
+      );
 
       await expectLater(AppEnv.load(), throwsStateError);
 

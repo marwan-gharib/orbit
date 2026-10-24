@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-
+import 'package:orbit/core/constants/assets.dart';
 import 'package:orbit/core/i18n/strings.g.dart';
+import 'package:orbit/core/responsive/responsive.dart';
 import 'package:orbit/core/theme/app_spacing.dart';
 import 'package:orbit/core/theme/extensions/colors_extension.dart';
 import 'package:orbit/core/theme/extensions/text_styles_extension.dart';
@@ -22,6 +23,7 @@ class PendingStatusCard extends StatelessWidget {
     required this.status,
     required this.lastCheckedAt,
     this.firstName,
+    this.registeredWithGoogle = false,
     super.key,
   });
 
@@ -36,6 +38,9 @@ class PendingStatusCard extends StatelessWidget {
 
   /// First name from a successful check, when one has happened.
   final String? firstName;
+
+  /// Whether the account was created through Google SSO.
+  final bool registeredWithGoogle;
 
   @override
   Widget build(BuildContext context) {
@@ -67,11 +72,33 @@ class PendingStatusCard extends StatelessWidget {
             ),
             SizedBox(height: AppSpacing.lg),
           ],
-          Text(
-            t.auth.pending.emailLabel,
-            style: textStyles.labelMedium.copyWith(color: colors.textSecondary),
-          ),
-          SizedBox(height: AppSpacing.xxs),
+          if (registeredWithGoogle) ...[
+            Row(
+              children: [
+                ExcludeSemantics(
+                  child: Image.asset(
+                    Assets.googleLogo,
+                    width: Responsive.adapt(16),
+                    height: Responsive.adapt(16),
+                    fit: BoxFit.contain,
+                  ),
+                ),
+                SizedBox(width: AppSpacing.xs),
+                Text(
+                  t.auth.pending.registeredWithGoogle,
+                  style: textStyles.bodyMedium,
+                ),
+              ],
+            ),
+          ] else ...[
+            Text(
+              t.auth.pending.emailLabel,
+              style: textStyles.labelMedium.copyWith(
+                color: colors.textSecondary,
+              ),
+            ),
+            SizedBox(height: AppSpacing.xxs),
+          ],
           Text(email, style: textStyles.bodyMedium),
           SizedBox(height: AppSpacing.lg),
           Row(

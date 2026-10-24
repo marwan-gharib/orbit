@@ -1,21 +1,21 @@
 # Auth Feature
 
-> Last verified: 2026-10-23
+> Last verified: 2026-10-24
 > Path: `lib/features/auth/`
 
 ## 1 Purpose
-Authentication end to end: sign in with a persisted session, create a pending account
-that survives a restart, the three auth screens (login, signup, waiting for approval),
-and the approval check with its cooldown and terminal moment. The router uses the local
-session snapshot and the process-wide pending session to keep `/login`, `/signup` and
-`/pending` consistent.
+Authentication end to end: sign in with a persisted session, sign in / sign up with
+Google SSO ("Continue with Google"), create a pending account that survives a restart,
+the three auth screens (login, signup, waiting for approval), and the approval check
+with its cooldown and terminal moment. The router uses the local session snapshot and
+the process-wide pending session to keep `/login`, `/signup` and `/pending` consistent.
 
 ## 2 Screens & routes
 | Screen | Route | Entry | Exit |
 |--------|-------|-------|------|
-| `LoginScreen` | `/login` (`RouteNames.login`) | splash when signed out with no pending signup; footer link from signup; approved pending exit | success → `home` placeholder; footer → signup |
+| `LoginScreen` | `/login` (`RouteNames.login`) | splash when signed out with no pending signup; footer link from signup; approved pending exit | password/Google success → `home`; Google new user → `pending`; footer → signup |
 | `SignupScreen` | `/signup` (`RouteNames.signup`) | footer link from login; rejected pending exit | success → `pending`; footer → login |
-| `PendingScreen` | `/pending` (`RouteNames.pending`) | signup success; splash when a pending email is persisted; guard redirect | approved → login, rejected → signup, both after a 2 s moment |
+| `PendingScreen` | `/pending` (`RouteNames.pending`) | signup/Google new user success; splash when a pending email is persisted; guard redirect | approved → login, rejected → signup, both after a 2 s moment |
 
 All three use `AppPageTransition.fadeThrough` and navigate with `context.goNamed`
 (replacement only): no auth screen is pushed, so there is no back stack between them.
@@ -29,137 +29,95 @@ redirects to `/login`. The router listens to `PendingSignupSession`
 ## 3 File map
 | Layer | Key files (relative to feature root) | Responsibility |
 |-------|--------------------------------------|----------------|
-| presentation | screens/login_screen.dart | Sign-in form, validation, single BlocListener (success → home, failure → shake + haptic), inline banner |
+| presentation | screens/login_screen.dart | Sign-in form, password login & Google SSO buttons, mutual loading guard, listeners (home/pending/error shake) |
 | presentation | screens/signup_screen.dart | Five-field form, live password checklist/strength, server field errors, success → pending |
-| presentation | screens/pending_screen.dart | Email + status card, manual check, last-checked time, error/unchanged notices, terminal moment + exit timer |
+| presentation | screens/pending_screen.dart | Email/Google badge + status card, manual check, last-checked time, error/unchanged notices, terminal moment |
 | presentation | widgets/auth_page_scaffold.dart, auth_brand_header.dart, auth_error_banner.dart, auth_navigation_link.dart | Shared auth chrome: scroll-safe centered column, brand header, inline failure banner, footer link |
-| presentation | widgets/password_checklist.dart, password_rule_row.dart, password_rules.dart, password_strength_bar.dart | Id-based password policy drives both validator and live checklist; strength bar follows checklist progress |
-| presentation | widgets/pending_hero.dart, pending_stepper.dart, pending_status_card.dart, pending_moment.dart, pending_info_notice.dart, check_status_button.dart | Pending artwork, three-step progress, status/email card, terminal card, unchanged notice, check action with cooldown |
-| presentation | mappers/signup_field_errors_mapper.dart | `ValidationFailure` → inline field messages; unknown keys keep the generic banner |
-| presentation | mappers/employment_status_view.dart | Localized status label, badge severity and terminal check for `EmploymentStatus` |
-| presentation | constants/auth_layout_constants.dart | Responsive auth dimensions (hero, stepper, banner, moment, notice) |
-| presentation | cubits/login/, cubits/signup/, cubits/employee_status/ | Flow states (initial/loading/success/error), double-submit guards |
-| domain | entities/*.dart, enums/user_role.dart, enums/employment_status.dart | User, Permission, AuthSession, SignupResult, EmployeeStatusInfo, SessionInfo; typed wire-backed enums |
-| domain | params/login_params.dart, params/signup_params.dart | Request inputs |
-| domain | repositories/auth_repository.dart | Repository contract |
-| domain | usecases/*.dart (5) | Thin use cases over the repository |
-| data | datasources/remote/auth_remote_data_source.dart | The whole auth API: endpoints, verbs, wire bodies, GET-with-body, failure mapping |
-| data | datasources/local/auth_local_data_source.dart | Token persistence (secure storage only), cached user, pending email, session snapshot, rollback |
-| data | models/*.dart (6) | Hand-written JSON mapping with `ApiKeys` field names: `fromJson` where the payload arrives, `toJson` where it is persisted, `toEntity()` everywhere |
-| data | repositories/auth_repository_impl.dart | Orchestration: login persists, signup persists the pending email, logout clears regardless, status clears the cache on a terminal decision |
+| presentation | widgets/login_or_divider.dart, google_sign_in_button.dart | Animated "or continue with" divider and custom elevated Google SSO button |
+| presentation | widgets/pending_status_card.dart | Displays unmasked email or "Registered with Google" badge based on registration mode |
+| presentation | cubits/login/, cubits/google_sign_in/, cubits/signup/, cubits/employee_status/ | Flow states, double-submit guards, mutual disabling |
+| domain | entities/*.dart, google_sign_in_result.dart, enums/*.dart | User, Permission, AuthSession, SignupResult, GoogleSignInResult (LoggedIn/Registered) |
+| domain | params/login_params.dart, params/signup_params.dart, params/google_payload.dart | Request inputs and decoded Google JWT claims |
+| domain | repositories/auth_repository.dart | Repository contract including `signInWithGoogle` |
+| domain | usecases/*.dart (6) | Thin use cases over the repository |
+| data | datasources/google/google_auth_client.dart | GoogleSignIn v7 plugin isolation, token retrieval, cancellation mapping |
+| data | datasources/remote/auth_remote_data_source.dart | The whole auth API: login, signup, logout, employee status, Google SSO mobile |
+| data | datasources/local/auth_local_data_source.dart | Token persistence (secure storage), cached user, pending email + Google flag, rollback |
+| data | models/*.dart (7) | Hand-written JSON mapping: login, signup, employee status, session info, GoogleSsoResponseModel |
+| data | repositories/auth_repository_impl.dart | Orchestration: login/Google persistence, pending signup flag, rollback, session cleanup |
 
 ## 4 Entities & models
 | Entity | Key fields | Model (data) | Notes |
 |--------|------------|--------------|-------|
-| User | firstName, lastName, code, email, role, roleName, permissions | UserModel (+ PermissionModel) | `role` is the typed enum; raw role ids map through `UserRole.fromId`, unknown falls back to `unknown` |
-| AuthSession | accessToken, refreshToken, user | LoginResponseModel | Tokens never land in entities' persistence — the local DS writes them straight to secure storage |
+| User | firstName, lastName, code, email, role, roleName, permissions | UserModel (+ PermissionModel) | Typed role enum; unknown role id falls back to `unknown` |
+| AuthSession | accessToken, refreshToken, user | LoginResponseModel | Tokens stored strictly in secure storage |
 | SignupResult | firstName, lastName, email | SignupResponseModel | Echo only; no tokens, account starts implicitly `pending` |
-| EmployeeStatusInfo | firstName, lastName, status | EmployeeStatusResponseModel | `status` maps through `EmploymentStatus.fromValue` (case/whitespace-tolerant, `unknown` fallback) |
-| SessionInfo | isAuthenticated, user? | SessionInfoModel | Local-only routing snapshot; corrupt cached user is treated as absent |
+| GoogleSignInResult | LoggedIn(session) / Registered(signupResult) | GoogleSsoResponseModel | Discriminated union parsed by presence of `access_token` |
+| EmployeeStatusInfo | firstName, lastName, status | EmployeeStatusResponseModel | `status` mapped through `EmploymentStatus.fromValue` |
+| SessionInfo | isAuthenticated, user? | SessionInfoModel | Local-only routing snapshot |
 
 ## 5 Use cases
 | UseCase | Input | Output | Business rule (if any) |
 |---------|-------|--------|------------------------|
-| LoginUseCase | LoginParams | ApiResult<AuthSession> | Repository persists the session; persistence failure fails the login loudly (rollback already ran) |
-| SignupUseCase | SignupParams | ApiResult<SignupResult> | Repository persists the returned email as the pending signup; persistence failure fails signup loudly |
-| LogoutUseCase | — | ApiResult<void> | Remote revocation never blocks the local clear; the local clear also ends the pending email/session |
-| GetEmployeeStatusUseCase | — (reads the persisted pending email) | ApiResult<EmployeeStatusInfo> | A terminal decision clears the persisted pending email only; the in-memory session survives for the moment |
+| LoginUseCase | LoginParams | ApiResult<AuthSession> | Repository persists session; rollback on storage failure |
+| SignInWithGoogleUseCase | GooglePayload | ApiResult<GoogleSignInResult> | Persists session on login; persists email + google flag on signup |
+| SignupUseCase | SignupParams | ApiResult<SignupResult> | Repository persists email as pending signup |
+| LogoutUseCase | — | ApiResult<void> | Remote revocation never blocks local clear; clears tokens and pending |
+| GetEmployeeStatusUseCase | — | ApiResult<EmployeeStatusInfo> | Terminal decision clears persisted pending email |
 | GetSessionInfoUseCase | — | ApiResult<SessionInfo> | Never fails for missing data; missing means "signed out" |
 
 ## 6 API & storage
-Wire keys in `core/constants/api_keys.dart`, paths in `core/constants/endpoints.dart`
-(`Endpoints.authLogin/authSignup/authLogout/authEmployeeStatus`), storage keys in
-`core/constants/app_consts.dart`:
+Wire keys in `core/constants/api_keys.dart`, endpoints in `core/constants/endpoints.dart`,
+storage keys in `core/constants/app_consts.dart`:
 
 | Call | Method | Notes |
 |------|--------|-------|
-| `/api/auth/login/` | POST | body `email` + `password`; request opts out of the bearer token (`AuthInterceptor.requiresAuthExtra`); a 401 becomes `InvalidCredentialsFailure` (B4) |
-| `/api/auth/signup/` | POST | body `first_name`, `last_name`, `work_email` (NOT `email`), `password` |
-| `/api/auth/logout/` | POST | body `refresh`; called with the stored refresh token only if one exists |
-| `/api/auth/get_employee_status/` | GET with JSON body | `email` in the body — the unusual shape is isolated in `AuthRemoteDataSource` via the core `get(data)` seam |
+| `/api/auth/login/` | POST | body `email` + `password`; 401 becomes `InvalidCredentialsFailure` (B4) |
+| `/api/auth/sso_mobile/` | POST | body `iss`, `sub`, `email`, `given_name`, `family_name`, `id_token` (`sendIdToken=false` omits `id_token` from body) |
+| `/api/auth/signup/` | POST | body `first_name`, `last_name`, `work_email`, `password` |
+| `/api/auth/logout/` | POST | body `refresh`; called with stored refresh token |
+| `/api/auth/get_employee_status/` | GET with body | `email` in body; isolated in `AuthRemoteDataSource` |
 
-Storage: `access_token` + `refresh_token` in secure storage ONLY (never cache, never
-logs — the logging interceptor masks token values); cached user profile (no token
-fields) under `auth_cached_user` via `CacheService.writeJsonMap`; pending signup email
-under `pending_signup_email` so splash can resume the approval flow after a restart.
-The local data source mirrors that email into the core `PendingSignupSession`
-(`ChangeNotifier`) and clears both on sign-out; a terminal status check clears only the
-persisted copy so the pending screen can still play its moment.
+Storage: `access_token` + `refresh_token` in secure storage ONLY; cached user under
+`auth_cached_user` in cache; pending email under `pending_signup_email` and Google flag
+under `pending_signup_google`. Local data source mirrors them into `PendingSignupSession`.
 
 ## 7 State
-Cubit — reason: each flow is one usecase call per submission, no event
-transformation (STATE-1). Sealed Equatable states `LoginInitial/LoginLoading/
-LoginSuccess/LoginError` (same shape for signup and employee status). Each
-submission call is re-entrancy guarded (in-flight submissions are ignored; a new
-attempt is allowed after a failure). `isClosed` is checked before post-result emits.
-
-Presentation rules:
-- No screen-level `setState`; scoped `BlocSelector`/`BlocListener` and the password
-  controllers' listeners rebuild only the affected subtree. Login/signup side effects
-  live in one listener each (navigation, shake, haptics, server field mapping).
-- Pending entry performs NO automatic check (D6): it shows the email and "Last
-  checked: never" until the person taps Check status. The completion time is captured
-  in the screen and formatted with `MaterialLocalizations.formatTimeOfDay`.
-- `CheckStatusButton` owns a 15 s in-memory cooldown (`AppConsts.pendingCheckCooldown`)
-  that starts when a check completes, success or failure, and resets with the screen
-  instance. The Cubit's loading guard is the last defence against double submission.
-- A pending success shows the unchanged notice; a failure shows `AuthErrorBanner` with
-  `context.failureText` and still starts the cooldown; unknown stays on the screen.
-- Approved/rejected shows `PendingMoment` for `AppConsts.pendingMomentHold` (2 s), then
-  clears the in-memory session and replaces the route. The exit timer and haptics live
-  in the screen listener; the timer is cancelled on dispose. Login success → home;
-  signup success → pending.
-- Motion (ANIM-2), all from `core/animations`: login failure `ShakeWidget` (one-shot,
-  `AppDurations.slow`; skipped under reduced motion) plus the `FadeIn` banner
-  (`AppDurations.normal`/`AppCurves.enter`); signup rule markers cross-fade through
-  `AppAnimatedSwitcher` and the strength meter uses `AnimatedProgressBar` (core
-  defaults, instant under reduced motion); pending hero `IdleLoop` orbit
-  (`AppDurations.indeterminate`, linear, repeats, holds the settled frame under
-  reduced motion, ticks rebuild only the rotation transform, ticker disposed with the
-  route), one-shot `FadeIn`/`ScaleIn` for the terminal moment and `FadeIn` notices,
-  `AnimatedVisibility` for the cooldown hint. No feature owns an animation controller.
+Sealed Equatable states across all Cubits.
+- `GoogleSignInCubit`: `GoogleSignInIdle`, `GoogleSignInLoading`, `GoogleSignInAuthenticated`,
+  `GoogleSignInPending`, `GoogleSignInError`. Handles Google client cancellations gracefully (returns to Idle).
+- Mutual loading guard on `LoginScreen`: submit button and Google button are both disabled while
+  either `LoginCubit` or `GoogleSignInCubit` is loading.
+- Inline `AuthErrorBanner` and `ShakeWidget` surface both password and Google SSO failures.
 
 ## 8 DI
 `core/di/auth_injection.dart` — `initAuthModule`: data sources and repository
-(lazy singleton), five use cases (lazy singleton), three cubits (factory). The core
-container also registers the process-wide `PendingSignupSession` singleton; the router
-and the auth data source share that one instance. The route table resolves each Cubit
-and the session from GetIt.
+(lazy singleton), `GoogleAuthClient` (lazy singleton), use cases (lazy singleton),
+cubits (factory). Initializes GoogleSignIn with `serverClientId` from `AppEnv`. Restores
+pending signup session email and `registeredWithGoogle` flag at startup.
 
 ## 9 i18n
-`auth.login.*`, `auth.signup.*`, `auth.pending.*` in `assets/i18n/en.i18n.json`, plus
-shared `validators.*`. Validators return localized strings built from those keys; the
-password rule ids in `core/utils/field_rules.dart` drive both validation and the live
-checklist, so copy and rules cannot drift. English only for now; all copy goes through
-slang and no screen contains a user-facing literal.
+All user-facing text goes through slang (`assets/i18n/en.i18n.json`).
+Added keys for `orDivider`, `googleSignIn`, `googleSignInLoading`, `googleSignInError`,
+`a11y.googleSignIn`, and `registeredWithGoogle`. No hardcoded strings.
 
 ## 10 Tests
 `test/features/auth/` (mocktail + bloc_test):
-- **Enums**: `user_role_test.dart` (ids, unknown fallback), `employment_status_test.dart` (values, normalization, fallback).
-- **Models**: permission (round-trip), user (role mapping incl. B9 non-int, round-trip, toEntity), login (tokens + user, missing pieces throw), signup echo, employee status (nested user, unknown/missing status), session info snapshot.
-- **Use cases** ×5: repository passthrough (params identity, failures untouched).
-- **Remote datasource**: login test file (wire body + public extra, B4 reclass with serverMessage, network/validation passthrough, parsing failure) and main test file (signup wire keys + no-reclass, logout body, GET-with-body + nested parse, transport failures).
-- **Local datasource**: `auth_local_data_source_test.dart` — write order, no-token-keys-in-cache pin, rollback on every write stage (B6), clear, refresh-token read, session snapshot incl. corrupt-user degradation (B5). `auth_local_data_source_pending_test.dart` — pending email round-trip, write/read failures, cached-only vs full clear, and sign-in ending the pending flow.
-- **Repository impl**: login persists then returns entity; save failure propagates (B6); remote failures pass through without persisting; signup persists the pending email; logout B10 semantics — remote skipped without token or when the token read fails, cleared even on remote failure, clear failure returned; status reads the email, clears the cache only on approved/rejected, and maps/session snapshot.
-- **Cubits** ×3: initial state, [Loading, Success/Error], re-entrancy guard (completer-driven), post-failure resubmission, login carries `InvalidCredentialsFailure`.
-- **Presentation mappers**: `signup_field_errors_mapper_test.dart` (known keys, first message, unknown/empty fallback, banner decision); `employment_status_view_test.dart` (terminal set, localized labels, badge severity).
-- **Shared widgets**: brand header, error banner, navigation link, page scaffold, password checklist/rules/rule row/strength bar; pending cluster (hero, stepper, status card, moment, info notice, check-status cooldown) at widget level.
-- **Screens**: `login_screen_test.dart` (7) render, required fields, invalid email, inline banner, no duplicate submit while loading, success → home, footer → signup; `login_screen_validation_test.dart` (7) no errors while typing, unfocus + errors on a failed submit, errors persist until the next resubmit, next-key move, 3 layout surfaces. `signup_screen_test.dart` (9) render, required + name/password policy, mismatch, trimmed submit → pending, mapped field error inline, unmapped banner, loading guard, footer → login; `signup_screen_validation_test.dart` (10) same validation contract, checklist live mid-typing, mismatch persists until resubmit, server-error clearing; `pending_screen_test.dart` (6) entry state/no auto check/PopScope, check once + unchanged + last-checked + 15 s cooldown, failure banner, approved → login, rejected → signup, unknown stays.
-- **Core tests covering this feature's wiring**: `test/core/di/injection_container_test.dart` (auth registrations + factory scopes), splash datasource test pins the shared token/pending keys and mapper covers pending precedence, `test/core/config/app_env_test.dart` covers `.env` loading/fail-fast.
+- **Core / Utils**: `jwt_payload_decoder_test.dart` (12), `pending_signup_session_test.dart` (6), `app_env_test.dart` (7).
+- **Models**: `google_sso_response_model_test.dart` (6), permission, user, login, signup, status.
+- **Use cases**: `sign_in_with_google_usecase_test.dart` (3), login, signup, logout, status.
+- **Repository**: `auth_repository_impl_google_test.dart` (5) testing Google login persistence, signup pending persistence, failure propagation.
+- **Cubits**: `google_sign_in_cubit_test.dart` (7) covering idle, cancellation, client failure, login success, signup success, backend error, token decode error.
+- **Widgets**: `google_sign_in_button_test.dart` (3), `pending_status_card_test.dart` (5) covering Google badge vs email display.
+- **Screens**: `login_screen_test.dart` (7), `login_screen_google_test.dart` (6) covering divider/button rendering, tap action, mutual loading disabling, authenticated navigation, pending navigation, error banner. `login_screen_validation_test.dart` (7) across small phone, tablet, large text scale.
 
 ## 11 Known issues
-- A terminal status clear of the persisted pending email is best-effort: a cache failure
-  is ignored, but the in-memory flow still ends and the screen leaves normally.
-- `assets/animations/` is empty, so the terminal moments use core entrance widgets
-  (`FadeIn` + `ScaleIn`); the cards are ready to swap in a Lottie skin when assets exist.
-- Before the first check the screen knows only the email; the greeting appears once a
-  successful check returns the person's first name.
+- Google SSO is configured for Android only at this stage; iOS requires client ID and URL schemes.
+- A terminal status clear of the persisted pending email is best-effort.
+- `assets/animations/` is empty, so terminal moments use core entrance widgets (`FadeIn` + `ScaleIn`).
 
 ## 12 Changelog
-- 2026-10-22: Auth UI shipped — login, signup and pending-approval screens built on
-  core widgets/animations/responsive; shared auth widgets; validators and id-based
-  password rules; pending signup persistence + `PendingSignupSession`; auth route
-  guard and splash pending-aware routing; screen, mapper and widget tests.
-- 2026-10-21: Feature created — domain (entities/enums/params/repository/5 use cases), models, remote + local data sources, repository impl, three Cubits, DI module; core additions: error-body parser, `InvalidCredentialsFailure`, token log redaction, `AppEnv` (.env BASE_URL), `get(data)` seam + `X-Client-Type` header, first-of-name constants.
-- 2026-10-22: Review pass — states renamed to the STATE-5 naming, logout folds the token read instead of unwrapping (ERR-3), core `AppEnv`/`ErrorBodyParser` as `abstract final`, request header/extra names moved to `ApiKeys` and the log tag to `LogTags`.
-- 2026-10-23: Test pass — screen validation tests re-anchored to the shipped validator-on-submit behavior (no idle revalidation after `AutovalidateMode.onUserInteraction` was dropped); unit tests added for the pending widget cluster, password rule row and the status view mapper.
+- 2026-10-24: Google SSO ("Continue with Google") shipped for Android — `google_sign_in` v7 integration, JWT payload decoder, Google SSO mobile endpoint, GoogleSsoResponseModel discriminated union, GoogleSignInCubit, GoogleSignInButton, LoginOrDivider, mutual disabling, registeredWithGoogle badge on pending screen, full test suite.
+- 2026-10-23: Test pass — screen validation tests re-anchored to validator-on-submit; unit tests for pending widget cluster, password rules, status view mapper.
+- 2026-10-22: Auth UI shipped — login, signup and pending-approval screens; shared auth widgets; validators and password rules; pending signup persistence; auth route guard.
+- 2026-10-21: Feature created — domain, models, remote + local data sources, repository impl, three Cubits, DI module.

@@ -66,6 +66,7 @@ class AuthLocalDataSource {
       await _secureStorage.delete(AppConsts.refreshTokenKey);
       await _cache.delete(AppConsts.authUserCacheKey);
       await _cache.delete(AppConsts.pendingSignupEmailKey);
+      await _cache.delete(AppConsts.pendingSignupGoogleKey);
       return const Success<void>(null);
     } on Object catch (error, stackTrace) {
       return ResultFailure(ErrorMapper.toFailure(error, stackTrace));
@@ -101,18 +102,29 @@ class AuthLocalDataSource {
     }
   }
 
-  /// Persists the email of an account awaiting approval, then starts the
-  /// in-memory session. The session starts only after the write succeeds, so a
-  /// restart can never disagree with the cache.
-  Future<ApiResult<void>> savePendingSignupEmail(String email) async {
+  /// Persists the email and Google flag of an account awaiting approval,
+  /// then starts the in-memory session.
+  Future<ApiResult<void>> savePendingSignup(
+    String email, {
+    bool registeredWithGoogle = false,
+  }) async {
     try {
       await _cache.writeString(AppConsts.pendingSignupEmailKey, email);
-      _pendingSession.start(email);
+      if (registeredWithGoogle) {
+        await _cache.writeBool(AppConsts.pendingSignupGoogleKey, true);
+      } else {
+        await _cache.delete(AppConsts.pendingSignupGoogleKey);
+      }
+      _pendingSession.start(email, registeredWithGoogle: registeredWithGoogle);
       return const Success<void>(null);
     } on Object catch (error, stackTrace) {
       return ResultFailure(ErrorMapper.toFailure(error, stackTrace));
     }
   }
+
+  /// Legacy helper for standard email signup.
+  Future<ApiResult<void>> savePendingSignupEmail(String email) =>
+      savePendingSignup(email, registeredWithGoogle: false);
 
   /// The persisted pending-signup email, or `null` when none exists.
   Future<ApiResult<String?>> readPendingSignupEmail() async {
@@ -123,12 +135,21 @@ class AuthLocalDataSource {
     }
   }
 
-  /// Deletes the persisted email but keeps the in-memory session, so the
-  /// pending screen can finish its terminal moment after an approved or
-  /// rejected status check.
+  /// Reads whether the pending signup was registered via Google SSO.
+  Future<ApiResult<bool>> readPendingSignupGoogleFlag() async {
+    try {
+      final flag = await _cache.readBool(AppConsts.pendingSignupGoogleKey);
+      return Success(flag ?? false);
+    } on Object catch (error, stackTrace) {
+      return ResultFailure(ErrorMapper.toFailure(error, stackTrace));
+    }
+  }
+
+  /// Deletes the persisted email and Google flag but keeps the in-memory session.
   Future<ApiResult<void>> clearCachedPendingSignupEmail() async {
     try {
       await _cache.delete(AppConsts.pendingSignupEmailKey);
+      await _cache.delete(AppConsts.pendingSignupGoogleKey);
       return const Success<void>(null);
     } on Object catch (error, stackTrace) {
       return ResultFailure(ErrorMapper.toFailure(error, stackTrace));

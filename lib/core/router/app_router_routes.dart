@@ -11,6 +11,7 @@ import 'package:orbit/features/splash/presentation/cubit/splash_cubit.dart';
 import 'package:orbit/features/splash/presentation/screens/splash_screen.dart';
 
 import '../../features/auth/presentation/cubits/employee_status/employee_status_cubit.dart';
+import '../../features/auth/presentation/cubits/google_sign_in/google_sign_in_cubit.dart';
 import '../../features/auth/presentation/cubits/login/login_cubit.dart';
 import '../../features/auth/presentation/cubits/signup/signup_cubit.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
@@ -47,8 +48,11 @@ abstract final class AppRouterRoutes {
       path: RoutePaths.login,
       name: RouteNames.login,
       transition: AppPageTransition.fadeThrough,
-      builder: (_, _) => BlocProvider(
-        create: (_) => getIt<LoginCubit>(),
+      builder: (_, _) => MultiBlocProvider(
+        providers: [
+          BlocProvider(create: (_) => getIt<LoginCubit>()),
+          BlocProvider(create: (_) => getIt<GoogleSignInCubit>()),
+        ],
         child: const LoginScreen(),
       ),
     ),

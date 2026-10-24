@@ -119,8 +119,13 @@
       "noAccount": "New to Orbit?",
       "createAccount": "Create an account",
       "errorTitle": "Couldn't sign you in",
+      "orDivider": "or",
+      "googleSignIn": "Continue with Google",
+      "googleSignInLoading": "Signing in…",
+      "googleSignInError": "Couldn't sign you in with Google",
       "a11y": {
-        "submit": "Sign in to your account"
+        "submit": "Sign in to your account",
+        "googleSignIn": "Sign in with your Google account"
       }
     },
     "signup": {
@@ -161,6 +166,7 @@
       "title": "Your account is on its way",
       "subtitle": "An admin needs to approve your request before you can sign in.",
       "emailLabel": "Work email",
+      "registeredWithGoogle": "Registered with Google",
       "statusLabel": "Approval status",
       "statuses": {
         "pending": "Pending approval",

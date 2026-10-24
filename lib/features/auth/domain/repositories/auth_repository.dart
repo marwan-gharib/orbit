@@ -2,8 +2,10 @@ import 'package:orbit/core/utils/api_result.dart';
 
 import '../entities/auth_session_entity.dart';
 import '../entities/employee_status_info_entity.dart';
+import '../entities/google_sign_in_result.dart';
 import '../entities/session_info_entity.dart';
 import '../entities/signup_result_entity.dart';
+import '../params/google_payload.dart';
 import '../params/login_params.dart';
 import '../params/signup_params.dart';
 
@@ -13,6 +15,9 @@ abstract interface class AuthRepository {
   /// Signs in and persists the session (tokens + cached user). Fails loudly
   /// when persistence fails — the session is never half-saved.
   Future<ApiResult<AuthSession>> login(LoginParams params);
+
+  /// Authenticates using a Google identity payload.
+  Future<ApiResult<GoogleSignInResult>> signInWithGoogle(GooglePayload payload);
 
   /// Creates a pending account and persists its email so the approval flow
   /// resumes after a restart; nothing else is stored (no tokens arrive).

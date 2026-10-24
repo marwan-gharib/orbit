@@ -5,6 +5,9 @@ import 'package:mocktail/mocktail.dart';
 
 import 'package:orbit/core/i18n/strings.g.dart';
 import 'package:orbit/core/widgets/widgets.dart';
+import 'package:bloc_test/bloc_test.dart';
+import 'package:orbit/features/auth/presentation/cubits/google_sign_in/google_sign_in_cubit.dart';
+import 'package:orbit/features/auth/presentation/cubits/google_sign_in/google_sign_in_state.dart';
 import 'package:orbit/features/auth/domain/params/login_params.dart';
 import 'package:orbit/features/auth/domain/usecases/login_usecase.dart';
 import 'package:orbit/features/auth/presentation/cubits/login/login_cubit.dart';
@@ -13,6 +16,9 @@ import 'package:orbit/features/auth/presentation/screens/login_screen.dart';
 import '../../../../core/widgets/harness.dart';
 
 class MockLoginUseCase extends Mock implements LoginUseCase {}
+
+class MockGoogleSignInCubit extends MockCubit<GoogleSignInState>
+    implements GoogleSignInCubit {}
 
 void main() {
   setUpAll(() {
@@ -26,9 +32,20 @@ void main() {
     double textScaleFactor = 1,
   }) async {
     addTearDown(cubit.close);
+    final googleCubit = MockGoogleSignInCubit();
+    when(() => googleCubit.state).thenReturn(const GoogleSignInIdle());
+    when(() => googleCubit.stream).thenAnswer((_) => const Stream.empty());
+    addTearDown(googleCubit.close);
+
     await pumpApp(
       tester,
-      home: BlocProvider.value(value: cubit, child: const LoginScreen()),
+      home: MultiBlocProvider(
+        providers: [
+          BlocProvider<LoginCubit>.value(value: cubit),
+          BlocProvider<GoogleSignInCubit>.value(value: googleCubit),
+        ],
+        child: const LoginScreen(),
+      ),
       surfaceSize: surfaceSize,
       textScaleFactor: textScaleFactor,
     );

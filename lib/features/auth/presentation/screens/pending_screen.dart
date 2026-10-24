@@ -144,6 +144,8 @@ class _PendingScreenState extends State<PendingScreen> {
                                     status: status,
                                     firstName: info?.firstName,
                                     lastCheckedAt: lastChecked,
+                                    registeredWithGoogle:
+                                        widget.session.registeredWithGoogle,
                                   ),
                             ),
                             SizedBox(height: AppSpacing.lg),

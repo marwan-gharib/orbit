@@ -10,7 +10,10 @@ import 'package:orbit/core/router/route_paths.dart';
 import 'package:orbit/core/theme/app_theme.dart';
 import 'package:orbit/core/utils/api_result.dart';
 import 'package:orbit/core/widgets/error_state.dart';
+import 'package:bloc_test/bloc_test.dart';
 import 'package:orbit/features/auth/domain/usecases/login_usecase.dart';
+import 'package:orbit/features/auth/presentation/cubits/google_sign_in/google_sign_in_cubit.dart';
+import 'package:orbit/features/auth/presentation/cubits/google_sign_in/google_sign_in_state.dart';
 import 'package:orbit/features/auth/presentation/cubits/login/login_cubit.dart';
 import 'package:orbit/features/auth/presentation/screens/login_screen.dart';
 import 'package:orbit/features/splash/domain/entities/splash_state_entity.dart';
@@ -24,6 +27,9 @@ class MockCheckStartupStatusUseCase extends Mock
     implements CheckStartupStatusUseCase {}
 
 class MockLoginUseCase extends Mock implements LoginUseCase {}
+
+class MockGoogleSignInCubit extends MockCubit<GoogleSignInState>
+    implements GoogleSignInCubit {}
 
 // The home destination in AppRouterRoutes is still a private placeholder.
 const String homePlaceholderText = 'Home (Placeholder)';
@@ -63,6 +69,11 @@ void main() {
     addTearDown(() => getIt.unregister<SplashCubit>());
     getIt.registerSingleton<LoginCubit>(LoginCubit(MockLoginUseCase()));
     addTearDown(() => getIt.unregister<LoginCubit>());
+    final googleCubit = MockGoogleSignInCubit();
+    when(() => googleCubit.state).thenReturn(const GoogleSignInIdle());
+    when(() => googleCubit.stream).thenAnswer((_) => const Stream.empty());
+    getIt.registerSingleton<GoogleSignInCubit>(googleCubit);
+    addTearDown(() => getIt.unregister<GoogleSignInCubit>());
 
     final router = GoRouter(
       initialLocation: RoutePaths.splash,

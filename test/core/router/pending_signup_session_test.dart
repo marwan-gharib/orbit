@@ -45,6 +45,19 @@ void main() {
       expect(notifications, 1);
     });
 
+    test('should track registeredWithGoogle flag and clear it', () {
+      final session = PendingSignupSession();
+      expect(session.registeredWithGoogle, isFalse);
+
+      session.start('adam@orbit.app', registeredWithGoogle: true);
+      expect(session.email, 'adam@orbit.app');
+      expect(session.registeredWithGoogle, isTrue);
+
+      session.clear();
+      expect(session.email, isNull);
+      expect(session.registeredWithGoogle, isFalse);
+    });
+
     test('should not notify when clearing an empty session', () {
       final session = PendingSignupSession();
       var notifications = 0;

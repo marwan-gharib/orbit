@@ -6,8 +6,11 @@ import 'package:orbit/core/local/cache/cache_service.dart';
 import 'package:orbit/core/local/secure/secure_storage_client.dart';
 import 'package:orbit/core/network/base_api_client.dart';
 import 'package:orbit/core/router/pending_signup_session.dart';
+import 'package:orbit/features/auth/data/datasources/google/google_auth_client.dart';
 import 'package:orbit/features/auth/domain/repositories/auth_repository.dart';
+import 'package:orbit/features/auth/domain/usecases/sign_in_with_google_usecase.dart';
 import 'package:orbit/features/auth/presentation/cubits/employee_status/employee_status_cubit.dart';
+import 'package:orbit/features/auth/presentation/cubits/google_sign_in/google_sign_in_cubit.dart';
 import 'package:orbit/features/auth/presentation/cubits/login/login_cubit.dart';
 import 'package:orbit/features/auth/presentation/cubits/signup/signup_cubit.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -15,7 +18,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 void main() {
   setUp(() async {
     SharedPreferences.setMockInitialValues(<String, Object>{});
-    AppEnv.debugSeed(baseUrl: 'https://test.local');
+    AppEnv.debugSeed(
+      baseUrl: 'https://test.local',
+      googleServerClientId: 'test-google-client-id',
+    );
     await getIt.reset();
     await initDependencies();
   });
@@ -78,4 +84,29 @@ void main() {
       );
     },
   );
+
+  test('should register google auth client and sign in usecase', () {
+    expect(getIt.isRegistered<GoogleAuthClient>(), isTrue);
+    expect(getIt.isRegistered<SignInWithGoogleUseCase>(), isTrue);
+  });
+
+  test('should resolve a fresh google sign in cubit each time (factory scope)', () {
+    expect(
+      getIt<GoogleSignInCubit>(),
+      isNot(same(getIt<GoogleSignInCubit>())),
+    );
+  });
+
+  test('should resume a persisted pending signup with google flag at startup', () async {
+    await getIt.reset();
+    SharedPreferences.setMockInitialValues(<String, Object>{
+      AppConsts.pendingSignupEmailKey: 'adam@orbit.app',
+      AppConsts.pendingSignupGoogleKey: true,
+    });
+    await initDependencies();
+
+    final session = getIt<PendingSignupSession>();
+    expect(session.email, 'adam@orbit.app');
+    expect(session.registeredWithGoogle, isTrue);
+  });
 }

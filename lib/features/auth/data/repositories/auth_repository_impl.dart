@@ -3,14 +3,17 @@ import 'package:orbit/core/utils/api_result.dart';
 
 import '../../domain/entities/auth_session_entity.dart';
 import '../../domain/entities/employee_status_info_entity.dart';
+import '../../domain/entities/google_sign_in_result.dart';
 import '../../domain/entities/session_info_entity.dart';
 import '../../domain/entities/signup_result_entity.dart';
 import '../../domain/enums/employment_status.dart';
+import '../../domain/params/google_payload.dart';
 import '../../domain/params/login_params.dart';
 import '../../domain/params/signup_params.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../datasources/local/auth_local_data_source.dart';
 import '../datasources/remote/auth_remote_data_source.dart';
+import '../models/google_sso_response_model.dart';
 
 /// Implements [AuthRepository]: orchestration, persistence policy and error
 /// flow only — no business rules, no UI types (DATA-6).
@@ -33,6 +36,33 @@ class AuthRepositoryImpl implements AuthRepository {
         (failure) => ResultFailure(failure),
         (_) => Success(model.toEntity()),
       );
+    });
+  }
+
+  @override
+  Future<ApiResult<GoogleSignInResult>> signInWithGoogle(
+    GooglePayload payload,
+  ) async {
+    final result = await _remote.signInWithGoogle(payload);
+    return result.fold((failure) async => ResultFailure(failure), (model) async {
+      switch (model) {
+        case GoogleSsoLoginModel(:final loginResponse):
+          final saved = await _local.saveSession(loginResponse);
+          return saved.fold(
+            (failure) => ResultFailure(failure),
+            (_) => Success(GoogleLoggedIn(loginResponse.toEntity())),
+          );
+        case GoogleSsoSignupModel(:final signupResponse):
+          final entity = signupResponse.toEntity();
+          final saved = await _local.savePendingSignup(
+            entity.email,
+            registeredWithGoogle: true,
+          );
+          return saved.fold(
+            (failure) => ResultFailure(failure),
+            (_) => Success(GoogleRegistered(entity)),
+          );
+      }
     });
   }
 

@@ -12,4 +12,7 @@ abstract final class Endpoints {
   /// Check an account's employment status by email (GET with a JSON body —
   /// isolated in `AuthRemoteDataSource` so it can change in one place).
   static const String authEmployeeStatus = '/api/auth/get_employee_status/';
+
+  /// Mobile SSO endpoint for Google authentication.
+  static const String authSsoMobile = '/api/auth/sso_mobile/';
 }
