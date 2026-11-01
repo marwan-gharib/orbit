@@ -18,6 +18,7 @@ final class UserModel extends Equatable {
     required this.role,
     required this.roleName,
     required this.permissions,
+    this.id,
   });
 
   final String firstName;
@@ -27,6 +28,10 @@ final class UserModel extends Equatable {
   final UserRole role;
   final String roleName;
   final List<PermissionModel> permissions;
+
+  /// Numeric employee id (`user.id`); parsed defensively as nullable because
+  /// payloads cached before the field existed do not carry it.
+  final int? id;
 
   factory UserModel.fromJson(Map<String, dynamic> json) => UserModel(
     firstName: json[ApiKeys.firstNameKey] as String,
@@ -40,6 +45,7 @@ final class UserModel extends Equatable {
         : UserRole.unknown,
     roleName: json[ApiKeys.roleNameKey] as String? ?? '',
     permissions: _permissions(json[ApiKeys.permissionsKey]),
+    id: json[ApiKeys.idKey] is int ? json[ApiKeys.idKey] as int : null,
   );
 
   Map<String, dynamic> toJson() => <String, dynamic>{
@@ -52,6 +58,7 @@ final class UserModel extends Equatable {
     ApiKeys.permissionsKey: [
       for (final permission in permissions) permission.toJson(),
     ],
+    if (id != null) ApiKeys.idKey: id,
   };
 
   User toEntity() => User(
@@ -62,6 +69,7 @@ final class UserModel extends Equatable {
     role: role,
     roleName: roleName,
     permissions: [for (final permission in permissions) permission.toEntity()],
+    id: id,
   );
 
   static List<PermissionModel> _permissions(Object? raw) {
@@ -82,5 +90,6 @@ final class UserModel extends Equatable {
     role,
     roleName,
     permissions,
+    id,
   ];
 }

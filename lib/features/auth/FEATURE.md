@@ -1,6 +1,6 @@
 # Auth Feature
 
-> Last verified: 2026-10-24
+> Last verified: 2026-11-01
 > Path: `lib/features/auth/`
 
 ## 1 Purpose
@@ -42,14 +42,14 @@ redirects to `/login`. The router listens to `PendingSignupSession`
 | domain | usecases/*.dart (6) | Thin use cases over the repository |
 | data | datasources/google/google_auth_client.dart | GoogleSignIn v7 plugin isolation, token retrieval, cancellation mapping |
 | data | datasources/remote/auth_remote_data_source.dart | The whole auth API: login, signup, logout, employee status, Google SSO mobile |
-| data | datasources/local/auth_local_data_source.dart | Token persistence (secure storage), cached user, pending email + Google flag, rollback, implements core SessionCleaner, resets SessionExpiredNotifier on login, increments session generation on clearSession |
+| data | datasources/local/auth_local_data_source.dart | Token persistence (secure storage), cached user, pending email + Google flag, rollback, implements core SessionCleaner and CurrentEmployeeIdProvider, resets SessionExpiredNotifier on login, increments session generation on clearSession |
 | data | models/*.dart (7) | Hand-written JSON mapping: login, signup, employee status, session info, GoogleSsoResponseModel |
 | data | repositories/auth_repository_impl.dart | Orchestration: login/Google persistence, pending signup flag, rollback, session cleanup |
 
 ## 4 Entities & models
 | Entity | Key fields | Model (data) | Notes |
 |--------|------------|--------------|-------|
-| User | firstName, lastName, code, email, role, roleName, permissions | UserModel (+ PermissionModel) | Typed role enum; unknown role id falls back to `unknown` |
+| User | id (numeric employee id), firstName, lastName, code, email, role, roleName, permissions | UserModel (+ PermissionModel) | `id` is `user.id` from the login/SSO payload — the `employee_id` CRM writes send; typed role enum; unknown role id falls back to `unknown` |
 | AuthSession | accessToken, refreshToken, user | LoginResponseModel | Tokens stored strictly in secure storage |
 | SignupResult | firstName, lastName, email | SignupResponseModel | Echo only; no tokens, account starts implicitly `pending` |
 | GoogleSignInResult | LoggedIn(session) / Registered(signupResult) | GoogleSsoResponseModel | Discriminated union parsed by presence of `access_token` |
@@ -81,6 +81,10 @@ storage keys in `core/constants/app_consts.dart`:
 Storage: `access_token` + `refresh_token` in secure storage ONLY; cached user under
 `auth_cached_user` in cache; pending email under `pending_signup_email` and Google flag
 under `pending_signup_google`. Local data source mirrors them into `PendingSignupSession`.
+The cached user also carries `user.id` (numeric employee id); the core
+`CurrentEmployeeIdProvider` contract (implemented by the local data source, registered in
+`auth_injection.dart`) exposes it to other features. Profiles cached before `id` existed
+fail that lookup with an unauthorized failure and require one re-sign-in.
 
 ## 7 State
 Sealed Equatable states across all Cubits.
@@ -117,6 +121,7 @@ Added keys for `orDivider`, `googleSignIn`, `googleSignInLoading`, `googleSignIn
 - `assets/animations/` is empty, so terminal moments use core entrance widgets (`FadeIn` + `ScaleIn`).
 
 ## 12 Changelog
+- 2026-11-01: `user.id` (numeric employee id) parsed from the login/SSO payload, cached with the profile, and exposed through the core `CurrentEmployeeIdProvider` contract — CRM writes use it as `employee_id`. Sessions cached before the field existed need one re-sign-in.
 - 2026-10-24: Google SSO ("Continue with Google") shipped for Android — `google_sign_in` v7 integration, JWT payload decoder, Google SSO mobile endpoint, GoogleSsoResponseModel discriminated union, GoogleSignInCubit, GoogleSignInButton, LoginOrDivider, mutual disabling, registeredWithGoogle badge on pending screen, full test suite.
 - 2026-10-23: Test pass — screen validation tests re-anchored to validator-on-submit; unit tests for pending widget cluster, password rules, status view mapper.
 - 2026-10-22: Auth UI shipped — login, signup and pending-approval screens; shared auth widgets; validators and password rules; pending signup persistence; auth route guard.

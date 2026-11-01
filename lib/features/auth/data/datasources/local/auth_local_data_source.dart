@@ -1,11 +1,13 @@
 import 'package:orbit/core/constants/app_consts.dart';
 import 'package:orbit/core/constants/log_tags.dart';
 import 'package:orbit/core/errors/error_mapper.dart';
+import 'package:orbit/core/errors/failures.dart';
 import 'package:orbit/core/local/cache/cache_service.dart';
 import 'package:orbit/core/local/secure/secure_storage_client.dart';
 import 'package:orbit/core/network/session/session_cleaner.dart';
 import 'package:orbit/core/network/session/session_expired_notifier.dart';
 import 'package:orbit/core/router/pending_signup_session.dart';
+import 'package:orbit/core/services/current_employee_id_provider.dart';
 import 'package:orbit/core/utils/api_result.dart';
 import 'package:orbit/core/utils/logger.dart';
 
@@ -23,7 +25,7 @@ import '../../models/user_model.dart';
 ///
 /// Catches everything (Exception and Error): a storage failure must become a
 /// `Failure`, and a malformed cached payload must degrade, never crash.
-class AuthLocalDataSource implements SessionCleaner {
+class AuthLocalDataSource implements SessionCleaner, CurrentEmployeeIdProvider {
   AuthLocalDataSource({
     required this._cache,
     required this._secureStorage,
@@ -114,6 +116,20 @@ class AuthLocalDataSource implements SessionCleaner {
     } on Object catch (error, stackTrace) {
       return ResultFailure(ErrorMapper.toFailure(error, stackTrace));
     }
+  }
+
+  /// The signed-in employee's numeric id (login `user.id`), the value CRM
+  /// writes send as `employee_id`. A session cached before the field existed
+  /// (or an unreadable profile) requires a fresh sign-in.
+  @override
+  Future<ApiResult<int>> currentEmployeeId() async {
+    final id = (await _cachedUser())?.id;
+    if (id == null) {
+      return const ResultFailure(
+        UnauthorizedFailure(message: 'No signed-in employee id is available.'),
+      );
+    }
+    return Success(id);
   }
 
   /// Persists the email and Google flag of an account awaiting approval,
