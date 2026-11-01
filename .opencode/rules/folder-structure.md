@@ -60,3 +60,5 @@ testers_release_note.txt             # NOTES rules; project root
 File names are `snake_case.dart` with the suffixes `_entity`, `_params`, `_repository`,
 `_repository_impl`, `_usecase`, `_model`, `_mapper` (presentation only), `_remote_data_source`,
 `_local_data_source`, `_cubit`, `_state`, `_screen`, `_view_model`, `_injection`.
+A Bloc in `cubits/<name>/` uses `_bloc` for the holder, `_event` for its event
+class, `_state` for its state class (the folder stays `cubits/`).

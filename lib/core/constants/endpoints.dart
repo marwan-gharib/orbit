@@ -18,4 +18,21 @@ abstract final class Endpoints {
 
   /// Mobile SSO endpoint for Google authentication.
   static const String authSsoMobile = '/api/auth/sso_mobile/';
+
+  // ---------------------------------------------------------------------------
+  // CRM — interactions, customer notes and the opportunities view.
+  // ---------------------------------------------------------------------------
+
+  /// List/search/create interactions. PATCH updates one interaction; DELETE
+  /// carries `interaction_id` in the request BODY, not the URL.
+  static const String crmInteractions = '/crm/interactions/';
+
+  /// List (`?customer_id=`) and create customer notes.
+  static const String crmCustomerNotes = '/crm/customer-notes/';
+
+  /// Update/delete one note — note id in the path, not the body.
+  static String crmCustomerNoteById(int noteId) => '$crmCustomerNotes$noteId/';
+
+  /// Paged opportunities view (`page`, `page_size` plus filter queries).
+  static const String crmOpportunitiesView = '/crm/opportunities_view/';
 }

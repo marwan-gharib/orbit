@@ -14,6 +14,8 @@ import 'package:orbit/core/network/refresh/token_refresh_service_impl.dart';
 import 'package:orbit/core/network/session/session_cleaner.dart';
 import 'package:orbit/core/network/session/session_expired_notifier.dart';
 import 'package:orbit/core/router/pending_signup_session.dart';
+import 'package:orbit/core/services/crm_data_change_service.dart';
+import 'package:orbit/core/services/stream_crm_data_change_service.dart';
 
 /// Registers the cross-feature services every feature builds on, in
 /// dependency order: storage first, then the API client that talks to secure
@@ -58,5 +60,12 @@ Future<void> initCoreModule(GetIt getIt) async {
       sessionCleaner: getIt<SessionCleaner>(),
       sessionExpiredNotifier: getIt<SessionExpiredNotifier>(),
     ),
+  );
+
+  // CRM mutation broadcast (interactions/notes -> screen holders). One
+  // process-wide instance so a published change reaches every listening
+  // screen in the same run.
+  getIt.registerLazySingleton<CrmDataChangeService>(
+    () => StreamCrmDataChangeService(),
   );
 }

@@ -9,6 +9,7 @@ Update it whenever `core/` gains, loses, or changes a reusable piece (DOC-6).
 - `Assets` — core/constants/assets.dart — asset paths (`OnboardingSvgs` holds the layered onboarding illustration SVGs).
 - `AppLottieAssets` — core/constants/app_lottie_assets.dart — Lottie file paths (`assets/animations/`), consumed by `AppLottie`.
 - `AppConsts` — core/constants/app_consts.dart — other shared constants (storage keys, env names, durations...).
+- `DateFormats` — core/constants/date_formats.dart — wire date format patterns (`apiDate` `yyyy-MM-dd`).
 - `HeroTags` — core/constants/hero_tags.dart — the prefix that namespaces every `AppHero` flight tag.
 - `LogTags` — core/constants/log_tags.dart — `AppLogger` tags (`auth`), so a tag is never a literal at the call site.
 
@@ -18,6 +19,7 @@ Update it whenever `core/` gains, loses, or changes a reusable piece (DOC-6).
 - `RefreshDioClient.create` — core/network/refresh/refresh_dio_client.dart — minimal isolated Dio client (no interceptors) for token refresh calls.
 - `TokenRefreshService` — core/network/refresh/token_refresh_service.dart (+ impl) — executes refresh endpoint call, token rotation, and atomic secure storage update.
 - `SessionCleaner` — core/network/session/session_cleaner.dart — core interface for wiping local session data without feature coupling.
+- `CurrentEmployeeIdProvider` — core/services/current_employee_id_provider.dart — the signed-in employee id (`user.id`) as `ApiResult<int>`; implemented by the auth local data source over its cached profile, registered in `auth_injection.dart`.
 - `SessionExpiredNotifier` — core/network/session/session_expired_notifier.dart — signals session expiration and tracks generation counters against logout races.
 - Interceptors — core/network/interceptors/… — auth token (reads `AppConsts.accessTokenKey`, `requiresAuthExtra` opt-out — flag and header names in `ApiKeys`), token refresh (catches 401, single-flight refresh, retry, session expiry), logging (masks token values and Authorization headers before logging), error mapping.
 
@@ -36,6 +38,14 @@ Update it whenever `core/` gains, loses, or changes a reusable piece (DOC-6).
 - `PagedResult<T>` — core/utils/paged_result.dart
 - `Logger` — core/utils/logger.dart
 - `Validators` — core/utils/validators.dart
+
+## Domain / helpers
+- `InteractionType` — core/domain/enums/interaction_type.dart — lowercase wire interaction kinds with `unknown` fallback; shared by `interactions` and `opportunities` (embedded interactions).
+- `WireDates` — core/helpers/wire_dates.dart — CRM date-only wire handling: parse/normalize to a UTC calendar day (`tryParseDateOnly`, `parseDateOnly`) and format (`yyyy-MM-dd`, pattern in `DateFormats`).
+
+## Services
+- `CrmDataChange` (+ `CrmDataKind`) — core/services/crm_data_change.dart — one successful CRM mutation (kind + customer id + optional opportunity id); never serialized.
+- `CrmDataChangeService` (+ `StreamCrmDataChangeService` impl) — core/services/crm_data_change_service.dart / stream_crm_data_change_service.dart — in-memory broadcast of CRM mutations; repositories publish on success, screen holders subscribe and silently refetch; lazy singleton in `core_module.dart` (no replay, not persisted).
 
 ## Local storage
 - Secure storage abstraction — core/local/secure/secure_storage_client.dart (+ impl)
