@@ -17,4 +17,10 @@ abstract final class RoutePaths {
 
   /// Home screen (main app after auth).
   static const String home = '/home';
+
+  /// CRM shell route path.
+  static const String crm = '/crm';
+
+  /// CRM opportunity detail route path.
+  static const String crmOpportunityDetails = '/crm/opportunities/:id';
 }

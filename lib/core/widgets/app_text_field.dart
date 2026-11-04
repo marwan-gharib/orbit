@@ -25,6 +25,7 @@ class AppTextField extends StatefulWidget {
     this.autofillHints,
     this.onFieldSubmitted,
     this.onChanged,
+    this.minLines = 1,
     this.maxLines = 1,
     this.maxLength,
     this.inputFormatters,
@@ -50,6 +51,7 @@ class AppTextField extends StatefulWidget {
   final Iterable<String>? autofillHints;
   final void Function(String)? onFieldSubmitted;
   final void Function(String)? onChanged;
+  final int minLines;
   final int maxLines;
   final int? maxLength;
   final List<TextInputFormatter>? inputFormatters;
@@ -97,6 +99,7 @@ class _AppTextFieldState extends State<AppTextField> {
       autofillHints: widget.autofillHints,
       onFieldSubmitted: widget.onFieldSubmitted,
       onChanged: widget.onChanged,
+      minLines: widget.minLines,
       maxLines: widget.maxLines,
       maxLength: widget.maxLength,
       inputFormatters: widget.inputFormatters,

@@ -72,6 +72,10 @@ other constants in `core/constants/app_consts.dart`:
 
 `core/di/interactions_injection.dart` — `initInteractionsModule`: remote data source (lazy singleton), repository (lazy singleton), use cases (lazy singleton), holders (factory — one set per screen). Depends on `BaseApiClient`, `CrmDataChangeService` and `CurrentEmployeeIdProvider` from core. Wired into `injection_container.dart` after `initAuthModule`.
 
+## 7.1 Used by
+
+- `crm_shell` — consumes `InteractionsFeedView` in the CRM shell at `/crm`.
+
 ## 8 i18n
 
 None — no screens or user-facing text yet. All future screen text will go through slang.

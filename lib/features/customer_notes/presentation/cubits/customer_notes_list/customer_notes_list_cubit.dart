@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import 'package:orbit/core/errors/failures.dart';
 import 'package:orbit/core/services/crm_data_change.dart';
 
 import '../../../domain/entities/customer_note_entity.dart';
@@ -44,13 +45,64 @@ class CustomerNotesListCubit extends Cubit<CustomerNotesListState> {
     await _runQuery(customerId);
   }
 
-  /// Re-fetches the same customer's notes (silent refresh keeps data on
-  /// screen; failure keeps it and sets `refreshFailure`).
+  /// Re-fetches the same customer's notes. After data has loaded this is a
+  /// silent refresh: the previous notes stay on screen flagged
+  /// `isRefreshing`, and a failed refresh keeps them and sets
+  /// `refreshFailure`. Before any data exists it is a normal load.
   Future<void> refresh() async {
     final customerId = _customerId;
     if (customerId == null) return;
-    await _runQuery(customerId);
+    switch (state) {
+      case final CustomerNotesListSuccess current:
+        await _runSilentQuery(customerId, current);
+      case final CustomerNotesListEmpty current:
+        await _runSilentQuery(customerId, current);
+      case _:
+        await _runQuery(customerId);
+    }
   }
+
+  Future<void> _runSilentQuery(
+    int customerId,
+    CustomerNotesListState current,
+  ) async {
+    emit(_refreshingState(current));
+    final token = ++_queryToken;
+    final result = await _getCustomerNotes(customerId);
+    if (isClosed || token != _queryToken) return;
+    result.fold(
+      (failure) => emit(_refreshFailedState(current, failure)),
+      (loaded) => emit(_loadedState(loaded.notes, loaded.total)),
+    );
+  }
+
+  CustomerNotesListState _refreshingState(CustomerNotesListState current) =>
+      switch (current) {
+        CustomerNotesListSuccess(:final notes, :final total) =>
+          CustomerNotesListSuccess(
+            notes: notes,
+            total: total,
+            isRefreshing: true,
+          ),
+        CustomerNotesListEmpty() => const CustomerNotesListEmpty(
+          isRefreshing: true,
+        ),
+        _ => current,
+      };
+
+  CustomerNotesListState _refreshFailedState(
+    CustomerNotesListState current,
+    Failure failure,
+  ) => switch (current) {
+    CustomerNotesListSuccess(:final notes, :final total) =>
+      CustomerNotesListSuccess(
+        notes: notes,
+        total: total,
+        refreshFailure: failure,
+      ),
+    CustomerNotesListEmpty() => CustomerNotesListEmpty(refreshFailure: failure),
+    _ => current,
+  };
 
   Future<void> _runQuery(int customerId) async {
     emit(CustomerNotesListLoading());

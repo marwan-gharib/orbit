@@ -34,6 +34,7 @@ class OpportunitiesRepositoryImpl implements OpportunitiesRepository {
           items: entities,
           hasMore: hasMore,
           nextPage: hasMore ? page + 1 : null,
+          totalItems: response.count,
         ),
       );
     });

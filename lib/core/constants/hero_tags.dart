@@ -5,4 +5,10 @@ abstract final class HeroTags {
   /// feature's tag can never collide with the tag of a library widget that
   /// ships its own `Hero`.
   static const String prefix = 'orbit.hero.';
+
+  /// Opportunity detail flight tags.
+  static String opportunityTitle(int opportunityId) =>
+      '${prefix}opportunity_title_$opportunityId';
+  static String opportunityStatus(int opportunityId) =>
+      '${prefix}opportunity_status_$opportunityId';
 }

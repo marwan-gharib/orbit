@@ -25,14 +25,13 @@ class MockWatchNoteChangesUseCase extends Mock
 
 class MockCrmDataChangeService extends Mock implements CrmDataChangeService {}
 
-class MockAddCustomerNoteUseCase extends Mock implements AddCustomerNoteUseCase {}
+class MockAddCustomerNoteUseCase extends Mock
+    implements AddCustomerNoteUseCase {}
 
-class MockUpdateCustomerNoteUseCase
-    extends Mock
+class MockUpdateCustomerNoteUseCase extends Mock
     implements UpdateCustomerNoteUseCase {}
 
-class MockDeleteCustomerNoteUseCase
-    extends Mock
+class MockDeleteCustomerNoteUseCase extends Mock
     implements DeleteCustomerNoteUseCase {}
 
 /// Registers mocktail fallbacks once for all customer notes tests.
@@ -106,8 +105,4 @@ Map<String, dynamic> tCustomerNoteJson({
 };
 
 Map<String, dynamic> tNotesResponse(List<Map<String, dynamic>> notes) =>
-    <String, dynamic>{
-      'customer_id': 7,
-      'total': notes.length,
-      'notes': notes,
-    };
+    <String, dynamic>{'customer_id': 7, 'total': notes.length, 'notes': notes};

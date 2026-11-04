@@ -13,6 +13,7 @@ class AppColorsExtension extends ThemeExtension<AppColorsExtension> {
     required this.background,
     required this.surface,
     required this.surfaceVariant,
+    required this.surfaceContainerHighest,
     required this.surfaceElevated,
     required this.textPrimary,
     required this.textSecondary,
@@ -20,6 +21,7 @@ class AppColorsExtension extends ThemeExtension<AppColorsExtension> {
     required this.hint,
     required this.border,
     required this.borderStrong,
+    required this.outline,
     required this.primary,
     required this.primaryHover,
     required this.primaryActive,
@@ -51,6 +53,7 @@ class AppColorsExtension extends ThemeExtension<AppColorsExtension> {
   final Color background;
   final Color surface;
   final Color surfaceVariant;
+  final Color surfaceContainerHighest;
   final Color surfaceElevated;
 
   // Text and lines.
@@ -60,6 +63,7 @@ class AppColorsExtension extends ThemeExtension<AppColorsExtension> {
   final Color hint;
   final Color border;
   final Color borderStrong;
+  final Color outline;
 
   // Brand. `primary` is the text-safe interactive blue; hover/active ramp one
   // step brighter/darker in light mode and one step lighter in dark mode.
@@ -107,6 +111,7 @@ class AppColorsExtension extends ThemeExtension<AppColorsExtension> {
     background: AppColors.neutralNormal,
     surface: AppColors.neutralLight,
     surfaceVariant: AppColors.neutralNormalHover,
+    surfaceContainerHighest: AppColors.neutralNormalHover,
     surfaceElevated: AppColors.neutralLight,
     textPrimary: AppColors.secondaryDarker,
     textSecondary: AppColors.neutralDarker,
@@ -116,6 +121,7 @@ class AppColorsExtension extends ThemeExtension<AppColorsExtension> {
     // #6f7070 clears 3:1 against background, surface, AND the fill — #949595
     // fell to 2.86:1 on the scaffold background.
     borderStrong: AppColors.neutralDarkActive,
+    outline: AppColors.neutralNormalHover,
     primary: AppColors.primaryNormalHover,
     primaryHover: AppColors.primaryNormal,
     primaryActive: AppColors.primaryNormalActive,
@@ -147,6 +153,7 @@ class AppColorsExtension extends ThemeExtension<AppColorsExtension> {
     background: AppColors.secondaryDarker,
     surface: AppColors.secondaryDarkActive,
     surfaceVariant: AppColors.secondaryDarkHover,
+    surfaceContainerHighest: AppColors.secondaryDarkHover,
     surfaceElevated: AppColors.secondaryDark,
     textPrimary: AppColors.neutralLight,
     textSecondary: AppColors.neutralNormalActive,
@@ -154,6 +161,7 @@ class AppColorsExtension extends ThemeExtension<AppColorsExtension> {
     hint: AppColors.neutralDarkHover,
     border: AppColors.secondaryDark,
     borderStrong: AppColors.neutralDarkActive,
+    outline: AppColors.secondaryDark,
     primary: AppColors.primaryLightActive,
     primaryHover: AppColors.primaryLightHover,
     primaryActive: AppColors.primaryLight,
@@ -186,6 +194,7 @@ class AppColorsExtension extends ThemeExtension<AppColorsExtension> {
     Color? background,
     Color? surface,
     Color? surfaceVariant,
+    Color? surfaceContainerHighest,
     Color? surfaceElevated,
     Color? textPrimary,
     Color? textSecondary,
@@ -193,6 +202,7 @@ class AppColorsExtension extends ThemeExtension<AppColorsExtension> {
     Color? hint,
     Color? border,
     Color? borderStrong,
+    Color? outline,
     Color? primary,
     Color? primaryHover,
     Color? primaryActive,
@@ -223,6 +233,7 @@ class AppColorsExtension extends ThemeExtension<AppColorsExtension> {
       background: background ?? this.background,
       surface: surface ?? this.surface,
       surfaceVariant: surfaceVariant ?? this.surfaceVariant,
+      surfaceContainerHighest: surfaceContainerHighest ?? this.surfaceContainerHighest,
       surfaceElevated: surfaceElevated ?? this.surfaceElevated,
       textPrimary: textPrimary ?? this.textPrimary,
       textSecondary: textSecondary ?? this.textSecondary,
@@ -230,6 +241,7 @@ class AppColorsExtension extends ThemeExtension<AppColorsExtension> {
       hint: hint ?? this.hint,
       border: border ?? this.border,
       borderStrong: borderStrong ?? this.borderStrong,
+      outline: outline ?? this.outline,
       primary: primary ?? this.primary,
       primaryHover: primaryHover ?? this.primaryHover,
       primaryActive: primaryActive ?? this.primaryActive,
@@ -269,6 +281,9 @@ class AppColorsExtension extends ThemeExtension<AppColorsExtension> {
       surface: Color.lerp(surface, other.surface, t) ?? surface,
       surfaceVariant:
           Color.lerp(surfaceVariant, other.surfaceVariant, t) ?? surfaceVariant,
+      surfaceContainerHighest:
+          Color.lerp(surfaceContainerHighest, other.surfaceContainerHighest, t) ??
+              surfaceContainerHighest,
       surfaceElevated:
           Color.lerp(surfaceElevated, other.surfaceElevated, t) ??
           surfaceElevated,
@@ -281,6 +296,7 @@ class AppColorsExtension extends ThemeExtension<AppColorsExtension> {
       border: Color.lerp(border, other.border, t) ?? border,
       borderStrong:
           Color.lerp(borderStrong, other.borderStrong, t) ?? borderStrong,
+      outline: Color.lerp(outline, other.outline, t) ?? outline,
       primary: Color.lerp(primary, other.primary, t) ?? primary,
       primaryHover:
           Color.lerp(primaryHover, other.primaryHover, t) ?? primaryHover,

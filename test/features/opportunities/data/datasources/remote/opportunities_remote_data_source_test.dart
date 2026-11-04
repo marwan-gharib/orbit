@@ -34,10 +34,7 @@ void main() {
       ).thenAnswer((_) async => tPageResponseJson());
 
       final result = await dataSource.fetchOpportunitiesPage(
-        criteria: const OpportunitiesCriteria(
-          title: 'ERP',
-          customerId: 1,
-        ),
+        criteria: const OpportunitiesCriteria(title: 'ERP', customerId: 1),
         page: 2,
         pageSize: 10,
       );

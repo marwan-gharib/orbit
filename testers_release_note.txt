@@ -1,0 +1,71 @@
+What to test in this build
+
+NEW / CHANGED
+1. CRM Module entry: Home screen now shows a "CRM" button to enter the CRM module.
+   Try: From Home, tap the CRM button.
+   Expect: Navigates to /crm with Opportunities tab active, AppBar shows "CRM" with back button.
+
+2. CRM Shell tabbed interface: Two tabs — Opportunities and Interactions — with sliding pill indicator.
+   Try: Tap the Interactions tab, scroll, then tap back to Opportunities.
+   Expect: Pill slides smoothly; both tabs preserve their scroll position and state.
+
+3. CRM Opportunities tab: Full list with search, filters, stage chips, load-more.
+   Try: Search by title, filter by status, tap stage chips.
+   Expect: Debounced search (300ms), immediate filter chips, load-more with inline Retry on failure.
+
+4. CRM Interactions tab: Full feed with search, type filter, add/edit/delete interactions.
+   Try: Search interactions, filter by type, add a new interaction.
+   Expect: Feed loads, type chips filter, add sheet works, snackbar confirms save.
+
+5. Opportunity Detail from either tab: Hero transition from card or "Open opportunity" chip.
+   Try: Tap an opportunity card in Opportunities tab, or tap "Open opportunity" chip in Interactions feed.
+   Expect: Hero flight to detail screen; back preserves list state and scroll.
+
+6. Invalid opportunity ID handling: Non-numeric or missing IDs show a friendly error page.
+   Try: Navigate to /crm/opportunities/abc or /crm/opportunities/.
+   Expect: Error page with "Invalid opportunity ID" message and back button; no crash.
+
+7. Opportunity not found: Detail page shows not-found state for non-existent IDs.
+   Try: Navigate to /crm/opportunities/999999.
+   Expect: Detail page shows not-found state with back button; no crash.
+
+8. Cross-feature signal: Mutations in one tab silently refresh relevant data in other tabs/detail.
+   Try: Add an interaction in Interactions feed, then open an opportunity detail that shares the customer.
+   Expect: Detail's Interactions tab silently reloads with the new interaction.
+
+FIXED
+1. CRM Module entry: Home screen now shows a "CRM" button to enter the CRM module.
+   Try: From Home, tap the CRM button.
+   Expect: Navigates to /crm with Opportunities tab active, AppBar shows "CRM" with back button.
+
+2. CRM Shell tabbed interface: Two tabs — Opportunities and Interactions — with sliding pill indicator.
+   Try: Tap the Interactions tab, scroll, then tap back to Opportunities.
+   Expect: Pill slides smoothly; both tabs preserve their scroll position and state.
+
+3. CRM Opportunities tab: Full list with search, filters, stage chips, load-more.
+   Try: Search by title, filter by status, tap stage chips.
+   Expect: Debounced search (300ms), immediate filter chips, load-more with inline Retry on failure.
+
+4. CRM Interactions tab: Full feed with search, type filter, add/edit/delete interactions.
+   Try: Search interactions, filter by type, add a new interaction.
+   Expect: Feed loads, type chips filter, add sheet works, snackbar confirms save.
+
+5. Opportunity Detail from either tab: Hero transition from card or "Open opportunity" chip.
+   Try: Tap an opportunity card in Opportunities tab, or tap "Open opportunity" chip in Interactions feed.
+   Expect: Hero flight to detail screen; back preserves list state and scroll.
+
+6. Invalid opportunity ID handling: Non-numeric or missing IDs show a friendly error page.
+   Try: Navigate to /crm/opportunities/abc or /crm/opportunities/.
+   Expect: Error page with "Invalid opportunity ID" message and back button; no crash.
+
+7. Opportunity not found: Detail page shows not-found state for non-existent IDs.
+   Try: Navigate to /crm/opportunities/999999.
+   Expect: Detail page shows not-found state with back button; no crash.
+
+8. Cross-feature signal: Mutations in one tab silently refresh relevant data in other tabs/detail.
+   Try: Add an interaction in Interactions feed, then open an opportunity detail that shares the customer.
+   Expect: Detail's Interactions tab silently reloads with the new interaction.
+
+9. CRM Opportunities tab: Fixed rendering crash on small screens — the pinned search header no longer overflows.
+   Try: Open Opportunities tab on a small phone (360dp width) with text scale 1.5.
+   Expect: No "SliverGeometry is not valid" error; search header renders correctly.

@@ -33,4 +33,9 @@ abstract final class AppDurations {
   /// auto-dismisses. This is reading time, not motion: the one hold in this
   /// file that outlives the speed profile.
   static const Duration messageVisible = Duration(seconds: 4);
+
+  /// Long-form motion: highlight flash decay, extended count-ups, multi-part
+  /// check-draw plus burst. Reserved for moments that need more breathing room
+  /// than `slow`; never used inside scrolling lists.
+  static const Duration extraSlow = Duration(milliseconds: 1500);
 }

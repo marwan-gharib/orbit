@@ -13,8 +13,7 @@ import 'package:orbit/features/customer_notes/domain/params/update_customer_note
 
 import '../../customer_notes_test_mocks.dart';
 
-class _MockCustomerNotesRemoteDataSource
-    extends Mock
+class _MockCustomerNotesRemoteDataSource extends Mock
     implements CustomerNotesRemoteDataSource {}
 
 void main() {
@@ -37,72 +36,61 @@ void main() {
     repository = CustomerNotesRepositoryImpl(remote, changeService);
   });
 
-  test(
-    'getCustomerNotes sorts newest-first then id desc',
-    () async {
-      when(
-        () => remote.fetchCustomerNotes(any()),
-      ).thenAnswer((_) async => Success(
-        CustomerNotesResponseModel.fromJson(notesResponse([
-          tCustomerNoteJson(id: 1, date: '2026-10-31T13:36:00Z'),
-          tCustomerNoteJson(id: 2, date: '2026-10-31T13:36:45Z'),
-          tCustomerNoteJson(id: 3, date: '2026-10-31T13:36:45Z'),
-        ])),
-      ));
-
-      final result = await repository.getCustomerNotes(7);
-
-      expect(result.isSuccess, isTrue);
-      final notes = result.dataOrNull!.notes;
-      expect(notes.map((n) => n.noteId), [3, 2, 1]);
-      verifyNever(() => changeService.publish(any()));
-    },
-  );
-
-  test(
-    'addCustomerNote publishes CrmDataChange on success only',
-    () async {
-      when(
-        () => remote.addCustomerNote(any()),
-      ).thenAnswer((_) async => const Success(null));
-
-      final result = await repository.addCustomerNote(
-        const AddCustomerNoteParams(customerId: 7, noteText: 'New note.'),
-      );
-
-      expect(result.isSuccess, isTrue);
-      verify(
-        () => changeService.publish(
-          const CrmDataChange(kind: CrmDataKind.note, customerId: 7),
+  test('getCustomerNotes sorts newest-first then id desc', () async {
+    when(() => remote.fetchCustomerNotes(any())).thenAnswer(
+      (_) async => Success(
+        CustomerNotesResponseModel.fromJson(
+          notesResponse([
+            tCustomerNoteJson(id: 1, date: '2026-10-31T13:36:00Z'),
+            tCustomerNoteJson(id: 2, date: '2026-10-31T13:36:45Z'),
+            tCustomerNoteJson(id: 3, date: '2026-10-31T13:36:45Z'),
+          ]),
         ),
-      );
-    },
-  );
+      ),
+    );
 
-  test(
-    'addCustomerNote does not publish on failure',
-    () async {
-      when(
-        () => remote.addCustomerNote(any()),
-      ).thenAnswer(
-        (_) async => ResultFailure<void>(UnauthorizedFailure(message: 'x')),
-      );
+    final result = await repository.getCustomerNotes(7);
 
-      final result = await repository.addCustomerNote(
-        const AddCustomerNoteParams(customerId: 7, noteText: 'New note.'),
-      );
+    expect(result.isSuccess, isTrue);
+    final notes = result.dataOrNull!.notes;
+    expect(notes.map((n) => n.noteId), [3, 2, 1]);
+    verifyNever(() => changeService.publish(any()));
+  });
 
-      expect(result.isFailure, isTrue);
-      verifyNever(() => changeService.publish(any()));
-    },
-  );
+  test('addCustomerNote publishes CrmDataChange on success only', () async {
+    when(() => remote.addCustomerNote(any()))
+        .thenAnswer((_) async => const Success(null));
+
+    final result = await repository.addCustomerNote(
+      const AddCustomerNoteParams(customerId: 7, noteText: 'New note.'),
+    );
+
+    expect(result.isSuccess, isTrue);
+    verify(
+      () => changeService.publish(
+        const CrmDataChange(kind: CrmDataKind.note, customerId: 7),
+      ),
+    );
+  });
+
+  test('addCustomerNote does not publish on failure', () async {
+    when(() => remote.addCustomerNote(any())).thenAnswer(
+      (_) async => ResultFailure<void>(UnauthorizedFailure(message: 'x')),
+    );
+
+    final result = await repository.addCustomerNote(
+      const AddCustomerNoteParams(customerId: 7, noteText: 'New note.'),
+    );
+
+    expect(result.isFailure, isTrue);
+    verifyNever(() => changeService.publish(any()));
+  });
 
   test(
     'updateCustomerNote publishes CrmDataChange with customerId on success',
     () async {
-      when(
-        () => remote.updateCustomerNote(any()),
-      ).thenAnswer((_) async => const Success(null));
+      when(() => remote.updateCustomerNote(any()))
+          .thenAnswer((_) async => const Success(null));
 
       final result = await repository.updateCustomerNote(
         const UpdateCustomerNoteParams(noteId: 1, noteText: 'Updated.'),
@@ -121,9 +109,8 @@ void main() {
   test(
     'deleteCustomerNote publishes CrmDataChange with customerId on success',
     () async {
-      when(
-        () => remote.deleteCustomerNote(any()),
-      ).thenAnswer((_) async => const Success(null));
+      when(() => remote.deleteCustomerNote(any()))
+          .thenAnswer((_) async => const Success(null));
 
       final result = await repository.deleteCustomerNote(1, customerId: 7);
 

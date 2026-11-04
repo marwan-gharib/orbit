@@ -29,9 +29,7 @@ class MockCrmDataChangeService extends Mock implements CrmDataChangeService {}
 
 /// Registers mocktail fallbacks once for all opportunities tests.
 void registerOpportunitiesFallbacks() {
-  registerFallbackValue(
-    OpportunitiesCriteria(title: 'ERP', customerId: 1),
-  );
+  registerFallbackValue(OpportunitiesCriteria(title: 'ERP', customerId: 1));
   registerFallbackValue(
     GetOpportunitiesParams(
       criteria: const OpportunitiesCriteria(),
@@ -67,9 +65,7 @@ Opportunity tOpportunity({
   employee: tEmployee(),
 );
 
-OpportunityCustomer tCustomer({
-  int id = 1,
-}) => OpportunityCustomer(
+OpportunityCustomer tCustomer({int id = 1}) => OpportunityCustomer(
   customerId: id,
   customerCode: 'CUS-2026-9973',
   firstName: 'Omar',
@@ -86,10 +82,8 @@ OpportunityCustomer tCustomer({
   interactions: [],
 );
 
-OpportunityEmployee tEmployee() => OpportunityEmployee(
-  employeeId: 22,
-  employeeName: 'Omar Mohammed',
-);
+OpportunityEmployee tEmployee() =>
+    OpportunityEmployee(employeeId: 22, employeeName: 'Omar Mohammed');
 
 Map<String, dynamic> tOpportunityJson({
   int id = 1,

@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -14,7 +15,8 @@ import 'package:orbit/features/opportunities/presentation/cubits/opportunity_det
 
 import '../../../opportunities_test_mocks.dart';
 
-class _MockGetOpportunityUseCase extends Mock implements GetOpportunityUseCase {}
+class _MockGetOpportunityUseCase extends Mock
+    implements GetOpportunityUseCase {}
 
 class _MockWatchCrmChangesUseCase extends Mock
     implements WatchCrmChangesUseCase {}
@@ -30,20 +32,25 @@ void main() {
     getOpportunity = _MockGetOpportunityUseCase();
     watchCrmChanges = _MockWatchCrmChangesUseCase();
     changeService = MockCrmDataChangeService();
-    when(() => changeService.changes).thenAnswer((_) => Stream.value(
-      const CrmDataChange(kind: CrmDataKind.note, customerId: 7, opportunityId: 1),
-    ));
+    when(() => changeService.changes).thenAnswer(
+      (_) => Stream.value(
+        const CrmDataChange(
+          kind: CrmDataKind.note,
+          customerId: 7,
+          opportunityId: 1,
+        ),
+      ),
+    );
     when(() => watchCrmChanges()).thenAnswer((_) => changeService.changes);
   });
 
   OpportunityDetailsCubit newCubit({
     GetOpportunityUseCase? g,
     WatchCrmChangesUseCase? w,
-  }) =>
-      OpportunityDetailsCubit(
-        getOpportunity: g ?? getOpportunity,
-        watchCrmChanges: w ?? watchCrmChanges,
-      );
+  }) => OpportunityDetailsCubit(
+    getOpportunity: g ?? getOpportunity,
+    watchCrmChanges: w ?? watchCrmChanges,
+  );
 
   test('should have OpportunityDetailsInitial as the initial state', () {
     expect(newCubit().state, isA<OpportunityDetailsInitial>());
@@ -93,22 +100,20 @@ void main() {
     await cubit.load(1);
 
     changeService.publish(
-      const CrmDataChange(kind: CrmDataKind.note, customerId: 7, opportunityId: 1),
+      const CrmDataChange(
+        kind: CrmDataKind.note,
+        customerId: 7,
+        opportunityId: 1,
+      ),
     );
 
     await Future<void>.delayed(Duration.zero);
 
     expect(
       cubit.state,
-      isA<OpportunityDetailsSuccess>().having(
-        (s) => s.isRefreshing,
-        'isRefreshing',
-        isFalse,
-      ).having(
-        (s) => s.refreshFailure,
-        'refreshFailure',
-        isNull,
-      ),
+      isA<OpportunityDetailsSuccess>()
+          .having((s) => s.isRefreshing, 'isRefreshing', isFalse)
+          .having((s) => s.refreshFailure, 'refreshFailure', isNull),
     );
   });
 
@@ -120,7 +125,11 @@ void main() {
     await cubit.load(1);
 
     changeService.publish(
-      const CrmDataChange(kind: CrmDataKind.note, customerId: 7, opportunityId: 999),
+      const CrmDataChange(
+        kind: CrmDataKind.note,
+        customerId: 7,
+        opportunityId: 999,
+      ),
     );
 
     await Future<void>.delayed(Duration.zero);
@@ -143,7 +152,11 @@ void main() {
     await cubit.load(1);
 
     changeService.publish(
-      const CrmDataChange(kind: CrmDataKind.interaction, customerId: 7, opportunityId: 1),
+      const CrmDataChange(
+        kind: CrmDataKind.interaction,
+        customerId: 7,
+        opportunityId: 1,
+      ),
     );
 
     await Future<void>.delayed(Duration.zero);

@@ -13,8 +13,7 @@ import 'package:orbit/features/opportunities/domain/params/opportunities_criteri
 
 import '../../opportunities_test_mocks.dart';
 
-class _MockOpportunitiesRemoteDataSource
-    extends Mock
+class _MockOpportunitiesRemoteDataSource extends Mock
     implements OpportunitiesRemoteDataSource {}
 
 void main() {
@@ -37,9 +36,13 @@ void main() {
           page: any(named: 'page'),
           pageSize: any(named: 'pageSize'),
         ),
-      ).thenAnswer((_) async => Success(
-        OpportunitiesPageResponseModel.fromJson(tPageResponseJson(count: 6, next: '2')),
-      ));
+      ).thenAnswer(
+        (_) async => Success(
+          OpportunitiesPageResponseModel.fromJson(
+            tPageResponseJson(count: 6, next: '2'),
+          ),
+        ),
+      );
 
       final result = await repository.getOpportunities(
         const OpportunitiesCriteria(),
@@ -56,60 +59,59 @@ void main() {
     },
   );
 
-  test(
-    'getOpportunities hasMore false when next is null',
-    () async {
-      when(
-        () => remote.fetchOpportunitiesPage(
-          criteria: any(named: 'criteria'),
-          page: any(named: 'page'),
-          pageSize: any(named: 'pageSize'),
+  test('getOpportunities hasMore false when next is null', () async {
+    when(
+      () => remote.fetchOpportunitiesPage(
+        criteria: any(named: 'criteria'),
+        page: any(named: 'page'),
+        pageSize: any(named: 'pageSize'),
+      ),
+    ).thenAnswer(
+      (_) async => Success(
+        OpportunitiesPageResponseModel.fromJson(
+          tPageResponseJson(count: 1, next: null),
         ),
-      ).thenAnswer((_) async => Success(
-        OpportunitiesPageResponseModel.fromJson(tPageResponseJson(count: 1, next: null)),
-      ));
+      ),
+    );
 
-      final result = await repository.getOpportunities(
-        const OpportunitiesCriteria(),
-        page: 1,
-        pageSize: 10,
-      );
+    final result = await repository.getOpportunities(
+      const OpportunitiesCriteria(),
+      page: 1,
+      pageSize: 10,
+    );
 
-      expect(result.isSuccess, isTrue);
-      expect(result.dataOrNull!.hasMore, isFalse);
-      expect(result.dataOrNull!.nextPage, isNull);
-    },
-  );
+    expect(result.isSuccess, isTrue);
+    expect(result.dataOrNull!.hasMore, isFalse);
+    expect(result.dataOrNull!.nextPage, isNull);
+  });
 
-  test(
-    'getOpportunity returns first result when non-empty',
-    () async {
-      when(
-        () => remote.fetchOpportunity(any()),
-      ).thenAnswer((_) async => Success(
-        OpportunitiesPageResponseModel.fromJson(tPageResponseJson(count: 1, next: null)),
-      ));
+  test('getOpportunity returns first result when non-empty', () async {
+    when(() => remote.fetchOpportunity(any())).thenAnswer(
+      (_) async => Success(
+        OpportunitiesPageResponseModel.fromJson(
+          tPageResponseJson(count: 1, next: null),
+        ),
+      ),
+    );
 
-      final result = await repository.getOpportunity(1);
+    final result = await repository.getOpportunity(1);
 
-      expect(result.isSuccess, isTrue);
-      expect(result.dataOrNull!.opportunityId, 1);
-    },
-  );
+    expect(result.isSuccess, isTrue);
+    expect(result.dataOrNull!.opportunityId, 1);
+  });
 
-  test(
-    'getOpportunity returns NotFoundFailure when empty',
-    () async {
-      when(
-        () => remote.fetchOpportunity(any()),
-      ).thenAnswer((_) async => Success(
-        OpportunitiesPageResponseModel.fromJson(tPageResponseJson(count: 0, next: null, results: [])),
-      ));
+  test('getOpportunity returns NotFoundFailure when empty', () async {
+    when(() => remote.fetchOpportunity(any())).thenAnswer(
+      (_) async => Success(
+        OpportunitiesPageResponseModel.fromJson(
+          tPageResponseJson(count: 0, next: null, results: []),
+        ),
+      ),
+    );
 
-      final result = await repository.getOpportunity(999);
+    final result = await repository.getOpportunity(999);
 
-      expect(result.isFailure, isTrue);
-      expect(result.failureOrNull, isA<NotFoundFailure>());
-    },
-  );
+    expect(result.isFailure, isTrue);
+    expect(result.failureOrNull, isA<NotFoundFailure>());
+  });
 }

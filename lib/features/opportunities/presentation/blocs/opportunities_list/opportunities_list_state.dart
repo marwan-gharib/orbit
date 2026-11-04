@@ -36,6 +36,7 @@ final class OpportunitiesListSuccess extends OpportunitiesListState {
     required this.items,
     required this.hasMore,
     required this.nextPage,
+    required this.totalCount,
     this.isRefreshing = false,
     this.isLoadingMore = false,
     this.loadMoreFailure,
@@ -45,6 +46,10 @@ final class OpportunitiesListSuccess extends OpportunitiesListState {
   final List<Opportunity> items;
   final bool hasMore;
   final int? nextPage;
+
+  /// Total matching rows from the API envelope (`count`). Display-only —
+  /// paging logic never uses it.
+  final int totalCount;
   final bool isRefreshing;
   final bool isLoadingMore;
   final Failure? loadMoreFailure;
@@ -56,6 +61,7 @@ final class OpportunitiesListSuccess extends OpportunitiesListState {
     items,
     hasMore,
     nextPage,
+    totalCount,
     isRefreshing,
     isLoadingMore,
     loadMoreFailure,
@@ -67,15 +73,24 @@ final class OpportunitiesListSuccess extends OpportunitiesListState {
 final class OpportunitiesListEmpty extends OpportunitiesListState {
   const OpportunitiesListEmpty({
     required super.criteria,
+    required this.totalCount,
     this.isRefreshing = false,
     this.refreshFailure,
   });
 
+  /// Total matching rows from the API envelope (`count`). Display-only —
+  /// paging logic never uses it.
+  final int totalCount;
   final bool isRefreshing;
   final Failure? refreshFailure;
 
   @override
-  List<Object?> get props => [criteria, isRefreshing, refreshFailure];
+  List<Object?> get props => [
+    criteria,
+    totalCount,
+    isRefreshing,
+    refreshFailure,
+  ];
 }
 
 /// A full load failed; copy from `context.failureText`.

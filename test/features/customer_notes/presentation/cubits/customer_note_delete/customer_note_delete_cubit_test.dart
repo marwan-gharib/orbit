@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -23,9 +24,8 @@ void main() {
     deleteCustomerNote = _MockDeleteCustomerNoteUseCase();
   });
 
-  CustomerNoteDeleteCubit newCubit({
-    DeleteCustomerNoteUseCase? d,
-  }) => CustomerNoteDeleteCubit(d ?? deleteCustomerNote);
+  CustomerNoteDeleteCubit newCubit({DeleteCustomerNoteUseCase? d}) =>
+      CustomerNoteDeleteCubit(d ?? deleteCustomerNote);
 
   test('should have CustomerNoteDeleteInitial as the initial state', () {
     expect(newCubit().state, isA<CustomerNoteDeleteInitial>());
@@ -62,11 +62,9 @@ void main() {
 
     expect(
       cubit.state,
-      isA<CustomerNoteDeleteFailure>().having(
-        (s) => s.noteId,
-        'noteId',
-        note.noteId,
-      ).having((s) => s.failure, 'failure', isA<UnauthorizedFailure>()),
+      isA<CustomerNoteDeleteFailure>()
+          .having((s) => s.noteId, 'noteId', note.noteId)
+          .having((s) => s.failure, 'failure', isA<UnauthorizedFailure>()),
     );
   });
 
@@ -84,7 +82,8 @@ void main() {
     pending.complete(const Success(null));
     await first;
 
-    verify(() => deleteCustomerNote(any(), customerId: any(named: 'customerId')))
-        .called(1);
+    verify(
+      () => deleteCustomerNote(any(), customerId: any(named: 'customerId')),
+    ).called(1);
   });
 }

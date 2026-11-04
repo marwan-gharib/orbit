@@ -4,7 +4,6 @@ import 'package:mocktail/mocktail.dart';
 import 'package:orbit/features/interactions/domain/enums/interaction_type.dart';
 import 'package:orbit/core/errors/failures.dart';
 import 'package:orbit/core/utils/api_result.dart';
-import 'package:orbit/features/interactions/domain/entities/interaction_entity.dart';
 import 'package:orbit/features/interactions/domain/params/add_interaction_params.dart';
 import 'package:orbit/features/interactions/domain/params/update_interaction_params.dart';
 import 'package:orbit/features/interactions/presentation/cubits/interaction_form/interaction_form_cubit.dart';
@@ -31,44 +30,14 @@ void main() {
   });
 
   test('startAdd clears any editing context', () {
-    final interaction = Interaction(
-      interactionId: 4,
-      type: InteractionType.call,
-      subject: 'x',
-      description: 'y',
-      interactionDate: DateTime(2025),
-      customerId: 1,
-      employeeId: 2,
-      opportunityId: 2,
-    );
-    cubit.startEdit(interaction);
-    expect(
-      cubit.state,
-      isA<InteractionFormReady>().having(
-        (s) => s.existing,
-        'existing',
-        interaction,
-      ),
-    );
-
+    cubit.startEditWithContext(customerId: 1, opportunityId: 2);
     cubit.startAdd();
     expect(cubit.state, const InteractionFormReady(existing: null));
   });
 
-  test('startEdit prepares the form and captures the owning context', () {
-    final interaction = Interaction(
-      interactionId: 4,
-      type: InteractionType.call,
-      subject: 'x',
-      description: 'y',
-      interactionDate: DateTime(2025),
-      customerId: 1,
-      employeeId: 2,
-      opportunityId: 2,
-    );
-    cubit.startEdit(interaction);
-
-    expect(cubit.state, InteractionFormReady(existing: interaction));
+  test('startEditWithContext prepares the form and captures the owning context', () {
+    cubit.startEditWithContext(customerId: 1, opportunityId: 2);
+    expect(cubit.state, const InteractionFormReady(existing: null));
   });
 
   test('submitNew emits Submitting then Success on success', () async {
@@ -137,17 +106,7 @@ void main() {
   test(
     'submitUpdate emits Submitting then Success(isEdit: true) on success',
     () async {
-      final interaction = Interaction(
-        interactionId: 4,
-        type: InteractionType.call,
-        subject: 'x',
-        description: 'y',
-        interactionDate: DateTime(2025),
-        customerId: 7,
-        employeeId: 2,
-        opportunityId: 2,
-      );
-      cubit.startEdit(interaction);
+      cubit.startEditWithContext(customerId: 7, opportunityId: 2);
       when(() => updateUseCase(any(), context: any(named: 'context')))
           .thenAnswer((_) async => const Success<void>(null));
 
@@ -171,16 +130,7 @@ void main() {
 
   test('submitUpdate emits SubmitError on failure', () async {
     const failure = ServerFailure(message: 'down');
-    final interaction = Interaction(
-      interactionId: 4,
-      type: InteractionType.call,
-      subject: 'x',
-      description: 'y',
-      interactionDate: DateTime(2025),
-      customerId: 7,
-      employeeId: 2,
-    );
-    cubit.startEdit(interaction);
+    cubit.startEditWithContext(customerId: 7, opportunityId: 2);
     when(() => updateUseCase(any(), context: any(named: 'context')))
         .thenAnswer((_) async => const ResultFailure<void>(failure));
 

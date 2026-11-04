@@ -16,6 +16,7 @@ import 'package:orbit/core/network/session/session_expired_notifier.dart';
 import 'package:orbit/core/router/pending_signup_session.dart';
 import 'package:orbit/core/services/crm_data_change_service.dart';
 import 'package:orbit/core/services/stream_crm_data_change_service.dart';
+import 'package:orbit/core/services/url_launcher_service.dart';
 
 /// Registers the cross-feature services every feature builds on, in
 /// dependency order: storage first, then the API client that talks to secure
@@ -67,5 +68,11 @@ Future<void> initCoreModule(GetIt getIt) async {
   // screen in the same run.
   getIt.registerLazySingleton<CrmDataChangeService>(
     () => StreamCrmDataChangeService(),
+  );
+
+  // URL launcher abstraction over the `url_launcher` package; features call
+  // this instead of importing the package directly (testable with a fake).
+  getIt.registerLazySingleton<UrlLauncherService>(
+    () => UrlLauncherServiceImpl(),
   );
 }

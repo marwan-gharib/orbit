@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -34,11 +35,7 @@ void main() {
   CustomerNoteFormCubit newCubit({
     AddCustomerNoteUseCase? a,
     UpdateCustomerNoteUseCase? u,
-  }) =>
-      CustomerNoteFormCubit(
-        a ?? addCustomerNote,
-        u ?? updateCustomerNote,
-      );
+  }) => CustomerNoteFormCubit(a ?? addCustomerNote, u ?? updateCustomerNote);
 
   test('should have CustomerNoteFormInitial as the initial state', () {
     expect(newCubit().state, isA<CustomerNoteFormInitial>());
@@ -50,7 +47,11 @@ void main() {
 
     expect(
       cubit.state,
-      isA<CustomerNoteFormReady>().having((s) => s.existing, 'existing', isNull),
+      isA<CustomerNoteFormReady>().having(
+        (s) => s.existing,
+        'existing',
+        isNull,
+      ),
     );
   });
 
@@ -62,11 +63,7 @@ void main() {
 
     expect(
       cubit.state,
-      isA<CustomerNoteFormReady>().having(
-        (s) => s.existing,
-        'existing',
-        note,
-      ),
+      isA<CustomerNoteFormReady>().having((s) => s.existing, 'existing', note),
     );
   });
 
@@ -87,27 +84,30 @@ void main() {
     );
   });
 
-  test('submitNew should emit Submitting then SubmitError on failure', () async {
-    const failure = UnauthorizedFailure(message: 'no session');
-    when(() => addCustomerNote(any()))
-        .thenAnswer((_) async => ResultFailure<void>(failure));
+  test(
+    'submitNew should emit Submitting then SubmitError on failure',
+    () async {
+      const failure = UnauthorizedFailure(message: 'no session');
+      when(() => addCustomerNote(any()))
+          .thenAnswer((_) async => ResultFailure<void>(failure));
 
-    final cubit = newCubit();
-    cubit.startAdd();
+      final cubit = newCubit();
+      cubit.startAdd();
 
-    await cubit.submitNew(
-      const AddCustomerNoteParams(customerId: 7, noteText: 'New note.'),
-    );
+      await cubit.submitNew(
+        const AddCustomerNoteParams(customerId: 7, noteText: 'New note.'),
+      );
 
-    expect(
-      cubit.state,
-      isA<CustomerNoteFormSubmitError>().having(
-        (s) => s.failure,
-        'failure',
-        isA<UnauthorizedFailure>(),
-      ),
-    );
-  });
+      expect(
+        cubit.state,
+        isA<CustomerNoteFormSubmitError>().having(
+          (s) => s.failure,
+          'failure',
+          isA<UnauthorizedFailure>(),
+        ),
+      );
+    },
+  );
 
   test('submitUpdate should emit Submitting then Success', () async {
     when(() => updateCustomerNote(any(), customerId: any(named: 'customerId')))

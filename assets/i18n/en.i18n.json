@@ -197,5 +197,188 @@
         "checkStatus": "Check your approval status"
       }
     }
+  },
+  "crm": {
+      "title": "CRM",
+      "tabs": {
+        "opportunities": "Opportunities",
+        "interactions": "Interactions"
+      },
+      "editor": {
+        "titleAdd": "Log interaction",
+        "titleEdit": "Edit interaction",
+        "type": "Type",
+        "subject": "Subject",
+        "description": "Description",
+        "date": "Date",
+        "contactOptional": "Contact (optional)",
+        "contactNone": "None",
+        "typeCall": "Call",
+        "typeEmail": "Email",
+        "typeMeeting": "Meeting",
+        "submit": "Save",
+        "subjectRequired": "Subject is required",
+        "dateRequired": "Date is required",
+        "discardTitle": "Discard changes?",
+        "discardBody": "You have unsaved changes. Discard them?"
+      },
+      "common": {
+        "retry": "Retry",
+        "loading": "Loading…",
+        "clearFilters": "Clear filters",
+        "cancel": "Cancel",
+        "save": "Save",
+        "delete": "Delete",
+        "edit": "Edit",
+        "today": "Today",
+        "yesterday": "Yesterday",
+        "endOfList": "End of list",
+        "refreshFailedNotice": "Refresh failed — previous data kept",
+        "dismiss": "Dismiss",
+        "call": "Call",
+        "email": "Email",
+        "moreActions": "More actions",
+        "launchFailed": "Couldn't launch {app}. Try again later.",
+        "activeFilters": "{n} active filters",
+        "updated": "Updated",
+        "saved": "Saved",
+        "deleted": "Deleted",
+        "invalidId": "Invalid opportunity ID",
+        "back": "Back",
+        "notFound": "Not found",
+        "a11y": {
+          "search": "Search",
+          "clearSearch": "Clear search",
+          "filterButton": "Filters",
+          "chipSelected": "Selected"
+        }
+      },
+      "crmOpportunities": {
+        "searchHint": "Search opportunities by title",
+        "filterTitle": "Filter by stage",
+        "status": {
+          "all": "All",
+          "open": "Open",
+          "won": "Won",
+          "lost": "Lost"
+        },
+        "stage": {
+          "all": "All",
+          "lead": "Lead",
+          "qualified": "Qualified",
+          "proposal": "Proposal",
+          "negotiation": "Negotiation",
+          "closed": "Closed"
+        },
+        "card": {
+          "overdue": "Overdue",
+          "valueA11y": "Estimated value",
+          "probabilityA11y": "Probability"
+        },
+        "listEmpty": "No opportunities",
+        "listNoResults": "No opportunities match your filters",
+        "listOpportunityCountOne": "1 opportunity",
+        "listOpportunityCountOther": "{n} opportunities",
+        "detail": {
+          "tabs": {
+            "overview": "Overview",
+            "contacts": "Contacts",
+            "interactions": "Interactions",
+            "notes": "Notes"
+          },
+          "statusOpen": "Open",
+          "statusWon": "Won",
+          "statusLost": "Lost",
+          "lostReasonEmpty": "No reason recorded",
+          "facts": {
+            "created": "Created",
+            "expectedClose": "Expected close",
+            "closedAt": "Closed",
+            "owner": "Owner",
+            "leadSource": "Lead source",
+            "customerCode": "Customer code",
+            "company": "Company",
+            "address": "Address",
+            "phone": "Phone",
+            "email": "Email",
+            "stage": "Stage",
+            "probability": "Probability"
+          },
+          "contacts": {
+            "primary": "Primary",
+            "empty": "No contacts"
+          },
+          "contactsEmpty": "No contacts for this customer",
+          "interactionsEmpty": "No interactions logged",
+          "notesEmpty": "No notes yet",
+          "logIt": {
+            "callTitle": "Log this call?",
+            "emailTitle": "Log this email?",
+            "body": "Log this interaction under this opportunity?",
+            "log": "Log it",
+            "notNow": "Not now"
+          }
+        }
+      },
+      "crmInteractions": {
+        "searchHint": "Search interactions by subject or description",
+        "type": {
+          "all": "All",
+          "call": "Call",
+          "email": "Email",
+          "meeting": "Meeting"
+        },
+        "item": {
+          "noDescription": "No description",
+          "openOpportunity": "Opportunity"
+        },
+        "feedEmpty": "No interactions",
+        "feedEmptyMessage": "Interactions you add will appear here.",
+        "feedNoResults": "No interactions match your filters",
+        "loading": "Loading interactions…",
+        "edit": "Edit",
+        "delete": "Delete",
+        "interactionsEmpty": "No interactions logged",
+        "deleteConfirm": {
+          "title": "Delete interaction?",
+          "body": "This interaction will be removed permanently."
+        }
+      },
+      "crmNotes": {
+        "threadTitle": "Notes",
+        "countOne": "1 note",
+        "countOther": "{n} notes",
+        "loading": "Loading notes…",
+        "emptyMessage": "Notes you add for this customer will appear here.",
+        "composerLabel": "Note",
+        "composerHint": "Add a note…",
+        "send": "Send",
+        "sendA11y": "Send note",
+        "sending": "Sending note",
+        "sent": "Note sent",
+        "sendFailed": "Couldn't send the note. Try again.",
+        "showMore": "Show more",
+        "showLess": "Show less",
+        "discard": "Discard",
+        "moreActions": "Note actions",
+        "timestampA11y": "{relative}, {date}",
+        "refreshFailed": "Couldn't refresh notes. Showing the last loaded notes.",
+        "empty": "No notes yet",
+        "edit": "Edit note",
+        "delete": "Delete note",
+        "deleteConfirm": {
+          "title": "Delete note?",
+          "body": "This note will be removed permanently."
+        },
+        "relative": {
+          "now": "Just now",
+          "minuteAgo": "1 minute ago",
+          "minutesAgo": "{n} minutes ago",
+          "hourAgo": "1 hour ago",
+          "hoursAgo": "{n} hours ago",
+          "dayAgo": "1 day ago",
+          "daysAgo": "{n} days ago"
+        }
+      }
+    }
   }
-}

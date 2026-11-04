@@ -40,9 +40,7 @@ void main() {
       verify(
         () => client.get(
           any(that: equals(Endpoints.crmCustomerNotes)),
-          queryParameters: <String, dynamic>{
-            ApiKeys.customerIdKey: 7,
-          },
+          queryParameters: <String, dynamic>{ApiKeys.customerIdKey: 7},
           headers: any(named: 'headers'),
           extra: any(named: 'extra'),
         ),

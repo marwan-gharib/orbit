@@ -13,6 +13,19 @@ void main() {
       expect(find.text('Email'), findsOneWidget);
     });
 
+    testWidgets('should grow from minLines up to maxLines when set', (
+      tester,
+    ) async {
+      await pumpWidget(
+        tester,
+        const AppTextField(label: 'Note', minLines: 1, maxLines: 5),
+      );
+
+      final field = tester.widget<TextField>(find.byType(TextField));
+      expect(field.minLines, 1);
+      expect(field.maxLines, 5);
+    });
+
     testWidgets('should show hint when provided', (tester) async {
       await pumpWidget(
         tester,

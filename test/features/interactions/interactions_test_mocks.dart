@@ -33,9 +33,11 @@ class MockCrmDataChangeService extends Mock implements CrmDataChangeService {}
 
 class MockAddInteractionUseCase extends Mock implements AddInteractionUseCase {}
 
-class MockUpdateInteractionUseCase extends Mock implements UpdateInteractionUseCase {}
+class MockUpdateInteractionUseCase extends Mock
+    implements UpdateInteractionUseCase {}
 
-class MockDeleteInteractionUseCase extends Mock implements DeleteInteractionUseCase {}
+class MockDeleteInteractionUseCase extends Mock
+    implements DeleteInteractionUseCase {}
 
 /// Registers mocktail fallbacks once for all interactions tests.
 void registerInteractionsFallbacks() {

@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -26,9 +27,7 @@ void main() {
     getOpportunities = _MockGetOpportunitiesUseCase();
   });
 
-  OpportunitiesListBloc newBloc({
-    GetOpportunitiesUseCase? g,
-  }) =>
+  OpportunitiesListBloc newBloc({GetOpportunitiesUseCase? g}) =>
       OpportunitiesListBloc(
         getOpportunities: g ?? getOpportunities,
         pageSize: 10,
@@ -40,12 +39,11 @@ void main() {
   });
 
   test('should emit Loading then Success on first load', () async {
-    when(() => getOpportunities(any()))
-        .thenAnswer((_) async => Success(PagedResult(
-          items: [tOpportunity()],
-          hasMore: false,
-          nextPage: null,
-        )));
+    when(() => getOpportunities(any())).thenAnswer(
+      (_) async => Success(
+        PagedResult(items: [tOpportunity()], hasMore: false, nextPage: null),
+      ),
+    );
 
     final bloc = newBloc();
     bloc.add(OpportunitiesListStarted());
@@ -62,12 +60,10 @@ void main() {
   });
 
   test('should emit Loading then Empty when no results', () async {
-    when(() => getOpportunities(any()))
-        .thenAnswer((_) async => Success(const PagedResult(
-          items: [],
-          hasMore: false,
-          nextPage: null,
-        )));
+    when(() => getOpportunities(any())).thenAnswer(
+      (_) async =>
+          Success(const PagedResult(items: [], hasMore: false, nextPage: null)),
+    );
 
     final bloc = newBloc();
     bloc.add(OpportunitiesListStarted());
@@ -78,8 +74,9 @@ void main() {
 
   test('should emit Loading then Error on failure', () async {
     const failure = UnauthorizedFailure(message: 'no session');
-    when(() => getOpportunities(any()))
-        .thenAnswer((_) async => ResultFailure<PagedResult<Opportunity>>(failure));
+    when(
+      () => getOpportunities(any()),
+    ).thenAnswer((_) async => ResultFailure<PagedResult<Opportunity>>(failure));
 
     final bloc = newBloc();
     bloc.add(OpportunitiesListStarted());
@@ -99,11 +96,13 @@ void main() {
     var callCount = 0;
     when(() => getOpportunities(any())).thenAnswer((_) async {
       callCount++;
-      return Success(PagedResult(
-        items: [tOpportunity(id: callCount)],
-        hasMore: callCount < 2,
-        nextPage: callCount < 2 ? callCount + 1 : null,
-      ));
+      return Success(
+        PagedResult(
+          items: [tOpportunity(id: callCount)],
+          hasMore: callCount < 2,
+          nextPage: callCount < 2 ? callCount + 1 : null,
+        ),
+      );
     });
 
     final bloc = newBloc();
@@ -129,57 +128,56 @@ void main() {
     bloc.add(OpportunitiesListLoadMoreRequested());
     bloc.add(OpportunitiesListLoadMoreRequested());
 
-    pending.complete(Success(PagedResult(
-      items: [tOpportunity()],
-      hasMore: false,
-      nextPage: null,
-    )));
+    pending.complete(
+      Success(
+        PagedResult(items: [tOpportunity()], hasMore: false, nextPage: null),
+      ),
+    );
     await Future<void>.delayed(Duration.zero);
 
     verify(() => getOpportunities(any())).called(1);
   });
 
-  test('should keep items and set loadMoreFailure on load-more failure', () async {
-    when(() => getOpportunities(any()))
-        .thenAnswer((_) async => Success(PagedResult(
-          items: [tOpportunity()],
-          hasMore: true,
-          nextPage: 2,
-        )));
+  test(
+    'should keep items and set loadMoreFailure on load-more failure',
+    () async {
+      when(() => getOpportunities(any())).thenAnswer(
+        (_) async => Success(
+          PagedResult(items: [tOpportunity()], hasMore: true, nextPage: 2),
+        ),
+      );
 
-    const failure = UnauthorizedFailure(message: 'down');
-    var callCount = 0;
-    when(() => getOpportunities(any())).thenAnswer((_) async {
-      callCount++;
-      if (callCount == 1) {
-        return Success(PagedResult(
-          items: [tOpportunity()],
-          hasMore: true,
-          nextPage: 2,
-        ));
-      }
-      return ResultFailure<PagedResult<Opportunity>>(failure);
-    });
+      const failure = UnauthorizedFailure(message: 'down');
+      var callCount = 0;
+      when(() => getOpportunities(any())).thenAnswer((_) async {
+        callCount++;
+        if (callCount == 1) {
+          return Success(
+            PagedResult(items: [tOpportunity()], hasMore: true, nextPage: 2),
+          );
+        }
+        return ResultFailure<PagedResult<Opportunity>>(failure);
+      });
 
-    final bloc = newBloc();
-    bloc.add(OpportunitiesListStarted());
-    await Future<void>.delayed(Duration.zero);
+      final bloc = newBloc();
+      bloc.add(OpportunitiesListStarted());
+      await Future<void>.delayed(Duration.zero);
 
-    bloc.add(OpportunitiesListLoadMoreRequested());
-    await Future<void>.delayed(Duration.zero);
+      bloc.add(OpportunitiesListLoadMoreRequested());
+      await Future<void>.delayed(Duration.zero);
 
-    final state = bloc.state as OpportunitiesListSuccess;
-    expect(state.items, hasLength(1)); // kept
-    expect(state.loadMoreFailure, isA<UnauthorizedFailure>());
-  });
+      final state = bloc.state as OpportunitiesListSuccess;
+      expect(state.items, hasLength(1)); // kept
+      expect(state.loadMoreFailure, isA<UnauthorizedFailure>());
+    },
+  );
 
   test('should set hasMore false when next is null', () async {
-    when(() => getOpportunities(any()))
-        .thenAnswer((_) async => Success(PagedResult(
-          items: [tOpportunity()],
-          hasMore: false,
-          nextPage: null,
-        )));
+    when(() => getOpportunities(any())).thenAnswer(
+      (_) async => Success(
+        PagedResult(items: [tOpportunity()], hasMore: false, nextPage: null),
+      ),
+    );
 
     final bloc = newBloc();
     bloc.add(OpportunitiesListStarted());
@@ -196,12 +194,10 @@ void main() {
   });
 
   test('should not emit after close', () async {
-    when(() => getOpportunities(any()))
-        .thenAnswer((_) async => Success(PagedResult(
-          items: [],
-          hasMore: false,
-          nextPage: null,
-        )));
+    when(() => getOpportunities(any())).thenAnswer(
+      (_) async =>
+          Success(PagedResult(items: [], hasMore: false, nextPage: null)),
+    );
 
     final bloc = newBloc();
     bloc.add(OpportunitiesListStarted());

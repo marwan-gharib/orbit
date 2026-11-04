@@ -31,30 +31,15 @@ void main() {
 
     test('should be case- and whitespace-tolerant', () {
       expect(OpportunityStage.fromValue('  LEAD  '), OpportunityStage.lead);
-      expect(
-        OpportunityStage.fromValue('Closed'),
-        OpportunityStage.closed,
-      );
+      expect(OpportunityStage.fromValue('Closed'), OpportunityStage.closed);
     });
 
     test('should have pipeline order as declaration order', () {
       expect(OpportunityStage.values.indexOf(OpportunityStage.lead), 0);
-      expect(
-        OpportunityStage.values.indexOf(OpportunityStage.qualified),
-        1,
-      );
-      expect(
-        OpportunityStage.values.indexOf(OpportunityStage.proposal),
-        2,
-      );
-      expect(
-        OpportunityStage.values.indexOf(OpportunityStage.negotiation),
-        3,
-      );
-      expect(
-        OpportunityStage.values.indexOf(OpportunityStage.closed),
-        4,
-      );
+      expect(OpportunityStage.values.indexOf(OpportunityStage.qualified), 1);
+      expect(OpportunityStage.values.indexOf(OpportunityStage.proposal), 2);
+      expect(OpportunityStage.values.indexOf(OpportunityStage.negotiation), 3);
+      expect(OpportunityStage.values.indexOf(OpportunityStage.closed), 4);
     });
   });
 }

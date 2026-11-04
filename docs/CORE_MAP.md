@@ -35,13 +35,16 @@ Update it whenever `core/` gains, loses, or changes a reusable piece (DOC-6).
 
 ## Utils
 - `ApiResult<T>` (with `fold`) — core/utils/api_result.dart
-- `PagedResult<T>` — core/utils/paged_result.dart
+- `PagedResult<T>` — core/utils/paged_result.dart — now carries optional `totalItems` (display-only)
 - `Logger` — core/utils/logger.dart
 - `Validators` — core/utils/validators.dart
+- `Formatters` — core/utils/formatters.dart — currency/money, the single CRM date format (`crmDate`, e.g. `19 Oct 2026`) and locale-free relative timestamps (`relativeParts` → `RelativeTimeUnit`/`RelativeTimeParts`, so features choose the localized copy)
+- `diffList<T>()` — core/utils/list_diff.dart — pure id-based list diff for animated list views
 
 ## Domain / helpers
 - `InteractionType` — core/domain/enums/interaction_type.dart — lowercase wire interaction kinds with `unknown` fallback; shared by `interactions` and `opportunities` (embedded interactions).
 - `WireDates` — core/helpers/wire_dates.dart — CRM date-only wire handling: parse/normalize to a UTC calendar day (`tryParseDateOnly`, `parseDateOnly`) and format (`yyyy-MM-dd`, pattern in `DateFormats`).
+- `AnimatedChipSelector<T>` — core/animations/selection/selection.dart — chip row with animated sliding indicator; used by CRM tabs, stage chips and type chips. `ChipItem.badge` optionally renders a count pill on the trailing edge.
 
 ## Services
 - `CrmDataChange` (+ `CrmDataKind`) — core/services/crm_data_change.dart — one successful CRM mutation (kind + customer id + optional opportunity id); never serialized.
@@ -53,17 +56,21 @@ Update it whenever `core/` gains, loses, or changes a reusable piece (DOC-6).
 
 ## Shared widgets
 - `AppButton` (variants: filled/elevated/outlined/text, loading, icon, destructive) — core/widgets/app_button.dart
-- `AppTextField` (label/hint/helper/prefix/suffix, validator, obscure toggle) — core/widgets/app_text_field.dart
+- `AppTextField` (label/hint/helper/prefix/suffix, validator, obscure toggle, `minLines`/`maxLines` for growing multiline fields) — core/widgets/app_text_field.dart
 - `AppCard` (tappable, custom padding) — core/widgets/app_card.dart
 - `StatusBadge` (success/warning/error/info/neutral, custom icon) — core/widgets/status_badge.dart
 - `EmptyState` (title/message/icon, primary action button) — core/widgets/empty_state.dart
 - `ErrorState` (title/message/icon, retry action button) — core/widgets/error_state.dart
 - `AppDialog` (styled AlertDialog using theme tokens) — core/widgets/app_dialog.dart
 - `ConfirmDialog` (confirmation dialog using AppDialog + showAppDialog) — core/widgets/confirm_dialog.dart
+- `ProgressRing` (sweep ring driven by external progress) — core/widgets/progress_ring.dart
+- `DrawnCheckmark` (one-shot stroke-drawn checkmark) — core/widgets/drawn_checkmark.dart
+- `HighlightFlash` (one-shot accent flash overlay) — core/widgets/highlight_flash.dart
+- `DiffListView<T>` (id-based diff with animated insert/remove/flash) — core/widgets/diff_list_view.dart
 - Barrel: `core/widgets/widgets.dart`
 
 ## Animations (`core/animations/`, barrel `animations.dart`, cheat sheet `core/animations/README.md`, dev gallery `lib/dev/animations_showcase_page.dart`)
-- Tokens — `AppDurations`, `AppCurves`, `AppAnimationConstants` — core/animations/tokens/… (the only place durations, curves, motion numbers live).
+- Tokens — `AppDurations` (`fast`, `normal`, `slow`, `extraSlow`, `stagger`, loading loops), `AppCurves`, `AppAnimationConstants` — core/animations/tokens/… (the only place durations, curves, motion numbers live).
 - Engine — `Entrance` — core/animations/entrance/entrance.dart — plays once on first build, Interval-based delay (no timers), honours `disableAnimations`.
 - Entrances — `FadeIn`, `SlideIn`, `ScaleIn`, `FadeSlideIn`, `BlurIn` — core/animations/entrance/… (RTL-aware, generic over `child`).
 - Progress-driven entrance layers (no controller; the caller supplies a progress window) — `AssemblyLayer`, `ClipReveal` — core/animations/entrance/… (used by the onboarding slide artwork assembly).
@@ -75,7 +82,7 @@ Update it whenever `core/` gains, loses, or changes a reusable piece (DOC-6).
 - Idle / progress drivers — `IdleLoop` (breathing / float / travel loops that hold the settled frame when off), `PageIndicator` (morphing dots→pill, tappable), `ProgressDriver` (replay/toggle 0..1 timeline for slide entrances) — core/animations/state/… — all honour `disableAnimations`.
 - Loading — `ShimmerScope` (one sweep controller + one ShaderMask per skeleton screen), `ShimmerBox` (rectangle/circle/text-line), `SkeletonListTile`/`SkeletonCard`/`SkeletonTextBlock`, `PulsingPlaceholder` (cheap opacity pulse for long lists), `AnimatedProgressBar` (determinate + indeterminate, RTL-aware) — core/animations/loading/… (theme-derived placeholder colors via `PlaceholderColors`; `disableAnimations` renders static placeholder colors; shimmer vs pulse guidance in the doc comments).
 - Lottie — `AppLottie` (success/error/empty/loading named constructors + generic `.asset()`) — core/animations/lottie/… — the only `package:lottie` importer (features never import the package); composition-driven playback, `disableAnimations` freezes on the final frame (loading rests on the first) and still delivers `onCompleted` once, fallback icon/widget on a failed load, optional RTL mirroring; parent rebuilds never restart playback.
-- Overlays — `showAppDialog` (focus-pull entrance with blurred barrier, in `app_dialog_route.dart`), `AppBottomSheet`, `AppSnackbar` (+ `AppSnackbarType`/`AppSnackbarResult`), `AppPopupMenu`, `AppOverlayMotion` — core/animations/overlays/ — token-driven modal motion (blurred dialog barrier, drag-handled sheet, replace-don't-queue snackbar, anchor-positioned menu); every entry point reads `disableAnimations` through `AppOverlayMotion`. Barrel: `core/animations/overlays/overlays.dart`.
+- Overlays — `showAppDialog` (focus-pull entrance with blurred barrier, in `app_dialog_route.dart`), `AppBottomSheet` (optional form mode: non-dismissible, no drag handle), `AppSnackbar` (+ `AppSnackbarType`/`AppSnackbarResult`), `AppPopupMenu`, `AppOverlayMotion` — core/animations/overlays/ — token-driven modal motion (blurred dialog barrier, drag-handled sheet, replace-don't-queue snackbar, anchor-positioned menu); every entry point reads `disableAnimations` through `AppOverlayMotion`. Barrel: `core/animations/overlays/overlays.dart`.
 - Scroll-based — `RevealOnScroll` (one-shot viewport reveal, listener detaches after firing), `ParallaxWidget` (scroll-position-driven background, RTL-aware, no user controller needed), `CollapsingHeader` (SliverAppBar + FlexibleSpaceBar large title with a fading/zooming background slot), `AppBarFadeOnScroll` + `FadeOnScrollBar` (scroll-offset-driven bar background/elevation; controller or notification fed) — core/animations/scroll/… (geometry via the nearest viewport's render object; scroll-linked mappings are instantaneous, `disableAnimations` pins reveal/parallax/bar to their final state).
 - Navigation — `AppPageTransitions` + `AppPageTransition` (fadeThrough, shared axis H/V, slide, scale, containerTransform, none), `AppRoute.create` (applies the app-wide default when a route names no transition), `AppHero`/`AppHeroTag` (card flights with the namespaced tag and the cross-fading shuttle), `AppContainerTransform.page` (card → details) — core/animations/navigation/… (`CustomTransitionPage` builders on token durations/curves, both routes animate, RTL- and `disableAnimations`-aware, iOS back-swipe via `_BackSwipeHost`).
 

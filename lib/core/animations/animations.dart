@@ -64,6 +64,7 @@ export 'scroll/app_bar_fade_on_scroll.dart';
 export 'scroll/collapsing_header.dart';
 export 'scroll/parallax_widget.dart';
 export 'scroll/reveal_on_scroll.dart';
+export 'selection/selection.dart';
 export 'staggered/staggered_column.dart';
 export 'staggered/staggered_grid_item.dart';
 export 'staggered/staggered_item.dart';

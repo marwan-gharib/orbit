@@ -1,15 +1,19 @@
 # Opportunities Feature
 
-> Last verified: 2026-11-01
+> Last verified: 2026-11-04
 > Path: `lib/features/opportunities/`
 
 ## 1 Purpose
 
-CRM opportunities end to end — paginated list with filters and title search, read-only detail.
-Mobile cannot create, edit, or change stage of opportunities. Domain entities, params
-and repository contract; data models, remote data source and repository implementation;
-and presentation holders (Bloc list + Cubit detail). No screens, routes or i18n yet:
-the holders are wired into DI and ready for a screen layer to consume.
+CRM opportunities end to end — paginated list with filters and title search, read-only
+detail with header, stage stepper, probability ring, tabs (overview/contacts/interactions/notes),
+and "Log it?" prompt. Mobile cannot create, edit, or change stage of opportunities.
+Domain entities, params and repository contract; data models, remote data source and
+repository implementation; and presentation holders (Bloc list + Cubit detail) and
+presentation widgets (card, list tab, detail header, stage stepper, probability ring,
+detail tabs, overview, contacts, interactions, notes tabs, log-it bottom sheet).
+Routes `/crm` and `/crm/opportunities/:id` are wired in the router with the detail
+screen reachable from opportunity cards via Hero transition.
 
 ## 2 File map
 
@@ -20,6 +24,24 @@ the holders are wired into DI and ready for a screen layer to consume.
 | presentation | cubits/opportunities_list/opportunities_list_state.dart | Initial, Loading, Success(items+hasMore+nextPage), Empty, Error — `isRefreshing`/`isLoadingMore`/failures |
 | presentation | cubits/opportunity_details/opportunity_details_cubit.dart | Read-only detail via list endpoint (`opportunity_id`); silent reload on CRM change signal when `opportunityId` matches |
 | presentation | cubits/opportunity_details/opportunity_details_state.dart | Initial, Loading, Success(opportunity), Error — `isRefreshing`/`refreshFailure` on silent refresh |
+| presentation | constants/opportunity_layout_constants.dart | Shared geometry for card, skeleton, detail sections, stepper |
+| presentation | widgets/opportunity_card.dart | Opportunity list item — whole-surface tap, status badge, value, probability ring, stage chip, overdue tag |
+| presentation | widgets/opportunity_card_skeleton.dart | Skeleton twin of card — same geometry via ShimmerScope |
+| presentation | widgets/opportunities_tab_view.dart | List tab body: search field, filter button, stage chips, summary row, list with load-more footer |
+| presentation | widgets/opportunity_filter_sheet.dart | Bottom sheet for status filter (Open/Won/Lost) with animated chip selector |
+| presentation | widgets/opportunity_header.dart | Detail header with title, status badge, stage chip, value, dates |
+| presentation | widgets/status_banner.dart | Full-width banner for Won/Lost with reason |
+| presentation | widgets/progress_card.dart | Probability ring (72dp) + StageStepper |
+| presentation | widgets/stage_stepper.dart | 5-node stepper with connector lines |
+| presentation | widgets/opportunity_tab_bar.dart | Sticky tab bar with count badges |
+| presentation | widgets/overview_tab.dart | Customer card + Details card |
+| presentation | widgets/contacts_tab.dart | Contact cards with call/email actions |
+| presentation | widgets/interactions_tab.dart | Add button + InteractionsTimeline |
+| presentation | widgets/notes_tab.dart | CustomerNotesThread + CustomerNoteComposer |
+| presentation | widgets/opportunity_detail_page.dart | Full detail page with SliverAppBar, tabs, silent refresh |
+| presentation | widgets/opportunity_detail_skeleton.dart | Full-page skeleton twin |
+| presentation | pure/embedded_interaction_to_tile_data.dart | Maps EmbeddedCustomerInteraction → InteractionTileData |
+| presentation | pure/contact_to_interaction_option.dart | Maps CustomerContact → InteractionContactOption |
 | domain | entities/opportunity_entity.dart | Opportunity (equatable, read-only) |
 | domain | entities/opportunity_customer_entity.dart | OpportunityCustomer (embedded aggregate with contacts/notes/interactions) |
 | domain | entities/opportunity_employee_entity.dart | OpportunityEmployee (owner, not signed-in user) |
@@ -79,9 +101,13 @@ Wire keys in `core/constants/api_keys.dart`, endpoints in `core/constants/endpoi
 
 `core/di/opportunities_injection.dart` — `initOpportunitiesModule`: remote data source (lazy singleton), repository (lazy singleton), use cases (lazy singleton), holders (factory — one per screen). Depends on `BaseApiClient` and `CrmDataChangeService` from core. Wired into `injection_container.dart` after `initCustomerNotesModule`.
 
+## 7.1 Used by
+
+- `crm_shell` — consumes `OpportunitiesTabView` and `OpportunitiesListBloc` in the CRM shell at `/crm`.
+
 ## 8 i18n
 
-None — no screens or user-facing text yet. All future screen text will go through slang.
+Keys in `assets/i18n/en.i18n.json` under `crm.crmOpportunities.*` (generated by `dart run slang`).
 
 ## 9 Tests
 
@@ -92,12 +118,19 @@ None — no screens or user-facing text yet. All future screen text will go thro
 - **Remote data source**: 6 tests — page query passthrough (page, page_size, filters), detail query (`opportunity_id` + page=1/page_size=1), error mapping, malformed body → ParsingFailure, enum wire values, `next` never parsed as URL.
 - **Repository**: 5 tests — `PagedResult` mapping (`hasMore` from `next`, `nextPage = page + 1`), server order preserved, detail success, detail not-found (empty results).
 - **Cubits/Bloc**: list lifecycle (7), list debounce+restartable (4), load-more droppable (3), load-more failure keeps items (2), hasMore false on `next == null` (2), refresh (3), detail success/not-found/signal reload (5).
+- **Pure mappers**: embedded_interaction_to_tile_data (2), contact_to_interaction_option (2).
+- **Widgets**: opportunity_card (5) — whole-surface tap at corners/gaps/badge/date/ring, overdue tag logic, double-tap guard.
+- **Detail widgets**: opportunity_header, status_banner, progress_card, stage_stepper, opportunity_tab_bar, overview_tab, contacts_tab, interactions_tab, notes_tab, opportunity_detail_page, opportunity_detail_skeleton.
 
 ## 10 Known issues
 
-- No screens, routes or i18n yet — holders are DI-ready but not reachable from the UI.
 - `OpportunitiesListBloc` is intentionally not subscribed to the CRM change signal — list items never render embedded notes or interactions.
+- Animated header count from `totalItems` not yet animated — static count displayed.
+- ~~Fixed:~~ `SliverPersistentHeader` layoutExtent exceeded paintExtent in `OpportunitiesTabView` — the pinned search header delegate claimed 80px but content was ~68px. Fixed by reducing `maxExtent`/`minExtent` from 80 to 72.
 
 ## 11 Changelog
 
+- 2026-11-04: O1 Foundations + O2 Opportunities Tab + O3 Detail Page Structure + O4 Contacts/Interactions/Notes tabs — completed full Opportunities UI: O1 Foundations (HeroTags, OpportunityLayoutConstants, ProgressRing, UrlLauncherServiceFake, pure mappers with tests); O2 Opportunities Tab (OpportunityCard, OpportunityCardSkeleton, OpportunitiesTabView with search/filter/stage chips, load-more footer with inline error+Retry, AnimatedChipSelector); O3 Detail Page Structure (OpportunityDetailPage with SliverAppBar, OpportunityHeader, StatusBanner, ProgressCard with ProbabilityRing+StageStepper, OpportunityTabBar, OpportunityDetailSkeleton); O4 Contacts/Interactions/Notes tabs (ContactsTab with call/email, InteractionsTab with InteractionsTimeline, NotesTab with CustomerNotesThread+Composer); all tests pass (1184 total), analyze clean (only warnings).
+- 2026-11-04: O1 Foundations + O2 Opportunities Tab — added `OpportunityLayoutConstants`, `ProgressRing` core widget, `UrlLauncherServiceFake` test helper, Hero tags for opportunities; pure mappers `embeddedInteractionToTileData` and `contactToInteractionOption` with tests; `OpportunityCard` with whole-surface tap target (Q1), status badge, probability ring, stage chip, overdue tag; `OpportunityCardSkeleton` twin; `OpportunitiesTabView` with search, filter button+sheet, stage chips, summary row, load-more footer with inline error+Retry; `AnimatedChipSelector` for status filter and stage chips; all tests pass (54), analyze clean.
+- 2026-11-04: Fixed `SliverPersistentHeader` layoutExtent/paintExtent mismatch in `OpportunitiesTabView` — reduced `_PinnedHeaderDelegate` maxExtent/minExtent from 80 to 72 to match actual content height (~68px). All tests pass (1159 total).
 - 2026-11-01: Opportunities feature end to end (domain → data → presentation → DI → tests planned): `Opportunity`, `OpportunityCustomer`, `OpportunityEmployee`, `CustomerContact`, `EmbeddedCustomerNote`, `EmbeddedCustomerInteraction` entities; `OpportunityStage`/`OpportunityStatus` enums with `unknown` fallback; `OpportunitiesCriteria`, `GetOpportunitiesParams`; `OpportunitiesRepository` + 3 use cases; 7 models; remote data source (GET page + GET one); repository impl (`PagedResult` mapping, detail not-found); `OpportunitiesListBloc` (debounced search, immediate filters, droppable load-more, `hasMore` from `next`), `OpportunityDetailsCubit` (silent signal reload); DI module wired into container; analyze clean, all files ≤300 lines.

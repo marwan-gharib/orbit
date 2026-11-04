@@ -118,6 +118,23 @@ class OpportunitiesListBloc
     if (current is! OpportunitiesListSuccess) return;
     if (!current.hasMore || current.isLoadingMore) return;
 
+    // Show a loading state inside the footer while the next page is in flight
+    // so the Retry button can show its loading state and the list never spins
+    // forever without a terminal state.
+    emit(
+      OpportunitiesListSuccess(
+        criteria: current.criteria,
+        items: current.items,
+        hasMore: current.hasMore,
+        nextPage: current.nextPage,
+        totalCount: current.totalCount,
+        isRefreshing: current.isRefreshing,
+        isLoadingMore: true,
+        loadMoreFailure: current.loadMoreFailure,
+        refreshFailure: current.refreshFailure,
+      ),
+    );
+
     final criteria = _criteria ?? const OpportunitiesCriteria();
     await _loadPage(
       criteria,
@@ -170,6 +187,7 @@ class OpportunitiesListBloc
                 items: current.items,
                 hasMore: current.hasMore,
                 nextPage: current.nextPage,
+                totalCount: current.totalCount,
                 isRefreshing: current.isRefreshing,
                 isLoadingMore: false,
                 loadMoreFailure: failure,
@@ -187,7 +205,13 @@ class OpportunitiesListBloc
         final nextPage = hasMore ? page + 1 : null;
 
         if (items.isEmpty) {
-          emit(OpportunitiesListEmpty(criteria: criteria, isRefreshing: false));
+          emit(
+            OpportunitiesListEmpty(
+              criteria: criteria,
+              totalCount: paged.totalItems ?? 0,
+              isRefreshing: false,
+            ),
+          );
         } else {
           emit(
             OpportunitiesListSuccess(
@@ -195,6 +219,7 @@ class OpportunitiesListBloc
               items: items,
               hasMore: hasMore,
               nextPage: nextPage,
+              totalCount: paged.totalItems ?? 0,
               isRefreshing: false,
               isLoadingMore: false,
             ),

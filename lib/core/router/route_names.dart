@@ -17,4 +17,10 @@ abstract final class RouteNames {
 
   /// Home screen route name.
   static const String home = 'home';
+
+  /// CRM shell route name.
+  static const String crm = 'crm';
+
+  /// CRM opportunity detail route name.
+  static const String crmOpportunityDetails = 'crmOpportunityDetails';
 }
