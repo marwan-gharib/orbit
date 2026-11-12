@@ -134,4 +134,23 @@ abstract final class ApiKeys {
   static const String totalKey = 'total';
   static const String pageKey = 'page';
   static const String pageSizeKey = 'page_size';
+
+  // CRM dashboard overview.
+  static const String valueKey = 'value';
+  static const String labelKey = 'label';
+  static const String percentageKey = 'percentage';
+  static const String openPipelineKey = 'open_pipeline';
+  static const String weightedForecastKey = 'weighted_forecast';
+  static const String wonKey = 'won';
+  static const String winRatioKey = 'win_ratio';
+  static const String wonCountKey = 'won_count';
+  static const String lostCountKey = 'lost_count';
+  static const String pastExpectedCloseKey = 'past_expected_close';
+  static const String pipelineByStageKey = 'pipeline_by_stage';
+  static const String expectedClosingsByMonthKey = 'expected_closings_by_month';
+  static const String monthKey = 'month';
+  static const String dealValueKey = 'deal_value';
+  static const String weightedValueKey = 'weighted_value';
+  static const String salesTeamKey = 'sales_team';
+  static const String wonValueKey = 'won_value';
 }

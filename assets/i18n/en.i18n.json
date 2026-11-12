@@ -201,8 +201,71 @@
   "crm": {
       "title": "CRM",
       "tabs": {
+        "dashboard": "Dashboard",
         "opportunities": "Opportunities",
         "interactions": "Interactions"
+      },
+      "dashboard": {
+        "title": "Sales dashboard",
+        "subtitle": "Live overview of your pipeline",
+        "hero": {
+          "openPipeline": "Open pipeline",
+          "opportunities": "{count} open opportunities",
+          "forecastCoverage": "Forecast coverage",
+          "weightedOfOpen": "Weighted forecast vs open pipeline"
+        },
+        "kpi": {
+          "won": "Won revenue",
+          "wonDeals": "{count} deals won",
+          "weighted": "Weighted forecast",
+          "weightedHint": "Adjusted by probability",
+          "avgDeal": "Avg. open deal",
+          "avgDealHint": "Per open opportunity",
+          "pastDue": "Past close date",
+          "pastDueHint": "Open deals overdue",
+          "pastDueClear": "All on schedule"
+        },
+        "winRatio": {
+          "title": "Win ratio",
+          "subtitle": "Won vs lost deals",
+          "won": "Won",
+          "lost": "Lost",
+          "closedDeals": "{count} closed deals",
+          "noClosed": "No closed deals yet"
+        },
+        "pipeline": {
+          "title": "Pipeline by stage",
+          "subtitle": "Where your open deals are",
+          "viewFunnel": "Funnel",
+          "viewDonut": "Donut",
+          "viewBars": "Bars",
+          "metricValue": "Value",
+          "metricCount": "Count",
+          "total": "Total",
+          "dealsCount": "{count} deals",
+          "empty": "No open deals in the pipeline"
+        },
+        "closings": {
+          "title": "Expected closings",
+          "subtitle": "Deals by expected close month",
+          "viewBars": "Bars",
+          "viewLine": "Trend",
+          "deal": "Deal value",
+          "weighted": "Weighted",
+          "bestMonth": "Best month",
+          "empty": "No expected closings"
+        },
+        "team": {
+          "title": "Sales team",
+          "subtitle": "Ranked by won revenue",
+          "wonDeals": "{count} won",
+          "empty": "No won deals yet",
+          "topPerformer": "Top performer"
+        },
+        "empty": {
+          "title": "Nothing to show yet",
+          "message": "Dashboard figures appear once your team has opportunities."
+        }
       },
       "editor": {
         "titleAdd": "Log interaction",
@@ -279,6 +342,8 @@
         "listNoResults": "No opportunities match your filters",
         "listOpportunityCountOne": "1 opportunity",
         "listOpportunityCountOther": "{n} opportunities",
+        "loadingOpportunities": "Loading opportunities.",
+        "loadingOpportunityDetail": "Loading opportunity.",
         "detail": {
           "tabs": {
             "overview": "Overview",

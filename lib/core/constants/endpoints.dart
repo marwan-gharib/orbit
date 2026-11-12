@@ -35,4 +35,8 @@ abstract final class Endpoints {
 
   /// Paged opportunities view (`page`, `page_size` plus filter queries).
   static const String crmOpportunitiesView = '/crm/opportunities_view/';
+
+  /// CRM dashboard overview: KPIs, pipeline by stage, expected closings by
+  /// month, win ratio and the sales team ranking (one GET, no parameters).
+  static const String crmOverview = '/crm/overview/';
 }

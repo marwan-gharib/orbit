@@ -305,6 +305,7 @@ class Translations$crm$en {
 	String get title => 'CRM';
 
 	late final Translations$crm$tabs$en tabs = Translations$crm$tabs$en._(_root);
+	late final Translations$crm$dashboard$en dashboard = Translations$crm$dashboard$en._(_root);
 	late final Translations$crm$editor$en editor = Translations$crm$editor$en._(_root);
 	late final Translations$crm$common$en common = Translations$crm$common$en._(_root);
 	late final Translations$crm$crmOpportunities$en crmOpportunities = Translations$crm$crmOpportunities$en._(_root);
@@ -626,11 +627,37 @@ class Translations$crm$tabs$en {
 
 	// Translations
 
+	/// en: 'Dashboard'
+	String get dashboard => 'Dashboard';
+
 	/// en: 'Opportunities'
 	String get opportunities => 'Opportunities';
 
 	/// en: 'Interactions'
 	String get interactions => 'Interactions';
+}
+
+// Path: crm.dashboard
+class Translations$crm$dashboard$en {
+	Translations$crm$dashboard$en._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Sales dashboard'
+	String get title => 'Sales dashboard';
+
+	/// en: 'Live overview of your pipeline'
+	String get subtitle => 'Live overview of your pipeline';
+
+	late final Translations$crm$dashboard$hero$en hero = Translations$crm$dashboard$hero$en._(_root);
+	late final Translations$crm$dashboard$kpi$en kpi = Translations$crm$dashboard$kpi$en._(_root);
+	late final Translations$crm$dashboard$winRatio$en winRatio = Translations$crm$dashboard$winRatio$en._(_root);
+	late final Translations$crm$dashboard$pipeline$en pipeline = Translations$crm$dashboard$pipeline$en._(_root);
+	late final Translations$crm$dashboard$closings$en closings = Translations$crm$dashboard$closings$en._(_root);
+	late final Translations$crm$dashboard$team$en team = Translations$crm$dashboard$team$en._(_root);
+	late final Translations$crm$dashboard$empty$en empty = Translations$crm$dashboard$empty$en._(_root);
 }
 
 // Path: crm.editor
@@ -799,6 +826,12 @@ class Translations$crm$crmOpportunities$en {
 
 	/// en: '{n} opportunities'
 	String listOpportunityCountOther({required Object n}) => '${n} opportunities';
+
+	/// en: 'Loading opportunities.'
+	String get loadingOpportunities => 'Loading opportunities.';
+
+	/// en: 'Loading opportunity.'
+	String get loadingOpportunityDetail => 'Loading opportunity.';
 
 	late final Translations$crm$crmOpportunities$detail$en detail = Translations$crm$crmOpportunities$detail$en._(_root);
 }
@@ -1064,6 +1097,201 @@ class Translations$auth$pending$a11y$en {
 
 	/// en: 'Check your approval status'
 	String get checkStatus => 'Check your approval status';
+}
+
+// Path: crm.dashboard.hero
+class Translations$crm$dashboard$hero$en {
+	Translations$crm$dashboard$hero$en._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Open pipeline'
+	String get openPipeline => 'Open pipeline';
+
+	/// en: '{count} open opportunities'
+	String opportunities({required Object count}) => '${count} open opportunities';
+
+	/// en: 'Forecast coverage'
+	String get forecastCoverage => 'Forecast coverage';
+
+	/// en: 'Weighted forecast vs open pipeline'
+	String get weightedOfOpen => 'Weighted forecast vs open pipeline';
+}
+
+// Path: crm.dashboard.kpi
+class Translations$crm$dashboard$kpi$en {
+	Translations$crm$dashboard$kpi$en._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Won revenue'
+	String get won => 'Won revenue';
+
+	/// en: '{count} deals won'
+	String wonDeals({required Object count}) => '${count} deals won';
+
+	/// en: 'Weighted forecast'
+	String get weighted => 'Weighted forecast';
+
+	/// en: 'Adjusted by probability'
+	String get weightedHint => 'Adjusted by probability';
+
+	/// en: 'Avg. open deal'
+	String get avgDeal => 'Avg. open deal';
+
+	/// en: 'Per open opportunity'
+	String get avgDealHint => 'Per open opportunity';
+
+	/// en: 'Past close date'
+	String get pastDue => 'Past close date';
+
+	/// en: 'Open deals overdue'
+	String get pastDueHint => 'Open deals overdue';
+
+	/// en: 'All on schedule'
+	String get pastDueClear => 'All on schedule';
+}
+
+// Path: crm.dashboard.winRatio
+class Translations$crm$dashboard$winRatio$en {
+	Translations$crm$dashboard$winRatio$en._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Win ratio'
+	String get title => 'Win ratio';
+
+	/// en: 'Won vs lost deals'
+	String get subtitle => 'Won vs lost deals';
+
+	/// en: 'Won'
+	String get won => 'Won';
+
+	/// en: 'Lost'
+	String get lost => 'Lost';
+
+	/// en: '{count} closed deals'
+	String closedDeals({required Object count}) => '${count} closed deals';
+
+	/// en: 'No closed deals yet'
+	String get noClosed => 'No closed deals yet';
+}
+
+// Path: crm.dashboard.pipeline
+class Translations$crm$dashboard$pipeline$en {
+	Translations$crm$dashboard$pipeline$en._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Pipeline by stage'
+	String get title => 'Pipeline by stage';
+
+	/// en: 'Where your open deals are'
+	String get subtitle => 'Where your open deals are';
+
+	/// en: 'Funnel'
+	String get viewFunnel => 'Funnel';
+
+	/// en: 'Donut'
+	String get viewDonut => 'Donut';
+
+	/// en: 'Bars'
+	String get viewBars => 'Bars';
+
+	/// en: 'Value'
+	String get metricValue => 'Value';
+
+	/// en: 'Count'
+	String get metricCount => 'Count';
+
+	/// en: 'Total'
+	String get total => 'Total';
+
+	/// en: '{count} deals'
+	String dealsCount({required Object count}) => '${count} deals';
+
+	/// en: 'No open deals in the pipeline'
+	String get empty => 'No open deals in the pipeline';
+}
+
+// Path: crm.dashboard.closings
+class Translations$crm$dashboard$closings$en {
+	Translations$crm$dashboard$closings$en._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Expected closings'
+	String get title => 'Expected closings';
+
+	/// en: 'Deals by expected close month'
+	String get subtitle => 'Deals by expected close month';
+
+	/// en: 'Bars'
+	String get viewBars => 'Bars';
+
+	/// en: 'Trend'
+	String get viewLine => 'Trend';
+
+	/// en: 'Deal value'
+	String get deal => 'Deal value';
+
+	/// en: 'Weighted'
+	String get weighted => 'Weighted';
+
+	/// en: 'Best month'
+	String get bestMonth => 'Best month';
+
+	/// en: 'No expected closings'
+	String get empty => 'No expected closings';
+}
+
+// Path: crm.dashboard.team
+class Translations$crm$dashboard$team$en {
+	Translations$crm$dashboard$team$en._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Sales team'
+	String get title => 'Sales team';
+
+	/// en: 'Ranked by won revenue'
+	String get subtitle => 'Ranked by won revenue';
+
+	/// en: '{count} won'
+	String wonDeals({required Object count}) => '${count} won';
+
+	/// en: 'No won deals yet'
+	String get empty => 'No won deals yet';
+
+	/// en: 'Top performer'
+	String get topPerformer => 'Top performer';
+}
+
+// Path: crm.dashboard.empty
+class Translations$crm$dashboard$empty$en {
+	Translations$crm$dashboard$empty$en._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Nothing to show yet'
+	String get title => 'Nothing to show yet';
+
+	/// en: 'Dashboard figures appear once your team has opportunities.'
+	String get message => 'Dashboard figures appear once your team has opportunities.';
 }
 
 // Path: crm.common.a11y
@@ -1543,8 +1771,55 @@ extension on Translations {
 			'auth.pending.a11y.stepper' => 'Approval progress',
 			'auth.pending.a11y.checkStatus' => 'Check your approval status',
 			'crm.title' => 'CRM',
+			'crm.tabs.dashboard' => 'Dashboard',
 			'crm.tabs.opportunities' => 'Opportunities',
 			'crm.tabs.interactions' => 'Interactions',
+			'crm.dashboard.title' => 'Sales dashboard',
+			'crm.dashboard.subtitle' => 'Live overview of your pipeline',
+			'crm.dashboard.hero.openPipeline' => 'Open pipeline',
+			'crm.dashboard.hero.opportunities' => ({required Object count}) => '${count} open opportunities',
+			'crm.dashboard.hero.forecastCoverage' => 'Forecast coverage',
+			'crm.dashboard.hero.weightedOfOpen' => 'Weighted forecast vs open pipeline',
+			'crm.dashboard.kpi.won' => 'Won revenue',
+			'crm.dashboard.kpi.wonDeals' => ({required Object count}) => '${count} deals won',
+			'crm.dashboard.kpi.weighted' => 'Weighted forecast',
+			'crm.dashboard.kpi.weightedHint' => 'Adjusted by probability',
+			'crm.dashboard.kpi.avgDeal' => 'Avg. open deal',
+			'crm.dashboard.kpi.avgDealHint' => 'Per open opportunity',
+			'crm.dashboard.kpi.pastDue' => 'Past close date',
+			'crm.dashboard.kpi.pastDueHint' => 'Open deals overdue',
+			'crm.dashboard.kpi.pastDueClear' => 'All on schedule',
+			'crm.dashboard.winRatio.title' => 'Win ratio',
+			'crm.dashboard.winRatio.subtitle' => 'Won vs lost deals',
+			'crm.dashboard.winRatio.won' => 'Won',
+			'crm.dashboard.winRatio.lost' => 'Lost',
+			'crm.dashboard.winRatio.closedDeals' => ({required Object count}) => '${count} closed deals',
+			'crm.dashboard.winRatio.noClosed' => 'No closed deals yet',
+			'crm.dashboard.pipeline.title' => 'Pipeline by stage',
+			'crm.dashboard.pipeline.subtitle' => 'Where your open deals are',
+			'crm.dashboard.pipeline.viewFunnel' => 'Funnel',
+			'crm.dashboard.pipeline.viewDonut' => 'Donut',
+			'crm.dashboard.pipeline.viewBars' => 'Bars',
+			'crm.dashboard.pipeline.metricValue' => 'Value',
+			'crm.dashboard.pipeline.metricCount' => 'Count',
+			'crm.dashboard.pipeline.total' => 'Total',
+			'crm.dashboard.pipeline.dealsCount' => ({required Object count}) => '${count} deals',
+			'crm.dashboard.pipeline.empty' => 'No open deals in the pipeline',
+			'crm.dashboard.closings.title' => 'Expected closings',
+			'crm.dashboard.closings.subtitle' => 'Deals by expected close month',
+			'crm.dashboard.closings.viewBars' => 'Bars',
+			'crm.dashboard.closings.viewLine' => 'Trend',
+			'crm.dashboard.closings.deal' => 'Deal value',
+			'crm.dashboard.closings.weighted' => 'Weighted',
+			'crm.dashboard.closings.bestMonth' => 'Best month',
+			'crm.dashboard.closings.empty' => 'No expected closings',
+			'crm.dashboard.team.title' => 'Sales team',
+			'crm.dashboard.team.subtitle' => 'Ranked by won revenue',
+			'crm.dashboard.team.wonDeals' => ({required Object count}) => '${count} won',
+			'crm.dashboard.team.empty' => 'No won deals yet',
+			'crm.dashboard.team.topPerformer' => 'Top performer',
+			'crm.dashboard.empty.title' => 'Nothing to show yet',
+			'crm.dashboard.empty.message' => 'Dashboard figures appear once your team has opportunities.',
 			'crm.editor.titleAdd' => 'Log interaction',
 			'crm.editor.titleEdit' => 'Edit interaction',
 			'crm.editor.type' => 'Type',
@@ -1607,6 +1882,8 @@ extension on Translations {
 			'crm.crmOpportunities.listNoResults' => 'No opportunities match your filters',
 			'crm.crmOpportunities.listOpportunityCountOne' => '1 opportunity',
 			'crm.crmOpportunities.listOpportunityCountOther' => ({required Object n}) => '${n} opportunities',
+			'crm.crmOpportunities.loadingOpportunities' => 'Loading opportunities.',
+			'crm.crmOpportunities.loadingOpportunityDetail' => 'Loading opportunity.',
 			'crm.crmOpportunities.detail.tabs.overview' => 'Overview',
 			'crm.crmOpportunities.detail.tabs.contacts' => 'Contacts',
 			'crm.crmOpportunities.detail.tabs.interactions' => 'Interactions',
