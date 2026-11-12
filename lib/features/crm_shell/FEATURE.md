@@ -1,81 +1,102 @@
 # CRM Shell Feature
 
-> Last verified: 2026-11-04
+> Last verified: 2026-11-12
 > Path: `lib/features/crm_shell/`
 
-## 1 Purpose
+## 1. Purpose
 
-CRM module shell — composes the three CRM features (`opportunities`, `interactions`, `customer_notes`) into one working module with a tabbed interface. Owns the `/crm` route and the tab bar; does not own any domain/business logic.
+Composes the CRM module: one shell at `/crm` with the Dashboard, Opportunities and
+Interactions tabs kept alive, a floating navigation bar that hides while scrolling, and
+pushes into the opportunity detail route. Owns no domain, data or state logic.
 
-## 2 Screens & routes
+## 2. Screens & routes
 
-| Screen | Route | Purpose |
-|--------|-------|---------|
-| CrmShell | `/crm` | Tabbed shell with Opportunities and Interactions tabs; preserves tab state and scroll |
-| OpportunityDetailPage | `/crm/opportunities/:id` | Owned by `opportunities` feature; pushed from both tabs |
-| Invalid ID page | `/crm/opportunities/:id` (non-numeric) | Shows error with back action |
+| Screen | Route (constant) | Params | Notes |
+|--------|------------------|--------|-------|
+| CrmShell | `RoutePaths.crm` | — | 3 tabs (Dashboard, Opportunities, Interactions); AppBar with back + `crm.title` |
+| Opportunity detail | `RoutePaths.crmOpportunityDetails` | `id` | Owned by `opportunities`, defined in `core/router`; pushed by the shell and the feed's "Open opportunity" chip |
+| Invalid-id page | `RoutePaths.crmOpportunityDetails` (non-numeric) | — | Error + back; lives in `core/router` |
 
-## 3 File map
+Navigation: Home → `/crm` fadeThrough; tab switching via the `FloatingNavBar` pill and
+`TabController` (swipe works, `TabBarView`); card/chip tap → detail containerTransform
+(AppHero flight); back returns to the shell with per-tab state and scroll preserved
+(`_KeepAlive`).
 
-| Layer | Key files | Responsibility |
-|-------|-----------|----------------|
-| presentation | widgets/crm_shell.dart | `CrmShell` (Scaffold + AppBar + AnimatedChipSelector tab bar + IndexedStack via TabBarView), `_TabBar` |
-| presentation | widgets/widgets.dart | Barrel export |
+## 3. File map
 
-No domain, data, or state layer — this feature only composes existing features.
+| Layer | Key files (relative to feature root) | Responsibility |
+|-------|--------------------------------------|----------------|
+| presentation | widgets/crm_shell.dart | `CrmShell` (Scaffold, AppBar, three kept-alive tabs, scroll-driven nav visibility) and `_KeepAlive` |
 
-## 4 Dependencies
+No domain, data or state layer. The barrel `presentation/widgets/widgets.dart` no longer
+exists. Route definitions, the home screen's CRM entry and the invalid-id page live in
+`core/router/app_router_routes.dart`, not here.
 
-| Depends on | Used by |
-|------------|---------|
-| `opportunities` (OpportunitiesTabView, OpportunitiesListBloc) | — |
-| `interactions` (InteractionsFeedView) | — |
-| `customer_notes` (via OpportunitiesDetailPage → NotesTab) | — |
-| `core/animations` (AnimatedChipSelector, AppRoute, AppPageTransition) | — |
-| `core/router` (RoutePaths, RouteNames, AppRoute) | — |
-| `core/di` (getIt for OpportunitiesListBloc) | — |
-| `core/theme` (context.colors, AppSpacing) | — |
-| `core/i18n` (context.t.crm.title, context.t.crm.tabs) | — |
+## 4. Entities & models
 
-## 5 Constants & routes
+none — composition only.
 
-Route paths in `core/constants/route_paths.dart`:
-- `RoutePaths.crm` → `/crm`
-- `RoutePaths.crmOpportunityDetails` → `/crm/opportunities/:id`
+## 5. Use cases
 
-Route names in `core/constants/route_names.dart`:
-- `RouteNames.crm` → `crm`
-- `RouteNames.crmOpportunityDetails` → `crmOpportunityDetails`
+none — composition only.
 
-i18n keys in `assets/i18n/en.i18n.json` under `crm.*`:
-- `crm.title` — "CRM"
-- `crm.tabs.opportunities` — "Opportunities"
-- `crm.tabs.interactions` — "Interactions"
-- `crm.common.invalidId` — "Invalid opportunity ID"
-- `crm.common.back` — "Back"
-- `crm.common.notFound` — "Not found" (reused from common)
+## 6. API & storage
 
-## 6 Navigation behavior
+none — composition only.
 
-| From | Action | To | Transition |
-|------|--------|----|------------|
-| Home | Tap CRM button | `/crm` (Opportunities tab) | fadeThrough |
-| Shell | Tap tab | Switch in place | AnimatedChipSelector pill slide |
-| Opportunities tab | Tap card | `/crm/opportunities/<id>` | containerTransform (Hero) |
-| Interactions tab | Tap "Open opportunity" chip | `/crm/opportunities/<id>` | containerTransform |
-| Detail | Back | Shell (preserved state & scroll) | sharedAxisHorizontal reverse |
-| Invalid ID | — | Invalid ID page with back | fadeThrough |
+## 7. State
 
-## 7 Tests
+- No holders of its own. The Interactions tab creates `InteractionsListBloc`,
+  `InteractionFormCubit` and `InteractionDeleteCubit` through `getIt` factories (one set
+  for the shell's lifetime); the opportunities list Bloc is provided by the `/crm` route
+  builder in `core/router`.
+- All three tabs stay mounted (`_KeepAlive` with `AutomaticKeepAliveClientMixin`), so
+  scroll positions, blocs and loaded data survive tab switches.
 
-`test/features/crm_shell/` (to be added in C3):
-- Navigation tests for the full navigation map
-- Integration flow tests E1–E12 (end-to-end through real router)
+## 8. Dependencies
 
-## 8 Known issues
+- Depends on (features): `crm_dashboard` (`DashboardTab`), `opportunities`
+  (`OpportunitiesTabView` + detail route), `interactions` (`InteractionsFeedView` + its
+  three holders). `customer_notes` is only indirect — reached through the opportunities
+  detail page, never imported here.
+- Depends on (core): animations (`FloatingNavBar`, `AnimatedVisibility`, `AppCurves`,
+  `AppDurations`), `core/di` (getIt), `core/i18n`, `core/theme`; route constants in
+  `core/router` (owned there).
+- Used by (features): none — top-level shell wired only by the router.
+- DI file: none of its own; resolves the other features' holders through
+  `core/di/injection_container.dart`.
 
-- Tab body state preservation uses `TabBarView` (IndexedStack semantics) — scroll position is preserved per tab. The "fade-through" tab switch animation is achieved via `AnimatedChipSelector` pill motion; the body does not cross-fade (by design, to preserve state).
+## 9. Localization
 
-## 9 Changelog
+- `context.t.crm.title` and `context.t.crm.tabs.{dashboard,opportunities,interactions}`
+  for the shell; the invalid-id page (in `core/router`) uses
+  `crm.common.{invalidId,back,notFound}`.
 
-- 2026-11-04: Created CRM shell feature — CrmShell widget with AnimatedChipSelector tab bar, routes in AppRouterRoutes, Home screen CRM entry, invalid ID page, i18n keys for CRM title/tabs/invalidId/back.
+## 10. Business rules & edge cases
+
+- Tab bodies are never rebuilt away: each tab is kept alive, so blocs and scroll state
+  survive switches; the body intentionally does not cross-fade on tab change — the motion
+  is the nav bar's pill/icon animation.
+- The nav bar hides on scroll down and reappears on scroll up or idle; selecting any tab
+  also forces it visible.
+- The nav pill follows `TabController.animation` frame by frame, so taps and swipes glide
+  without stacked implicit animations.
+- Detail is opened with `context.push`, so back returns to the preserved shell.
+
+## 11. Tests
+
+none — no `test/features/crm_shell/` yet (navigation map and integration flows planned).
+
+## 12. Known issues / TODO
+
+- Missing test coverage: navigation map and shell integration flows have no tests.
+- `crm_shell.dart` pushes the detail route with a string literal
+  (`'/crm/opportunities/$id'`) instead of `RoutePaths.crmOpportunityDetails` (ARCH-10) —
+  small fix needed.
+
+## 13. Changelog
+
+- 2026-11-12 — Doc repaired against the working tree: three tabs incl. Dashboard (tab 0), `FloatingNavBar` documented (was `AnimatedChipSelector`), deleted barrel removed from the file map, `customer_notes` demoted to indirect dependency, `crm_dashboard` recorded, tests marked absent, string-literal route push flagged.
+- 2026-11-08: Dashboard tab added (tab 0) from `crm_dashboard`; nav bar has 3 items and shows only the selected label. `FloatingNavBar` follows `TabController.animation` frame by frame (no stacked implicit animation, no overshoot).
+- 2026-11-07: Top tab bar replaced by the core `FloatingNavBar` (floating, away from edges, sliding spring pill, hides while scrolling down).
+- 2026-11-04: Shell created — `CrmShell` with tab bar, `/crm` routes, home CRM entry, invalid-id page, i18n title/tabs/invalidId/back.
