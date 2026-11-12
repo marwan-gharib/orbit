@@ -19,24 +19,36 @@ import 'note_edit_sheet.dart';
 /// Sizes to its content and never scrolls itself, so a page decides how the
 /// thread moves. Owns its list cubit (recreated when [customerId] changes)
 /// and the one-shot form/delete cubits of the sheets and dialog it opens.
+///
+/// A page that must keep the loaded notes alive across tab switches (and
+/// refresh them itself) passes its own [cubit]; the thread then only reads it
+/// and never closes it.
 class CustomerNotesThread extends StatelessWidget {
-  const CustomerNotesThread({super.key, required this.customerId});
+  const CustomerNotesThread({super.key, required this.customerId, this.cubit});
 
   final int customerId;
+  final CustomerNotesListCubit? cubit;
 
   @override
-  Widget build(BuildContext context) => BlocProvider(
-    key: ValueKey(customerId),
-    create: (_) => getIt<CustomerNotesListCubit>()..load(customerId),
-    child: BlocBuilder<CustomerNotesListCubit, CustomerNotesListState>(
+  Widget build(BuildContext context) {
+    final view = BlocBuilder<CustomerNotesListCubit, CustomerNotesListState>(
       builder: (context, state) => CustomerNotesView(
         state: state,
         onRetry: () => context.read<CustomerNotesListCubit>().refresh(),
         onEdit: (note) => _edit(context, note),
         onDelete: (note) => _delete(context, note),
       ),
-    ),
-  );
+    );
+    final external = cubit;
+    if (external != null) {
+      return BlocProvider.value(value: external, child: view);
+    }
+    return BlocProvider(
+      key: ValueKey(customerId),
+      create: (_) => getIt<CustomerNotesListCubit>()..load(customerId),
+      child: view,
+    );
+  }
 
   Future<void> _edit(BuildContext context, CustomerNote note) async {
     final formCubit = getIt<CustomerNoteFormCubit>()..startEdit(note);
