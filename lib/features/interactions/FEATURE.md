@@ -1,100 +1,127 @@
 # Interactions Feature
 
-> Last verified: 2026-11-01
+> Last verified: 2026-11-12
 > Path: `lib/features/interactions/`
 
-## 1 Purpose
+## 1. Purpose
 
-CRM interactions end to end — domain entities, params and repository contract; data
-models, remote data source and repository implementation; and presentation holders
-(Bloc list + Cubit form + Cubit delete). No screens, routes or i18n yet: the holders
-are wired into DI and ready for a screen layer to consume.
+CRM interactions end to end: a search-and-filter feed grouped by date with overflow and
+swipe actions, an add/edit bottom sheet and a delete dialog — plus a non-scrolling timeline
+reused by the opportunity detail tab. Domain (entities/params/repository/use cases), data
+(models, data source, repository impl) and presentation (one Bloc, two Cubits, full widget
+layer). No standalone routes: it lives inside the CRM shell.
 
-## 2 File map
+## 2. Screens & routes
+
+| Screen | Route (constant) | Params | Notes |
+|--------|------------------|--------|-------|
+| Interactions feed tab | `RoutePaths.crm` | — | Composed by `crm_shell`; the shell provides the three holders |
+| Add/edit bottom sheet | — (overlay) | owning customer/opportunity context | `AppBottomSheet` opened via `widgets/helpers.dart`; fresh `InteractionFormCubit` per open |
+| Delete dialog | — (overlay) | interaction + context | Confirm runs inside the button; closes only after the delete succeeds |
+
+## 3. File map
 
 | Layer | Key files (relative to feature root) | Responsibility |
 |-------|--------------------------------------|----------------|
-| presentation | cubits/interactions_list/interactions_list_bloc.dart | Debounced search + immediate filters + full reloads, all restartable; silent refresh from the CRM change signal (successful mutations anywhere refetch this list under its criteria) |
-| presentation | cubits/interactions_list/interactions_list_event.dart | Started, SearchChanged, FiltersChanged, Refreshed events |
-| presentation | cubits/interactions_list/interactions_list_state.dart | Initial, Loading, Success, Empty, Error states — criteria carried by all loaded states; `isRefreshing`/`refreshFailure` on silent refresh |
-| presentation | cubits/interaction_form/interaction_form_cubit.dart | One-shot add/edit submit; owning context captured at startEdit, never part of the wire payload |
-| presentation | cubits/interaction_form/interaction_form_state.dart | Initial, Ready, Submitting, Success, SubmitError states |
-| presentation | cubits/interaction_delete/interaction_delete_cubit.dart | One-shot delete with InProgress/Success/Failure states |
-| presentation | cubits/interaction_delete/interaction_delete_state.dart | Initial, InProgress, Success, Failure states |
-| domain | entities/interaction_entity.dart | Interaction (equatable) |
-| domain | entities/interaction_context.dart | InteractionContext (customer + optional opportunity; never serialized) |
-| domain | params/interactions_criteria.dart | Active filters (searchText, type, customerId, contactId, opportunityId) |
-| domain | params/add_interaction_params.dart | Five editable fields + owning customer id |
-| domain | params/update_interaction_params.dart | Exactly the five PATCH-editable wire fields |
-| domain | repositories/interactions_repository.dart | Repository contract |
-| domain | usecases/*.dart (5) | Get, Add (resolves employee id from CurrentEmployeeIdProvider), Update, Delete, WatchInteractionChanges |
-| data | datasources/remote/interactions_remote_data_source.dart | GET list/search, POST add, PATCH edit, DELETE-with-body — all through BaseApiClient, failures only |
-| data | models/interaction_model.dart | Strict wire parse (unknown type → unknown; missing description → ''; unparsable date → FormatException) |
-| data | models/interactions_response_model.dart | Strict `{"Interactions": [...]}` parse — non-list root or non-object item fails the whole response |
-| data | repositories/interactions_repository_impl.dart | One GET when unsearched; two parallel GETs (subject + description) merged/deduped/sorted when searching; publishes CrmDataChange on success only |
+| presentation | blocs/interactions_list/* | Feed Bloc + events/states: debounced search, immediate filters, restartable reloads, CRM-signal silent refresh |
+| presentation | cubits/interaction_form/*, cubits/interaction_delete/* | One-shot add/edit and delete Cubits; owning context captured at startEdit, never serialized |
+| presentation | constants/interaction_layout_constants.dart | Shared geometry: tile, skeleton twin, timeline |
+| presentation | mappers/interaction_tile_mapper.dart, view_models/interaction_tile_data.dart | Interaction → plain tile data for feed and timeline |
+| presentation | pure/date_grouping.dart | Calendar-date grouping for the feed (today injected) |
+| presentation | pure/timeline_ordering.dart, interaction_form_dirty.dart, interaction_submit_params.dart | Timeline sort; form dirty-check (calendar-day dates); form → add/update params |
+| presentation | widgets/interactions_feed_view.dart, interactions_feed_state_body.dart | Feed entry; skeleton/content/empty (no data and no results)/error switch |
+| presentation | widgets/interactions_feed_header.dart | Search field + type chips; owns the search controller so clear-all empties it |
+| presentation | widgets/interactions_feed_content.dart, interactions_group_header.dart | Date-grouped scroll content (sticky headers, id-diffed flash/collapse); pinned date header (slang keys) |
+| presentation | widgets/interaction_tile.dart, interaction_tile_skeleton.dart, interaction_type_icon.dart | Tile (overflow menu, "Open opportunity" chip, swipe actions); skeleton twin; animated type icon |
+| presentation | widgets/interactions_timeline.dart | Non-scrolling timeline for the opportunity detail tab |
+| presentation | widgets/interaction_add_edit_sheet.dart, interaction_sheet_fields.dart, interaction_text_fields.dart, interaction_submit_button.dart | Add/edit sheet: fields, shaking subject validation, morphing save button |
+| presentation | widgets/interaction_swipe_background.dart, interaction_delete_dialog.dart, interaction_refresh_notice.dart | Swipe background; delete confirmation; dismissible silent-refresh failure notice |
+| presentation | widgets/helpers.dart | Opens the add sheet (fresh cubit per invocation; works without a Bloc in the host context) |
+| domain | entities/interaction_entity.dart, interaction_context.dart | Interaction; InteractionContext (customer + optional opportunity) |
+| domain | enums/interaction_type.dart | InteractionType — lowercase wire values, `unknown` fallback; consumed by opportunities too |
+| domain | params/interactions_criteria.dart, add_interaction_params.dart, update_interaction_params.dart | Filters; five editable fields + owner; exactly the five PATCH fields |
+| domain | repositories/interactions_repository.dart, usecases/* | Contract; Get, Add, Update, Delete, WatchInteractionChanges |
+| data | datasources/remote/interactions_remote_data_source.dart | GET list/search, POST add, PATCH edit, DELETE-with-body — through BaseApiClient, failures only |
+| data | models/interaction_model.dart, interactions_response_model.dart | Strict wire parse; strict `{"Interactions": [...]}` root |
+| data | repositories/interactions_repository_impl.dart | Search fan-out merge/dedupe/sort; publishes CrmDataChange on success only |
 
-## 3 Entities & models
+## 4. Entities & models
 
 | Entity | Key fields | Model (data) | Notes |
 |--------|------------|--------------|-------|
 | Interaction | interactionId, type, subject, description, interactionDate, customerId, employeeId, contactId?, opportunityId? | InteractionModel | Type falls back to `unknown` for unrecognized wire values; date parsed via `WireDates` (UTC-normalized calendar day) |
 | InteractionContext | customerId, opportunityId? | — | Never serialized; feeds only the CRM change signal |
 
-## 4 Use cases
+## 5. Use cases
 
 | UseCase | Input | Output | Business rule |
 |---------|-------|--------|---------------|
 | GetInteractionsUseCase | InteractionsCriteria | ApiResult<List<Interaction>> | Pass-through to repository |
 | AddInteractionUseCase | AddInteractionParams | ApiResult<void> | Employee id resolved from CurrentEmployeeIdProvider (cached `user.id`); unauthorized when missing |
 | UpdateInteractionUseCase | UpdateInteractionParams + context | ApiResult<void> | Exactly five editable fields; context signals the change only |
-| DeleteInteractionUseCase | interactionId + context | ApiResult<void> | DELETE carries interaction_id in body; context signals the change only |
-| WatchInteractionChangesUseCase | — | Stream<CrmDataChange> | Filters core signal to `interaction` kind |
+| DeleteInteractionUseCase | interactionId + context | ApiResult<void> | DELETE carries interaction_id in the body; context signals the change only |
+| WatchInteractionChangesUseCase | — | Stream<CrmDataChange> | Filters the core signal to the interaction kind |
 
-## 5 API & storage
+## 6. API & storage
 
-Wire keys in `core/constants/api_keys.dart`, endpoints in `core/constants/endpoints.dart`,
-other constants in `core/constants/app_consts.dart`:
+| Endpoint / key (constant) | Method | Notes |
+|---------------------------|--------|-------|
+| `Endpoints.crmInteractions` | GET | query (ApiKeys) `subject`, `description`, `type`, `customer_id`, `contact_id`, `opportunity_id`; root `{"Interactions": [...]}`, sorted date desc then id desc |
+| `Endpoints.crmInteractions` | POST | body `type`, `subject`, `description`, `interaction_date` (`yyyy-MM-dd`), `customer_id`, `employee_id`; optional `contact_id`, `opportunity_id` omitted when null |
+| `Endpoints.crmInteractions` | PATCH | body exactly 5 keys: `interaction_id`, `type`, `subject`, `description`, `interaction_date` |
+| `Endpoints.crmInteractions` | DELETE | body `{interaction_id}` (never the URL) |
 
-| Call | Method | Notes |
-|------|--------|-------|
-| `/crm/interactions/` | GET | query `subject`, `description`, `type`, `customer_id`, `contact_id`, `opportunity_id`; root `{"Interactions": [...]}`, sorted date desc then id desc |
-| `/crm/interactions/` | POST | body `type`, `subject`, `description`, `interaction_date` (`yyyy-MM-dd`), `customer_id`, `employee_id`; optional `contact_id`, `opportunity_id` omitted when null |
-| `/crm/interactions/` | PATCH | body exactly 5 keys: `interaction_id`, `type`, `subject`, `description`, `interaction_date` |
-| `/crm/interactions/` | DELETE | body `{interaction_id}` (not the URL) |
+## 7. State
 
-## 6 State
+- `InteractionsListBloc` — Bloc (per-event transformers). `Started` (idempotent), `SearchChanged` (debounced + restartable, sent as typed), `FiltersChanged`/`FiltersCleared` (immediate + restartable, replace semantics — null clears), `Refreshed` (restartable; manual and CRM-signal fed).
+- `InteractionFormCubit` — Cubit: `Initial → Ready → Submitting → Success/SubmitError`, one-shot per submit.
+- `InteractionDeleteCubit` — Cubit: `Initial → InProgress → Success/Failure`, one-shot per delete.
+- List states: `Initial`, `Loading`, `Success/Empty` (carry the criteria they were loaded under; `isRefreshing`/`refreshFailure` on silent refresh), `Error`. No pagination — the feed is a full list.
 
-- `InteractionsListBloc`: `InteractionsListInitial` → `Loading` → `Success`/`Empty`/`Error`. Search debounced + restartable; filters immediate + restartable; refresh restartable. CRM change signal triggers silent `Refreshed` when customer (and opportunity, when bound) match.
-- `InteractionFormCubit`: `Initial` → `Ready` → `Submitting` → `Success`/`SubmitError`. One-shot per submit.
-- `InteractionDeleteCubit`: `Initial` → `InProgress` → `Success`/`Failure`. One-shot per delete.
+## 8. Dependencies
 
-## 7 DI
+- Depends on (core): BaseApiClient, CrmDataChangeService, CurrentEmployeeIdProvider, Endpoints/ApiKeys, failure mapper, ApiResult + WireDates, core widgets, core animations (overlays, drawn check, shimmer), core/responsive, core/theme, core/i18n.
+- Depends on (features): none.
+- Used by (features): crm_shell (feed at `/crm`, owns the three holders); opportunities (detail tab owns its own `InteractionsListBloc`; timeline, tile skeleton, `InteractionType`).
+- DI file: `core/di/interactions_injection.dart` — `initInteractionsModule` (datasource/repository/use cases lazy singletons, holders factory); wired after `initAuthModule`.
 
-`core/di/interactions_injection.dart` — `initInteractionsModule`: remote data source (lazy singleton), repository (lazy singleton), use cases (lazy singleton), holders (factory — one set per screen). Depends on `BaseApiClient`, `CrmDataChangeService` and `CurrentEmployeeIdProvider` from core. Wired into `injection_container.dart` after `initAuthModule`.
+## 9. Localization
 
-## 7.1 Used by
+- Namespace: `context.t.crm.crmInteractions.*` in `assets/i18n/en.i18n.json` (slang); feed group headers resolve today/yesterday keys.
 
-- `crm_shell` — consumes `InteractionsFeedView` in the CRM shell at `/crm`.
+## 10. Business rules & edge cases
 
-## 8 i18n
+- Successful mutations publish exactly one `CrmDataChange` (repository); failures publish nothing. Consumers refetch — no patch state is applied locally.
+- The Bloc silently refetches under its active criteria when the signal reports a relevant mutation (customer, and bound opportunity, match); a deleted row disappears through the refetch.
+- Search runs two parallel GETs (subject + description) merged, deduped and sorted; unsearched is a single GET.
+- `InteractionType` maps lowercase wire strings; null/blank/unrecognized → `unknown`, never a crash.
+- `InteractionContext` is never serialized; PATCH carries exactly the five editable fields; DELETE id goes in the body.
+- The form's dirty check compares dates by calendar day; the sheet always starts from a fresh cubit.
 
-None — no screens or user-facing text yet. All future screen text will go through slang.
+## 11. Tests
 
-## 9 Tests
+`test/features/interactions/` (mocktail + bloc_test), 29 files / 148 cases; shared helpers `interactions_test_mocks.dart` + `test_helpers.dart`:
 
-`test/features/interactions/` (mocktail + bloc_test):
+| Area | Files (cases) |
+|------|---------------|
+| Use cases | get (2), add (2), update/delete (2), watch (1) |
+| Models | interaction_model (7), interactions_response_model (3) |
+| Data | remote data source (8), repository search (6), repository mutations (6) |
+| Constants | interaction_layout_constants (3) |
+| Blocs/Cubits | list lifecycle (1), list CRM-signal refresh (4), form (8), delete (4) |
+| Mappers/view models | tile mapper (4), tile data (7) |
+| Pure | date_grouping (10), timeline_ordering (7) |
+| Widgets | feed_view (3), feed_header (8), feed_content (9), feed_state_body (12), tile (7), tile_skeleton (3), type_icon (4), timeline (6), add_edit_sheet (4), delete_dialog (3), helpers (4) |
 
-- **Use cases**: get (3), add (2), update/delete (2), watch (1).
-- **Models**: interaction (7), interactions_response (3).
-- **Remote data source**: 9 tests — filter passthrough, type wire value, error mapping, malformed body → ParsingFailure, add 5 wire keys + employee id, owner ids omitted when null, update exactly 5 fields, delete body carries interaction_id, 2xx mutation success.
-- **Repository**: search (6) — single-GET sort, filter passthrough, merge/dedupe/subject-wins, subject-fails, description-fails, both-fail subject-wins; mutations (6) — add/update/delete publish exact `CrmDataChange` once on success, never on failure.
-- **Cubits/Bloc**: list lifecycle (7), list debounce+signal (4), form (8), delete (4). Shared mocks + fallbacks in `interactions_test_mocks.dart`.
+## 12. Known issues / TODO
 
-## 10 Known issues
-
-- No screens, routes or i18n yet — holders are DI-ready but not reachable from the UI.
+- `interactions_list_bloc_test.dart` holds a single lifecycle case (the 2026-11-01 suite had 7) — broad list lifecycle coverage shrank during the UI batches; restore as its own task.
 - `watch_interaction_changes_usecase_test.dart` uses a real `StreamController`; signal delivery is flushed through the event loop.
+- `interactions_group_header.dart` has no dedicated test file (exercised indirectly through `interactions_feed_content_test.dart`).
 
-## 11 Changelog
+## 13. Changelog
 
-- 2026-11-01: Interactions feature end to end (domain → data → presentation → DI → tests): `Interaction`, `InteractionsCriteria`, `AddInteractionParams`, `UpdateInteractionParams`, `InteractionsRepository` + 5 use cases; `InteractionModel`, `InteractionsResponseModel` (strict parse); remote data source (GET/POST/PATCH/DELETE-with-body); repository impl (search fan-out merge/dedup/sort, success-only `CrmDataChange` publish); `InteractionsListBloc` (debounced search, immediate filters, restartable reloads, CRM signal silent refresh), `InteractionFormCubit`, `InteractionDeleteCubit`; DI module wired into container; 75 tests, analyze clean, all files ≤300 lines.
+- 2026-11-12 — Doc repaired against the working tree: full UI documented (file map grew to the real widget/pure/view-model layer), Tests rewritten to the 29 real files/148 cases, i18n namespace and Screens & routes added, holders noted as `blocs/` (list) and `cubits/` (form/delete), `InteractionType` documented as feature-owned.
+- 2026-11-08: UI batch 4 — `FiltersCleared` (search + type, keeps customer/opportunity scope); header owns its search controller and empties it on clear-all; detailed feed skeleton; date header redesigned (pill + count), card modernised, no duplicate date in feed cards.
+- 2026-11-07: Add/edit/delete helpers resolve cubits through DI (`getIt`) and close them afterwards; opportunity chip polished (icon, readable colours).
+- 2026-11-01: Feature end to end — entities/params, repository + 5 use cases, 2 models (strict parse), remote data source (GET/POST/PATCH/DELETE-with-body), repository impl (search fan-out, success-only signal publish), list Bloc + form/delete Cubits, DI module.

@@ -48,6 +48,11 @@ final class InteractionsListFiltersChanged extends InteractionsListEvent {
 /// Manual pull-to-refresh; the Bloc also feeds itself this event when the
 /// CRM change signal reports a relevant successful mutation (silent refetch
 /// with the same criteria).
+/// Drops the search text and every filter in one step.
+final class InteractionsListFiltersCleared extends InteractionsListEvent {
+  const InteractionsListFiltersCleared();
+}
+
 final class InteractionsListRefreshed extends InteractionsListEvent {
   const InteractionsListRefreshed();
 }

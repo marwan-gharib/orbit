@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -7,6 +9,8 @@ import 'package:orbit/core/extensions/context_extensions.dart';
 import 'package:orbit/core/i18n/strings.g.dart';
 import 'package:orbit/core/theme/app_spacing.dart';
 import 'package:orbit/features/interactions/presentation/blocs/interactions_list/interactions_list_bloc.dart';
+import 'package:orbit/features/interactions/presentation/blocs/interactions_list/interactions_list_state.dart';
+import 'package:orbit/features/interactions/presentation/constants/interaction_layout_constants.dart';
 import 'package:orbit/features/interactions/presentation/blocs/interactions_list/interactions_list_event.dart'
     show InteractionsListRefreshed, InteractionsListStarted;
 import 'package:orbit/features/interactions/presentation/cubits/interaction_form/interaction_form_cubit.dart';
@@ -32,6 +36,33 @@ class InteractionsFeedView extends StatefulWidget {
 
 class _InteractionsFeedViewState extends State<InteractionsFeedView> {
   @override
+  void initState() {
+    super.initState();
+    context.read<InteractionsListBloc>().add(const InteractionsListStarted());
+  }
+
+  Future<void> _onRefresh() async {
+    final bloc = context.read<InteractionsListBloc>();
+    bloc.add(const InteractionsListRefreshed());
+    try {
+      await bloc.stream
+          .firstWhere(_isSettled)
+          .timeout(InteractionLayoutConstants.refreshTimeout);
+    } on TimeoutException {
+      // Keep what is on screen; the spinner just stops.
+    } on StateError {
+      // Bloc closed while refreshing (tab left): nothing to wait for.
+    }
+  }
+
+  bool _isSettled(InteractionsListState state) => switch (state) {
+    InteractionsListSuccess(:final isRefreshing) => !isRefreshing,
+    InteractionsListEmpty(:final isRefreshing) => !isRefreshing,
+    InteractionsListInitial() || InteractionsListLoading() => false,
+    InteractionsListError() => true,
+  };
+
+  @override
   Widget build(BuildContext context) {
     return MultiBlocListener(
       listeners: [
@@ -42,39 +73,29 @@ class _InteractionsFeedViewState extends State<InteractionsFeedView> {
           listener: _onDeleteStateChanged,
         ),
       ],
-      child: BlocProvider<InteractionsListBloc>(
-        create: (context) =>
-            context.read<InteractionsListBloc>()
-              ..add(const InteractionsListStarted()),
-        child: RefreshIndicator(
-          onRefresh: () async {
-            context.read<InteractionsListBloc>().add(
-              const InteractionsListRefreshed(),
-            );
-          },
-          child: CustomScrollView(
-            slivers: [
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: AppSpacing.page,
-                  child: const InteractionsFeedHeader(),
-                ),
+      child: RefreshIndicator(
+        onRefresh: _onRefresh,
+        child: CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          slivers: [
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: AppSpacing.page,
+                child: const InteractionsFeedHeader(),
               ),
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: AppSpacing.pageHorizontal,
-                  child: InteractionsFeedStateBody(
-                    onEdit: _openEditSheet,
-                    onDelete: _openDeleteDialog,
-                    onOpenOpportunity: widget.onOpenOpportunity,
-                  ),
-                ),
+            ),
+            SliverPadding(
+              padding: AppSpacing.pageHorizontal,
+              sliver: InteractionsFeedStateBody(
+                onEdit: _openEditSheet,
+                onDelete: _openDeleteDialog,
+                onOpenOpportunity: widget.onOpenOpportunity,
               ),
-              const SliverToBoxAdapter(
-                child: SizedBox(height: 100), // bottom padding for scroll
-              ),
-            ],
-          ),
+            ),
+            SliverToBoxAdapter(
+              child: SizedBox(height: InteractionLayoutConstants.feedBottomPadding),
+            ),
+          ],
         ),
       ),
     );

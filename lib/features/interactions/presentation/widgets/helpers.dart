@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:orbit/core/animations/overlays/app_bottom_sheet.dart';
 import 'package:orbit/core/animations/overlays/app_dialog_route.dart';
+import 'package:orbit/core/di/injection_container.dart';
 import 'package:orbit/features/interactions/domain/enums/interaction_type.dart';
 import 'package:orbit/features/interactions/presentation/cubits/interaction_form/interaction_form_cubit.dart';
 import 'package:orbit/features/interactions/presentation/cubits/interaction_delete/interaction_delete_cubit.dart';
@@ -23,21 +24,25 @@ Future<void> showAddInteractionSheet(
   DateTime? initialDate,
   String? contextLabel,
 }) async {
-  final formCubit = InteractionFormCubit(context.read(), context.read());
+  final formCubit = getIt<InteractionFormCubit>();
 
   formCubit.startAdd();
 
-  await _showAddSheet(
-    context: context,
-    formCubit: formCubit,
-    customerId: customerId,
-    opportunityId: opportunityId,
-    contacts: contacts,
-    initialContactId: initialContactId,
-    initialType: initialType,
-    initialDate: initialDate,
-    contextLabel: contextLabel,
-  );
+  try {
+    await _showAddSheet(
+      context: context,
+      formCubit: formCubit,
+      customerId: customerId,
+      opportunityId: opportunityId,
+      contacts: contacts,
+      initialContactId: initialContactId,
+      initialType: initialType,
+      initialDate: initialDate,
+      contextLabel: contextLabel,
+    );
+  } finally {
+    await formCubit.close();
+  }
 }
 
 /// Opens the edit-interaction bottom sheet.
@@ -46,18 +51,22 @@ Future<void> showEditInteractionSheet(
   BuildContext context, {
   required InteractionEditData data,
 }) async {
-  final formCubit = InteractionFormCubit(context.read(), context.read());
+  final formCubit = getIt<InteractionFormCubit>();
 
   formCubit.startEditWithContext(
     customerId: data.customerId ?? 0,
     opportunityId: data.opportunityId,
   );
 
-  await _showEditSheet(
-    context: context,
-    formCubit: formCubit,
-    editData: data,
-  );
+  try {
+    await _showEditSheet(
+      context: context,
+      formCubit: formCubit,
+      editData: data,
+    );
+  } finally {
+    await formCubit.close();
+  }
 }
 
 /// Opens the delete-interaction confirmation dialog.
@@ -68,19 +77,23 @@ Future<void> showDeleteInteractionDialog(
   int? customerId,
   int? opportunityId,
 }) async {
-  final deleteCubit = InteractionDeleteCubit(context.read());
+  final deleteCubit = getIt<InteractionDeleteCubit>();
 
-  return showAppDialog<void>(
-    context: context,
-    builder: (context) => BlocProvider.value(
-      value: deleteCubit,
-      child: InteractionDeleteDialog(
-        interactionId: interactionId,
-        customerId: customerId,
-        opportunityId: opportunityId,
+  try {
+    await showAppDialog<void>(
+      context: context,
+      builder: (context) => BlocProvider.value(
+        value: deleteCubit,
+        child: InteractionDeleteDialog(
+          interactionId: interactionId,
+          customerId: customerId,
+          opportunityId: opportunityId,
+        ),
       ),
-    ),
-  );
+    );
+  } finally {
+    await deleteCubit.close();
+  }
 }
 
 Future<void> _showAddSheet({

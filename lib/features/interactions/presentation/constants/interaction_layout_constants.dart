@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import 'package:orbit/core/responsive/responsive.dart';
 import 'package:orbit/core/theme/app_radius.dart';
 import 'package:orbit/core/theme/app_spacing.dart';
@@ -39,6 +38,13 @@ abstract final class InteractionLayoutConstants {
 
   /// Gap above a group header.
   static double get groupHeaderTopGap => AppSpacing.lg;
+  static double get groupHeaderHeight => Responsive.adapt(60);
+  static double get groupHeaderIconSize => Responsive.adapt(14);
+  static const int staggerItemCap = 8;
+  static const double swipeIconMinScale = 0.6;
+  static const double swipeIconMaxScale = 1.2;
+  static double get feedBottomPadding => Responsive.adapt(40);
+  static const Duration refreshTimeout = Duration(seconds: 15);
 
   /// Number of skeleton rows rendered.
   static const int skeletonRows = 3;
@@ -83,5 +89,5 @@ abstract final class InteractionLayoutConstants {
   static const int maxDepartingRows = 10;
 
   /// Corner radius for tile highlight and ripple.
-  static BorderRadius get tileBorderRadius => AppRadius.borderMd;
+  static BorderRadius get tileBorderRadius => AppRadius.borderLg;
 }

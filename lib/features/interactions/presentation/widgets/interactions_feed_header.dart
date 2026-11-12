@@ -3,7 +3,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:orbit/core/animations/animations.dart';
 import 'package:orbit/core/i18n/strings.g.dart';
 import 'package:orbit/core/theme/app_spacing.dart';
-import 'package:orbit/core/theme/extensions/colors_extension.dart';
 import 'package:orbit/core/widgets/app_text_field.dart';
 import 'package:orbit/features/interactions/domain/enums/interaction_type.dart';
 import 'package:orbit/features/interactions/presentation/blocs/interactions_list/interactions_list_bloc.dart';
@@ -11,12 +10,37 @@ import 'package:orbit/features/interactions/presentation/blocs/interactions_list
 import 'package:orbit/features/interactions/presentation/blocs/interactions_list/interactions_list_state.dart';
 
 /// Search field + type filter chips for the interactions feed.
-class InteractionsFeedHeader extends StatelessWidget {
+///
+/// Owns the search controller so "clear filters" (from anywhere) can empty
+/// the field: when the bloc's search text becomes empty while the field still
+/// shows text the user did not just type, the field is cleared.
+class InteractionsFeedHeader extends StatefulWidget {
   const InteractionsFeedHeader({super.key});
 
   @override
+  State<InteractionsFeedHeader> createState() => _InteractionsFeedHeaderState();
+}
+
+class _InteractionsFeedHeaderState extends State<InteractionsFeedHeader> {
+  final TextEditingController _controller = TextEditingController();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return BlocBuilder<InteractionsListBloc, InteractionsListState>(
+    final bloc = context.read<InteractionsListBloc>();
+
+    return BlocConsumer<InteractionsListBloc, InteractionsListState>(
+      // Only a clear-all (criteria without text and type) empties the field.
+      listenWhen: (previous, current) =>
+          previous.criteria != current.criteria &&
+          current.criteria.searchText == null &&
+          current.criteria.type == null,
+      listener: (context, state) => _controller.clear(),
       builder: (context, state) {
         final criteria = state.criteria;
         final hasActiveFilters =
@@ -27,32 +51,25 @@ class InteractionsFeedHeader extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             _SearchField(
-              initialValue: criteria.searchText ?? '',
-              hintText: context.t.crm.crmInteractions.searchHint,
-              onChanged: (text) => context.read<InteractionsListBloc>().add(
-                InteractionsListSearchChanged(text),
-              ),
-              onClear: () => context.read<InteractionsListBloc>().add(
-                const InteractionsListSearchChanged(''),
-              ),
+              controller: _controller,
+              onChanged: (text) =>
+                  bloc.add(InteractionsListSearchChanged(text)),
               showProgress: state is InteractionsListLoading,
             ),
             SizedBox(height: AppSpacing.md),
             _TypeChipRow(
               selectedType: criteria.type,
-              onChanged: (type) => context.read<InteractionsListBloc>().add(
-                InteractionsListFiltersChanged(type: type),
+              onChanged: (type) => bloc.add(
+                InteractionsListFiltersChanged(
+                  type: type,
+                  customerId: criteria.customerId,
+                  contactId: criteria.contactId,
+                  opportunityId: criteria.opportunityId,
+                ),
               ),
               hasActiveFilters: hasActiveFilters,
               onClearFilters: hasActiveFilters
-                  ? () {
-                      context.read<InteractionsListBloc>().add(
-                        const InteractionsListSearchChanged(''),
-                      );
-                      context.read<InteractionsListBloc>().add(
-                        const InteractionsListFiltersChanged(type: null),
-                      );
-                    }
+                  ? () => bloc.add(const InteractionsListFiltersCleared())
                   : null,
             ),
           ],
@@ -62,76 +79,50 @@ class InteractionsFeedHeader extends StatelessWidget {
   }
 }
 
-class _SearchField extends StatefulWidget {
+class _SearchField extends StatelessWidget {
   const _SearchField({
-    required this.initialValue,
-    required this.hintText,
+    required this.controller,
     required this.onChanged,
-    required this.onClear,
     required this.showProgress,
   });
 
-  final String initialValue;
-  final String hintText;
+  final TextEditingController controller;
   final ValueChanged<String> onChanged;
-  final VoidCallback onClear;
   final bool showProgress;
 
   @override
-  State<_SearchField> createState() => _SearchFieldState();
-}
-
-class _SearchFieldState extends State<_SearchField> {
-  late final TextEditingController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = TextEditingController(text: widget.initialValue);
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final colors = context.colors;
-
-    return Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Expanded(
-          child: AppTextField(
-            controller: _controller,
-            hint: widget.hintText,
+        ValueListenableBuilder<TextEditingValue>(
+          valueListenable: controller,
+          builder: (context, value, _) => AppTextField(
+            controller: controller,
+            label: context.t.crm.crmInteractions.searchHint,
+            hint: context.t.crm.crmInteractions.searchHint,
             prefixIcon: const Icon(Icons.search_rounded),
-            suffixIcon: _controller.text.isNotEmpty
+            suffixIcon: value.text.isNotEmpty
                 ? IconButton(
+                    tooltip: context.t.crm.common.a11y.clearSearch,
                     icon: const Icon(Icons.clear_rounded),
                     onPressed: () {
-                      _controller.clear();
-                      widget.onClear();
-                      widget.onChanged('');
+                      controller.clear();
+                      onChanged('');
                     },
                   )
                 : null,
-            onChanged: widget.onChanged,
-            label: context.t.crm.crmInteractions.searchHint,
+            onChanged: onChanged,
           ),
         ),
-        if (widget.showProgress) ...[
-          SizedBox(width: AppSpacing.sm),
-          SizedBox(
-            width: 20,
-            height: 20,
-            child: CircularProgressIndicator(
-              strokeWidth: 2,
-              color: colors.primary,
-            ),
+        // Thin progress line instead of a spinner squeezed beside the field.
+        AnimatedVisibility(
+          visible: showProgress,
+          child: Padding(
+            padding: EdgeInsetsDirectional.only(top: AppSpacing.xs),
+            child: const AnimatedProgressBar(),
           ),
-        ],
+        ),
       ],
     );
   }

@@ -1,74 +1,118 @@
 import 'package:flutter/material.dart';
-import 'package:orbit/core/animations/animations.dart';
-import 'package:orbit/core/i18n/strings.g.dart';
+import 'package:orbit/core/animations/loading/shimmer_box.dart';
+import 'package:orbit/core/animations/loading/shimmer_scope.dart';
+import 'package:orbit/core/responsive/responsive.dart';
+import 'package:orbit/core/theme/app_radius.dart';
+import 'package:orbit/core/theme/app_spacing.dart';
 import 'package:orbit/core/theme/extensions/colors_extension.dart';
-import 'package:orbit/core/theme/extensions/text_styles_extension.dart';
 
 import '../constants/interaction_layout_constants.dart';
 
-/// Loading twin of [InteractionTile]: same geometry, driven by one
-/// [ShimmerScope] per feed. Static under reduce-motion.
+/// Skeleton twin of an interaction card: type badge, subject, two
+/// description lines and a chip. The card surface stays outside the shimmer so
+/// only the placeholder shapes animate.
 class InteractionTileSkeleton extends StatelessWidget {
   const InteractionTileSkeleton({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final loadingLabel = context.t.crm.crmInteractions.loading;
+    final colors = context.colors;
 
-    return Semantics(
-      label: loadingLabel,
-      container: true,
-      child: ExcludeSemantics(
-        child: Container(
-          decoration: BoxDecoration(
-            color: context.colors.surface,
-            borderRadius: InteractionLayoutConstants.tileBorderRadius,
-          ),
-          child: Padding(
-            padding: EdgeInsets.symmetric(
-              horizontal: InteractionLayoutConstants.tileHorizontalPadding,
-              vertical: InteractionLayoutConstants.tileVerticalPadding,
-            ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                ShimmerBox.circle(
-                  width: InteractionLayoutConstants.typeIconSize,
-                  height: InteractionLayoutConstants.typeIconSize,
-                ),
-                SizedBox(width: InteractionLayoutConstants.typeIconGap),
-                Expanded(
-                  child: LayoutBuilder(
-                    builder: (context, constraints) => Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        ShimmerBox.textLine(
-                          width:
-                              constraints.maxWidth *
-                              InteractionLayoutConstants.skeletonSubjectWidth,
-                          height: context.textStyles.titleMedium.fontSize,
-                        ),
-                        SizedBox(height: InteractionLayoutConstants.contentGap),
-                        ShimmerBox.textLine(
-                          width:
-                              constraints.maxWidth *
-                              InteractionLayoutConstants
-                                  .skeletonDescriptionWidth,
-                          height: context.textStyles.bodyMedium.fontSize,
-                        ),
-                        SizedBox(height: InteractionLayoutConstants.contentGap),
-                        ShimmerBox.textLine(
-                          width:
-                              constraints.maxWidth *
-                              InteractionLayoutConstants.skeletonDateWidth,
-                          height: context.textStyles.labelSmall.fontSize,
-                        ),
-                      ],
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: colors.surfaceContainerHighest,
+        borderRadius: InteractionLayoutConstants.tileBorderRadius,
+        border: Border.all(color: colors.border),
+      ),
+      child: Padding(
+        padding: EdgeInsetsDirectional.all(AppSpacing.md),
+        child: ShimmerScope(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ShimmerBox(
+                width: Responsive.adapt(44),
+                height: Responsive.adapt(44),
+              ),
+              SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    FractionallySizedBox(
+                      widthFactor: 0.7,
+                      child: ShimmerBox(height: Responsive.adapt(16)),
                     ),
-                  ),
+                    SizedBox(height: AppSpacing.sm),
+                    ShimmerBox(height: Responsive.adapt(12)),
+                    SizedBox(height: AppSpacing.xs),
+                    FractionallySizedBox(
+                      widthFactor: 0.55,
+                      child: ShimmerBox(height: Responsive.adapt(12)),
+                    ),
+                    SizedBox(height: AppSpacing.md),
+                    Container(
+                      width: Responsive.adapt(96),
+                      height: Responsive.adapt(28),
+                      decoration: BoxDecoration(
+                        borderRadius: AppRadius.borderFull,
+                      ),
+                      child: ShimmerBox(
+                        width: Responsive.adapt(96),
+                        height: Responsive.adapt(28),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// A few [InteractionTileSkeleton]s with the gap the real list uses.
+class InteractionTileSkeletonList extends StatelessWidget {
+  const InteractionTileSkeletonList({super.key, this.count = 3});
+
+  final int count;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        for (var i = 0; i < count; i++) ...[
+          const InteractionTileSkeleton(),
+          if (i < count - 1)
+            SizedBox(height: InteractionLayoutConstants.tileVerticalPadding),
+        ],
+      ],
+    );
+  }
+}
+
+/// Skeleton of a pinned date header (pill + rule).
+class InteractionGroupHeaderSkeleton extends StatelessWidget {
+  const InteractionGroupHeaderSkeleton({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: InteractionLayoutConstants.groupHeaderHeight,
+      child: Padding(
+        padding: EdgeInsetsDirectional.symmetric(
+          horizontal: InteractionLayoutConstants.tileHorizontalPadding,
+          vertical: AppSpacing.sm,
+        ),
+        child: ShimmerScope(
+          child: Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: ShimmerBox(
+              width: Responsive.adapt(120),
+              height: Responsive.adapt(28),
             ),
           ),
         ),

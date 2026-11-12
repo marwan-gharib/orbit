@@ -1,24 +1,20 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:orbit/core/animations/animations.dart';
 import 'package:orbit/core/errors/failures.dart';
 import 'package:orbit/core/extensions/context_extensions.dart';
 import 'package:orbit/core/i18n/strings.g.dart';
-import 'package:orbit/core/theme/app_radius.dart';
 import 'package:orbit/core/theme/app_spacing.dart';
 import 'package:orbit/core/theme/extensions/colors_extension.dart';
 import 'package:orbit/core/theme/extensions/text_styles_extension.dart';
-import 'package:orbit/core/utils/formatters.dart';
-import 'package:orbit/core/widgets/app_button.dart';
-import 'package:orbit/core/widgets/app_text_field.dart' show AppTextField;
 import 'package:orbit/core/widgets/confirm_dialog.dart';
 
 import '../../domain/enums/interaction_type.dart' show InteractionType;
-import '../../domain/params/add_interaction_params.dart'
-    show AddInteractionParams;
-import '../../domain/params/update_interaction_params.dart'
-    show UpdateInteractionParams;
 import '../constants/interaction_layout_constants.dart';
+import '../pure/interaction_form_dirty.dart';
+import '../pure/interaction_submit_params.dart';
 import '../cubits/interaction_form/interaction_form_cubit.dart'
     show InteractionFormCubit;
 import '../cubits/interaction_form/interaction_form_state.dart'
@@ -27,6 +23,9 @@ import '../cubits/interaction_form/interaction_form_state.dart'
         InteractionFormSubmitting,
         InteractionFormSuccess,
         InteractionFormSubmitError;
+import 'interaction_sheet_fields.dart';
+import 'interaction_text_fields.dart';
+import 'interaction_submit_button.dart';
 import '../view_models/interaction_tile_data.dart'
     show InteractionEditData, InteractionContactOption, SheetMode;
 
@@ -74,6 +73,10 @@ class _InteractionAddEditSheetState extends State<InteractionAddEditSheet> {
   int? _selectedContactId;
   Failure? _failure;
   int _failureTrigger = 0;
+  String? _subjectError;
+  int _validationTrigger = 0;
+  bool _succeeded = false;
+  Timer? _closeTimer;
 
   @override
   void initState() {
@@ -99,6 +102,7 @@ class _InteractionAddEditSheetState extends State<InteractionAddEditSheet> {
 
   @override
   void dispose() {
+    _closeTimer?.cancel();
     _subjectController.dispose();
     _descriptionController.dispose();
     _subjectFocusNode.dispose();
@@ -107,30 +111,22 @@ class _InteractionAddEditSheetState extends State<InteractionAddEditSheet> {
   }
 
   bool get _isDirty {
-    if (widget.mode == SheetMode.add) {
-      return _subjectController.text.trim().isNotEmpty ||
-          _descriptionController.text.trim().isNotEmpty ||
-          _selectedContactId != widget.initialContactId ||
-          _selectedType != (widget.initialType ?? InteractionType.call) ||
-          !_isSameDay(_selectedDate, widget.initialDate ?? DateTime.now());
-    } else {
-      final data = widget.editData!;
-      return _subjectController.text.trim() != data.subject.trim() ||
-          _descriptionController.text.trim() != data.description.trim() ||
-          _selectedType != data.type ||
-          !_isSameDay(_selectedDate, data.date);
-    }
+    final edit = widget.editData;
+    return isInteractionFormDirty(
+      subject: _subjectController.text,
+      description: _descriptionController.text,
+      type: _selectedType,
+      date: _selectedDate,
+      contactId: _selectedContactId,
+      baselineSubject: edit?.subject ?? '',
+      baselineDescription: edit?.description ?? '',
+      baselineType: edit?.type ?? widget.initialType ?? InteractionType.call,
+      baselineDate: edit?.date ?? widget.initialDate ?? DateTime.now(),
+      baselineContactId: edit == null ? widget.initialContactId : null,
+    );
   }
 
-  bool _isSameDay(DateTime a, DateTime b) {
-    return a.year == b.year && a.month == b.month && a.day == b.day;
-  }
-
-  bool get _canSave {
-    if (!_isDirty) return false;
-    if (_subjectController.text.trim().isEmpty) return false;
-    return true;
-  }
+  bool get _canSave => _isDirty;
 
   @override
   Widget build(BuildContext context) {
@@ -140,53 +136,86 @@ class _InteractionAddEditSheetState extends State<InteractionAddEditSheet> {
       listener: _onStateChanged,
       builder: (context, state) {
         final isSubmitting = state is InteractionFormSubmitting;
+        final locked = isSubmitting || _succeeded;
 
         return PopScope(
-          canPop: !_isDirty && !isSubmitting,
-          onPopInvokedWithResult: (didPop, _) =>
-              _handlePop(didPop, isSubmitting),
+          canPop: !_isDirty && !locked,
+          onPopInvokedWithResult: (didPop, _) => _handlePop(didPop, locked),
           child: Padding(
             padding: EdgeInsetsDirectional.only(bottom: keyboardInset),
             child: SafeArea(
               top: false,
               child: SingleChildScrollView(
                 padding: AppSpacing.page,
-                child: Column(
+                child: StaggeredColumn(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    _buildHeader(context),
-                    SizedBox(height: InteractionLayoutConstants.sheetFieldGap),
-                    _buildTypeSelector(context),
-                    SizedBox(height: InteractionLayoutConstants.sheetFieldGap),
-                    _buildDatePicker(context),
-                    SizedBox(height: InteractionLayoutConstants.sheetFieldGap),
-                    _buildSubjectField(context),
-                    SizedBox(height: InteractionLayoutConstants.sheetFieldGap),
-                    _buildDescriptionField(context),
-                    if (widget.mode == SheetMode.add) ...[
-                      SizedBox(
-                        height: InteractionLayoutConstants.sheetFieldGap,
+                    Text(
+                      widget.mode == SheetMode.add
+                          ? context.t.crm.editor.titleAdd
+                          : context.t.crm.editor.titleEdit,
+                      style: context.textStyles.headlineSmall,
+                    ),
+                    _gap,
+                    InteractionTypeSelector(
+                      selected: _selectedType,
+                      onChanged: (type) => setState(() => _selectedType = type),
+                    ),
+                    _gap,
+                    InteractionDateField(
+                      date: _selectedDate,
+                      onChanged: (date) => setState(() => _selectedDate = date),
+                    ),
+                    _gap,
+                    InteractionSubjectField(
+                      controller: _subjectController,
+                      focusNode: _subjectFocusNode,
+                      errorText: _subjectError,
+                      validationTrigger: _validationTrigger,
+                      onChanged: (_) => setState(() {
+                        _failure = null;
+                        _subjectError = null;
+                      }),
+                    ),
+                    _gap,
+                    InteractionDescriptionField(
+                      controller: _descriptionController,
+                      focusNode: _descriptionFocusNode,
+                      onChanged: (_) => setState(() => _failure = null),
+                    ),
+                    if (widget.mode == SheetMode.add &&
+                        (widget.contacts?.isNotEmpty ?? false)) ...[
+                      _gap,
+                      InteractionContactSelector(
+                        contacts: widget.contacts!,
+                        selectedId: _selectedContactId,
+                        onChanged: (id) =>
+                            setState(() => _selectedContactId = id),
                       ),
-                      _buildContactSelector(context),
                     ],
                     if (widget.contextLabel != null) ...[
-                      SizedBox(
-                        height: InteractionLayoutConstants.sheetFieldGap,
-                      ),
-                      _buildContextLabel(context),
+                      _gap,
+                      InteractionContextLabel(text: widget.contextLabel!),
                     ],
-                    if (_failure case final failure?) ...[
-                      SizedBox(height: AppSpacing.sm),
-                      Text(
-                        context.failureText(failure),
-                        style: context.textStyles.bodySmall.copyWith(
-                          color: context.colors.error,
+                    if (_failure case final failure?)
+                      Padding(
+                        padding: EdgeInsetsDirectional.only(top: AppSpacing.sm),
+                        child: Text(
+                          context.failureText(failure),
+                          style: context.textStyles.bodySmall.copyWith(
+                            color: context.colors.error,
+                          ),
                         ),
                       ),
-                    ],
                     SizedBox(height: AppSpacing.lg),
-                    _buildActions(context, isSubmitting),
+                    InteractionSheetActions(
+                      isSubmitting: isSubmitting,
+                      succeeded: _succeeded,
+                      failureTrigger: _failureTrigger,
+                      onCancel: _cancel,
+                      onSubmit: _canSave ? _submit : null,
+                    ),
                   ],
                 ),
               ),
@@ -197,236 +226,15 @@ class _InteractionAddEditSheetState extends State<InteractionAddEditSheet> {
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
-    final labels = context.t.crm.editor;
-    return Text(
-      widget.mode == SheetMode.add ? labels.titleAdd : labels.titleEdit,
-      style: context.textStyles.headlineSmall,
-    );
-  }
-
-  Widget _buildTypeSelector(BuildContext context) {
-    final labels = context.t.crm.editor;
-    final colors = context.colors;
-    final textStyles = context.textStyles;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(labels.type, style: textStyles.labelMedium),
-        SizedBox(height: AppSpacing.xs),
-        SegmentedButton<InteractionType>(
-          segments: [
-            ButtonSegment(
-              value: InteractionType.call,
-              label: Text(labels.typeCall),
-              icon: const Icon(Icons.call_rounded, size: 20),
-            ),
-            ButtonSegment(
-              value: InteractionType.email,
-              label: Text(labels.typeEmail),
-              icon: const Icon(Icons.email_rounded, size: 20),
-            ),
-            ButtonSegment(
-              value: InteractionType.meeting,
-              label: Text(labels.typeMeeting),
-              icon: const Icon(Icons.meeting_room_rounded, size: 20),
-            ),
-          ],
-          selected: {_selectedType},
-          onSelectionChanged: (set) {
-            if (set.isNotEmpty) {
-              setState(() => _selectedType = set.first);
-            }
-          },
-          style: ButtonStyle(
-            backgroundColor: WidgetStateProperty.resolveWith((states) {
-              if (states.contains(WidgetState.selected)) {
-                return colors.primary;
-              }
-              return colors.surfaceVariant;
-            }),
-            foregroundColor: WidgetStateProperty.resolveWith((states) {
-              if (states.contains(WidgetState.selected)) {
-                return colors.onPrimary;
-              }
-              return colors.textSecondary;
-            }),
-            side: WidgetStateProperty.resolveWith((states) {
-              if (states.contains(WidgetState.selected)) {
-                return BorderSide.none;
-              }
-              return BorderSide(color: colors.border);
-            }),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildDatePicker(BuildContext context) {
-    final labels = context.t.crm.editor;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(labels.date, style: context.textStyles.labelMedium),
-        SizedBox(height: AppSpacing.xs),
-        InkWell(
-          onTap: () => _pickDate(context),
-          child: InputDecorator(
-            decoration: InputDecoration(
-              hintText: labels.date,
-              border: OutlineInputBorder(
-                borderRadius: AppRadius.borderMd,
-                borderSide: BorderSide(color: context.colors.border),
-              ),
-              contentPadding: EdgeInsets.symmetric(
-                horizontal: AppSpacing.md,
-                vertical: AppSpacing.sm,
-              ),
-            ),
-            child: Text(
-              Formatters.crmDate(_selectedDate),
-              style: context.textStyles.bodyMedium,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Future<void> _pickDate(BuildContext context) async {
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: _selectedDate,
-      firstDate: DateTime(2000),
-      lastDate: DateTime(2100),
-    );
-    if (picked != null && mounted) {
-      setState(() => _selectedDate = picked);
-    }
-  }
-
-  Widget _buildSubjectField(BuildContext context) {
-    return ShakeWidget(
-      trigger: _failureTrigger,
-      haptic: true,
-      child: AppTextField(
-        controller: _subjectController,
-        focusNode: _subjectFocusNode,
-        label: context.t.crm.editor.subject,
-        hint: context.t.crm.editor.subject,
-        textCapitalization: TextCapitalization.sentences,
-        onChanged: (_) => setState(() => _failure = null),
-        validator: (value) {
-          if (value == null || value.trim().isEmpty) {
-            return context.t.crm.editor.subjectRequired;
-          }
-          return null;
-        },
-      ),
-    );
-  }
-
-  Widget _buildDescriptionField(BuildContext context) {
-    return AppTextField(
-      controller: _descriptionController,
-      focusNode: _descriptionFocusNode,
-      label: context.t.crm.editor.description,
-      hint: context.t.crm.editor.description,
-      minLines: InteractionLayoutConstants.sheetMinLines,
-      maxLines: InteractionLayoutConstants.sheetMaxLines,
-      textCapitalization: TextCapitalization.sentences,
-      onChanged: (_) => setState(() => _failure = null),
-    );
-  }
-
-  Widget _buildContactSelector(BuildContext context) {
-    final labels = context.t.crm.editor;
-    final colors = context.colors;
-    final contacts = widget.contacts ?? [];
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(labels.contactOptional, style: context.textStyles.labelMedium),
-        SizedBox(height: AppSpacing.xs),
-        Wrap(
-          spacing: AppSpacing.xs,
-          runSpacing: AppSpacing.xs,
-          children: [
-            FilterChip(
-              label: Text(labels.contactNone),
-              selected: _selectedContactId == null,
-              onSelected: (_) => setState(() => _selectedContactId = null),
-              backgroundColor: colors.surfaceVariant,
-              selectedColor: colors.primaryContainer,
-              checkmarkColor: colors.onPrimaryContainer,
-            ),
-            for (final contact in contacts)
-              FilterChip(
-                label: Text(contact.label),
-                selected: _selectedContactId == contact.id,
-                onSelected: (_) =>
-                    setState(() => _selectedContactId = contact.id),
-                backgroundColor: colors.surfaceVariant,
-                selectedColor: colors.primaryContainer,
-                checkmarkColor: colors.onPrimaryContainer,
-              ),
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _buildContextLabel(BuildContext context) {
-    final colors = context.colors;
-    return Container(
-      padding: EdgeInsets.all(AppSpacing.md),
-      decoration: BoxDecoration(
-        color: colors.surfaceVariant,
-        borderRadius: AppRadius.borderMd,
-      ),
-      child: Row(
-        children: [
-          Icon(Icons.info_outline, color: colors.textSecondary, size: 20),
-          SizedBox(width: AppSpacing.sm),
-          Expanded(
-            child: Text(
-              widget.contextLabel!,
-              style: context.textStyles.bodyMedium.copyWith(
-                color: colors.textSecondary,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildActions(BuildContext context, bool isSubmitting) {
-    final common = context.t.crm.common;
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.end,
-      children: [
-        AppButton.text(
-          label: common.cancel,
-          onPressed: isSubmitting ? null : _cancel,
-        ),
-        SizedBox(width: AppSpacing.sm),
-        AppButton(
-          label: common.save,
-          isLoading: isSubmitting,
-          onPressed: _canSave && !isSubmitting ? _submit : null,
-        ),
-      ],
-    );
-  }
+  Widget get _gap => SizedBox(height: InteractionLayoutConstants.sheetFieldGap);
 
   void _onStateChanged(BuildContext context, InteractionFormState state) {
     if (state is InteractionFormSuccess) {
-      if (context.mounted) Navigator.of(context).pop();
+      // Let the drawn check play, then close.
+      setState(() => _succeeded = true);
+      _closeTimer = Timer(AppDurations.slow, () {
+        if (mounted) Navigator.of(context).pop();
+      });
       return;
     }
     if (state is InteractionFormSubmitError) {
@@ -439,28 +247,27 @@ class _InteractionAddEditSheetState extends State<InteractionAddEditSheet> {
 
   void _submit() {
     if (!_canSave) return;
+    if (_subjectController.text.trim().isEmpty) {
+      setState(() {
+        _subjectError = context.t.crm.editor.subjectRequired;
+        _validationTrigger++;
+      });
+      return;
+    }
 
-    if (widget.mode == SheetMode.add) {
-      final params = AddInteractionParams(
+    widget.onSubmit(
+      buildInteractionSubmitParams(
+        mode: widget.mode,
         type: _selectedType,
-        subject: _subjectController.text.trim(),
-        description: _descriptionController.text.trim(),
-        interactionDate: _selectedDate,
-        customerId: widget.customerId!,
+        subject: _subjectController.text,
+        description: _descriptionController.text,
+        date: _selectedDate,
+        customerId: widget.customerId,
         contactId: _selectedContactId,
         opportunityId: widget.opportunityId,
-      );
-      widget.onSubmit(params);
-    } else {
-      final params = UpdateInteractionParams(
-        interactionId: widget.editData!.interactionId,
-        type: _selectedType,
-        subject: _subjectController.text.trim(),
-        description: _descriptionController.text.trim(),
-        interactionDate: _selectedDate,
-      );
-      widget.onSubmit(params);
-    }
+        editData: widget.editData,
+      ),
+    );
   }
 
   void _cancel() {

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:orbit/core/animations/animations.dart';
 import 'package:orbit/core/errors/failures.dart';
 import 'package:orbit/core/extensions/context_extensions.dart';
 import 'package:orbit/core/i18n/strings.g.dart';
@@ -47,19 +46,21 @@ class _InteractionsFeedStateBodyState extends State<InteractionsFeedStateBody> {
       builder: (context, state) {
         final failure = _refreshFailure(state);
 
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (failure != null && !identical(failure, _dismissedFailure)) ...[
-              InteractionRefreshNotice(
-                message: context.t.crm.common.refreshFailedNotice,
-                dismissLabel: context.t.crm.common.dismiss,
-                onDismiss: () => setState(() => _dismissedFailure = failure),
+        return SliverMainAxisGroup(
+          slivers: [
+            if (failure != null && !identical(failure, _dismissedFailure))
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsetsDirectional.only(bottom: AppSpacing.sm),
+                  child: InteractionRefreshNotice(
+                    message: context.t.crm.common.refreshFailedNotice,
+                    dismissLabel: context.t.crm.common.dismiss,
+                    onDismiss: () =>
+                        setState(() => _dismissedFailure = failure),
+                  ),
+                ),
               ),
-              SizedBox(height: AppSpacing.sm),
-            ],
-            AppAnimatedSwitcher(child: _body(context, state)),
+            _body(context, state),
           ],
         );
       },
@@ -101,14 +102,16 @@ class _InteractionsFeedStateBodyState extends State<InteractionsFeedStateBody> {
           onOpenOpportunity: widget.onOpenOpportunity,
         ),
       InteractionsListEmpty(:final criteria, :final isRefreshing) =>
-        _buildEmpty(context, criteria, isRefreshing),
-      InteractionsListError(:final failure) => ErrorState(
-        key: const ValueKey('feed-error'),
-        message: context.failureText(failure),
-        retryAction: (
-          label: context.t.crm.common.retry,
-          onPressed: () => context.read<InteractionsListBloc>().add(
-            const InteractionsListRefreshed(),
+        SliverToBoxAdapter(child: _buildEmpty(context, criteria, isRefreshing)),
+      InteractionsListError(:final failure) => SliverToBoxAdapter(
+        child: ErrorState(
+          key: const ValueKey('feed-error'),
+          message: context.failureText(failure),
+          retryAction: (
+            label: context.t.crm.common.retry,
+            onPressed: () => context.read<InteractionsListBloc>().add(
+              const InteractionsListRefreshed(),
+            ),
           ),
         ),
       ),
@@ -131,14 +134,9 @@ class _InteractionsFeedStateBodyState extends State<InteractionsFeedStateBody> {
         icon: Icons.search_off_rounded,
         primaryAction: (
           label: context.t.crm.common.clearFilters,
-          onPressed: () {
-            context.read<InteractionsListBloc>().add(
-              const InteractionsListSearchChanged(''),
-            );
-            context.read<InteractionsListBloc>().add(
-              const InteractionsListFiltersChanged(type: null),
-            );
-          },
+          onPressed: () => context.read<InteractionsListBloc>().add(
+            const InteractionsListFiltersCleared(),
+          ),
         ),
       );
     }

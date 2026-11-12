@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import 'package:orbit/core/animations/animations.dart';
 import 'package:orbit/core/i18n/strings.g.dart';
 import 'package:orbit/core/theme/app_spacing.dart';
@@ -9,7 +8,6 @@ import 'package:orbit/core/theme/extensions/text_styles_extension.dart';
 import '../constants/interaction_layout_constants.dart';
 import '../view_models/interaction_tile_data.dart';
 import 'interaction_tile.dart';
-import 'interaction_type_icon.dart';
 
 /// Non-scrolling timeline of interactions for the opportunity detail tab.
 /// Newest first, vertical connector line behind type-icon nodes, tiles on the end side.
@@ -144,88 +142,18 @@ class _TimelineItem extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: EdgeInsetsDirectional.only(
+        start: InteractionLayoutConstants.tileHorizontalPadding,
+        end: InteractionLayoutConstants.tileHorizontalPadding,
         bottom: isLast ? 0 : InteractionLayoutConstants.timelineGap,
       ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Connector line + type icon node
-          SizedBox(
-            width: InteractionLayoutConstants.typeIconSize,
-            child: Stack(
-              children: [
-                // Vertical connector line (draws progressively)
-                if (!isFirst)
-                  AnimatedBuilder(
-                    animation: progress,
-                    builder: (context, child) => CustomPaint(
-                      size: Size(
-                        InteractionLayoutConstants.timelineConnectorWidth,
-                        InteractionLayoutConstants.timelineGap +
-                            InteractionLayoutConstants.typeIconSize,
-                      ),
-                      painter: _ConnectorPainter(
-                        progress: progress.value,
-                        color: context.colors.border,
-                        lineWidth:
-                            InteractionLayoutConstants.timelineConnectorWidth,
-                      ),
-                    ),
-                  ),
-                // Type icon node (centered)
-                Center(child: InteractionTypeIcon(type: tile.type)),
-              ],
-            ),
-          ),
-          SizedBox(width: InteractionLayoutConstants.typeIconGap),
-          // Tile content
-          Expanded(
-            child: InteractionTile(
-              data: tile,
-              showDate: true,
-              showOpenOpportunityChip: false, // Already in opportunity detail
-              showAuthorName: true,
-              onEdit: () => onEdit(tile),
-              onDelete: () => onDelete(tile),
-            ),
-          ),
-        ],
+      child: InteractionTile(
+        data: tile,
+        showDate: true,
+        showOpenOpportunityChip: false, // Already in opportunity detail
+        showAuthorName: true,
+        onEdit: () => onEdit(tile),
+        onDelete: () => onDelete(tile),
       ),
     );
   }
-}
-
-class _ConnectorPainter extends CustomPainter {
-  _ConnectorPainter({
-    required this.progress,
-    required this.color,
-    required this.lineWidth,
-  });
-
-  final double progress;
-  final Color color;
-  final double lineWidth;
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    if (progress <= 0) return;
-
-    final paint = Paint()
-      ..color = color
-      ..strokeWidth = lineWidth
-      ..strokeCap = StrokeCap.round;
-
-    final drawHeight = size.height * progress.clamp(0.0, 1.0);
-    final startY = size.height - drawHeight;
-
-    canvas.drawLine(
-      Offset(size.width / 2, startY),
-      Offset(size.width / 2, size.height),
-      paint,
-    );
-  }
-
-  @override
-  bool shouldRepaint(covariant _ConnectorPainter oldDelegate) =>
-      progress != oldDelegate.progress;
 }

@@ -40,6 +40,10 @@ class InteractionsListBloc
       _onFiltersChanged,
       transformer: restartable(),
     );
+    on<InteractionsListFiltersCleared>(
+      _onFiltersCleared,
+      transformer: restartable(),
+    );
     on<InteractionsListRefreshed>(_onRefreshed, transformer: restartable());
 
     // The subscription lives for the Bloc's life (screen scope) and is
@@ -82,7 +86,7 @@ class InteractionsListBloc
     final current = state.criteria;
     await _runQuery(
       InteractionsCriteria(
-        searchText: event.text,
+        searchText: event.text.isEmpty ? null : event.text,
         type: current.type,
         customerId: current.customerId,
         contactId: current.contactId,
@@ -105,6 +109,23 @@ class InteractionsListBloc
         customerId: event.customerId,
         contactId: event.contactId,
         opportunityId: event.opportunityId,
+      ),
+      emit,
+    );
+  }
+
+  Future<void> _onFiltersCleared(
+    InteractionsListFiltersCleared event,
+    Emitter<InteractionsListState> emit,
+  ) async {
+    final current = state.criteria;
+    // Keeps the scope (customer / contact / opportunity); clears the user's
+    // own filters: search text and type.
+    await _runQuery(
+      InteractionsCriteria(
+        customerId: current.customerId,
+        contactId: current.contactId,
+        opportunityId: current.opportunityId,
       ),
       emit,
     );
