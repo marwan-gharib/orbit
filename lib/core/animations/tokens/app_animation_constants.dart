@@ -172,4 +172,34 @@ abstract final class AppAnimationConstants {
   /// `overlays/` group: gap between a leading icon and its text inside an
   /// overlay surface (`AppSnackbar`, icon rows of dialogs and sheets).
   static const double overlayIconGap = 12.0;
+
+  /// `selection/` group: minimum chip height (touch target).
+  static const double chipMinHeight = 40.0;
+
+  /// `selection/` group: diameter of the notification badge on a chip.
+  static const double chipBadgeSize = 16.0;
+
+  /// `selection/` group: how far the chip badge overhangs the chip corner.
+  static const double chipBadgeOffset = -6.0;
+
+  /// `selection/` group: ring width separating the chip badge from the chip.
+  static const double chipBadgeBorderWidth = 2.0;
+
+  /// `state/` group: default edge of the drawn check mark.
+  static const double drawnCheckSize = 28.0;
+
+  /// `selection/` group: height of the floating navigation bar.
+  static const double floatingNavHeight = 64.0;
+
+  /// `selection/` group: widest the floating navigation bar grows.
+  static const double floatingNavMaxWidth = 420.0;
+
+  /// `selection/` group: elevation (shadow) of the floating navigation bar.
+  static const double floatingNavElevation = 10.0;
+
+  /// `selection/` group: size of a floating navigation bar icon.
+  static const double floatingNavIconSize = 24.0;
+
+  /// `selection/` group: scale of the selected navigation icon.
+  static const double floatingNavSelectedScale = 1.15;
 }

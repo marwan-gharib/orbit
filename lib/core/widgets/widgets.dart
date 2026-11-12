@@ -8,3 +8,4 @@ export 'app_dialog.dart';
 export 'confirm_dialog.dart';
 export 'highlight_flash.dart';
 export 'progress_ring.dart';
+export 'charts/charts.dart';

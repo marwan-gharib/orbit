@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:orbit/core/animations/tokens/app_animation_constants.dart';
 import 'package:orbit/core/animations/tokens/app_curves.dart';
 import 'package:orbit/core/animations/tokens/app_durations.dart';
-
 import 'package:orbit/core/theme/app_radius.dart';
 import 'package:orbit/core/theme/app_spacing.dart';
 import 'package:orbit/core/theme/extensions/colors_extension.dart';
-import 'package:orbit/core/theme/extensions/text_styles_extension.dart';
 
 import 'chip_item.dart';
+import 'chip_item_widget.dart';
 
 /// A horizontally-arranged row of chips with an animated sliding indicator
 /// that tracks the selected chip. Used by CRM shell tabs, stage chips and
@@ -56,10 +54,14 @@ class _AnimatedChipSelectorState<T> extends State<AnimatedChipSelector<T>>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
   late Animation<double> _position;
+  late Animation<double> _top;
   late Animation<double> _width;
+  late Animation<double> _height;
 
+  final GlobalKey _stackKey = GlobalKey();
   final GlobalKey _indicatorKey = GlobalKey();
-  late final List<GlobalKey> _chipKeys;
+  late List<GlobalKey> _chipKeys;
+  bool _isFirstMeasurement = true;
 
   @override
   void initState() {
@@ -70,7 +72,6 @@ class _AnimatedChipSelectorState<T> extends State<AnimatedChipSelector<T>>
     );
     _chipKeys = List.generate(widget.items.length, (_) => GlobalKey());
     _buildAnimations();
-    _controller.value = 1.0; // snap to selected on mount
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _measureSelectedChip();
     });
@@ -79,54 +80,93 @@ class _AnimatedChipSelectorState<T> extends State<AnimatedChipSelector<T>>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // Re-measure when the OS flips reduce-motion mid-animation.
     if (MediaQuery.disableAnimationsOf(context)) {
       _controller.value = 1.0;
     }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _measureSelectedChip(animate: false);
+    });
   }
 
   @override
   void didUpdateWidget(covariant AnimatedChipSelector<T> oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.selectedValue != oldWidget.selectedValue) {
-      _controller.forward(from: 0.0);
+    if (widget.items.length != oldWidget.items.length) {
+      _chipKeys = List.generate(widget.items.length, (_) => GlobalKey());
+    }
+    if (widget.selectedValue != oldWidget.selectedValue ||
+        widget.items.length != oldWidget.items.length) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (mounted) _measureSelectedChip();
       });
     }
   }
 
-  void _measureSelectedChip() {
+  void _measureSelectedChip({bool animate = true}) {
     final selectedIndex = widget.items.indexWhere(
       (item) => item.value == widget.selectedValue,
     );
     if (selectedIndex < 0 || !mounted) return;
 
-    final renderBox =
-        _indicatorKey.currentContext?.findRenderObject() as RenderBox?;
-    if (renderBox == null) return;
+    final stackBox = _stackKey.currentContext?.findRenderObject() as RenderBox?;
+    if (stackBox == null || !stackBox.hasSize) return;
 
     final selectedBox =
         _chipKeys[selectedIndex].currentContext?.findRenderObject()
             as RenderBox?;
-    if (selectedBox == null) return;
+    if (selectedBox == null || !selectedBox.hasSize) return;
 
-    final targetLeft =
-        selectedBox.localToGlobal(Offset.zero).dx -
-        renderBox.localToGlobal(Offset.zero).dx;
+    final targetOffset = stackBox.globalToLocal(
+      selectedBox.localToGlobal(Offset.zero),
+    );
     final targetWidth = selectedBox.size.width;
+    final targetHeight = selectedBox.size.height;
+    final targetLeft = targetOffset.dx;
+    final targetTop = targetOffset.dy;
 
-    setState(() {
+    final isReduceMotion = MediaQuery.disableAnimationsOf(context);
+    final shouldAnimate = animate && !isReduceMotion && !_isFirstMeasurement;
+
+    if (!shouldAnimate) {
+      _position = AlwaysStoppedAnimation(targetLeft);
+      _top = AlwaysStoppedAnimation(targetTop);
+      _width = AlwaysStoppedAnimation(targetWidth);
+      _height = AlwaysStoppedAnimation(targetHeight);
+      _controller.value = 1.0;
+    } else {
       _position = Tween<double>(
         begin: _position.value,
         end: targetLeft,
+      ).animate(CurvedAnimation(parent: _controller, curve: AppCurves.travel));
+      _top = Tween<double>(
+        begin: _top.value,
+        end: targetTop,
       ).animate(CurvedAnimation(parent: _controller, curve: AppCurves.travel));
       _width = Tween<double>(
         begin: _width.value,
         end: targetWidth,
       ).animate(CurvedAnimation(parent: _controller, curve: AppCurves.travel));
+      _height = Tween<double>(
+        begin: _height.value,
+        end: targetHeight,
+      ).animate(CurvedAnimation(parent: _controller, curve: AppCurves.travel));
       _controller.forward(from: 0.0);
-    });
+    }
+
+    _isFirstMeasurement = false;
+    setState(() {});
+
+    if (widget.scrollable) {
+      final selectedContext = _chipKeys[selectedIndex].currentContext;
+      if (selectedContext != null) {
+        Scrollable.ensureVisible(
+          selectedContext,
+          duration: isReduceMotion ? Duration.zero : AppDurations.normal,
+          curve: AppCurves.travel,
+          alignment: 0.5,
+        );
+      }
+    }
   }
 
   @override
@@ -136,50 +176,27 @@ class _AnimatedChipSelectorState<T> extends State<AnimatedChipSelector<T>>
   }
 
   void _buildAnimations() {
-    _position = Tween<double>(
-      begin: 0.0,
-      end: 0.0,
-    ).animate(CurvedAnimation(parent: _controller, curve: AppCurves.travel));
-    _width = Tween<double>(
-      begin: 0.0,
-      end: 0.0,
-    ).animate(CurvedAnimation(parent: _controller, curve: AppCurves.travel));
+    _position = const AlwaysStoppedAnimation(0.0);
+    _top = const AlwaysStoppedAnimation(0.0);
+    _width = const AlwaysStoppedAnimation(0.0);
+    _height = const AlwaysStoppedAnimation(0.0);
   }
 
   @override
   Widget build(BuildContext context) {
     final colors = context.colors;
-    final textStyles = context.textStyles;
 
-    final chips = <Widget>[];
-    for (final (index, item) in widget.items.indexed) {
-      final isSelected = item.value == widget.selectedValue;
-      chips.add(
-        Padding(
-          padding: EdgeInsetsDirectional.symmetric(
-            horizontal: AppSpacing.xs / 2,
-          ),
-          child: _buildChip(
-            context,
-            item,
-            index,
-            isSelected,
-            textStyles,
-            colors,
-          ),
-        ),
-      );
-    }
-
-    final children = <Widget>[
-      ...chips,
-      AnimatedBuilder(
-        animation: _controller,
-        builder: (context, _) => Positioned(
+    final indicator = AnimatedBuilder(
+      animation: _controller,
+      builder: (context, _) {
+        if (_width.value <= 0 || _height.value <= 0) {
+          return const SizedBox.shrink();
+        }
+        return Positioned(
           left: _position.value,
-          top: 0,
-          bottom: 0,
+          top: _top.value,
           width: _width.value,
+          height: _height.value,
           child: Container(
             key: _indicatorKey,
             decoration: BoxDecoration(
@@ -187,13 +204,32 @@ class _AnimatedChipSelectorState<T> extends State<AnimatedChipSelector<T>>
               borderRadius: AppRadius.borderFull,
             ),
           ),
-        ),
-      ),
-    ];
-
-    final stack = Stack(clipBehavior: Clip.none, children: children);
+        );
+      },
+    );
 
     if (widget.scrollable) {
+      final row = Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          for (final (index, item) in widget.items.indexed)
+            Padding(
+              padding: EdgeInsetsDirectional.symmetric(
+                horizontal: AppSpacing.xs / 2,
+              ),
+              child: ChipItemWidget<T>(
+                key: _chipKeys[index],
+                item: item,
+                isSelected: item.value == widget.selectedValue,
+                onSelected: () => widget.onChanged(item.value),
+                labelStyle: widget.labelStyle,
+                selectedLabelStyle: widget.selectedLabelStyle,
+                iconSize: widget.iconSize,
+              ),
+            ),
+        ],
+      );
+
       return SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         physics: const BouncingScrollPhysics(),
@@ -201,97 +237,44 @@ class _AnimatedChipSelectorState<T> extends State<AnimatedChipSelector<T>>
           padding: EdgeInsetsDirectional.symmetric(
             horizontal: AppSpacing.xs / 2,
           ),
-          child: stack,
+          child: Stack(
+            key: _stackKey,
+            clipBehavior: Clip.none,
+            children: [indicator, row],
+          ),
         ),
       );
     }
 
-    return stack;
-  }
-
-  Widget _buildChip(
-    BuildContext context,
-    ChipItem<T> item,
-    int index,
-    bool isSelected,
-    AppTextStylesExtension textStyles,
-    AppColorsExtension colors,
-  ) {
-    final effectiveLabelStyle = isSelected
-        ? (widget.selectedLabelStyle ??
-              textStyles.labelMedium.copyWith(color: colors.onPrimary))
-        : (widget.labelStyle ??
-              textStyles.labelMedium.copyWith(color: colors.textSecondary));
-    final effectiveBackgroundColor = isSelected
-        ? colors.primary
-        : Colors.transparent;
-
-    final badge = item.badge != null && item.badge! > 0;
-    return FilterChip(
-      key: _chipKeys[index],
-      label: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (item.icon != null) ...[
-                Icon(
-                  item.icon,
-                  size: widget.iconSize ?? AppAnimationConstants.overlayIconGap,
-                  color: isSelected ? colors.onPrimary : colors.textSecondary,
-                ),
-                SizedBox(width: AppSpacing.xxs),
-              ],
-              Text(item.label, style: effectiveLabelStyle),
-            ],
-          ),
-          if (badge) ...[
-            Positioned(
-              right: -6,
-              top: -6,
-              child: Container(
-                width: 16,
-                height: 16,
-                decoration: BoxDecoration(
-                  color: colors.error,
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: isSelected ? colors.onPrimary : colors.surface,
-                    width: 2,
-                  ),
-                ),
-                child: Center(
-                  child: Text(
-                    item.badge.toString(),
-                    style: TextStyle(
-                      color: colors.onError,
-                      fontSize: 10,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
+    final row = Row(
+      children: [
+        for (final (index, item) in widget.items.indexed)
+          Expanded(
+            child: Padding(
+              padding: EdgeInsetsDirectional.symmetric(
+                horizontal: AppSpacing.xs / 2,
+              ),
+              child: SizedBox(
+                width: double.infinity,
+                child: ChipItemWidget<T>(
+                  key: _chipKeys[index],
+                  item: item,
+                  isSelected: item.value == widget.selectedValue,
+                  onSelected: () => widget.onChanged(item.value),
+                  labelStyle: widget.labelStyle,
+                  selectedLabelStyle: widget.selectedLabelStyle,
+                  iconSize: widget.iconSize,
                 ),
               ),
             ),
-          ],
-        ],
-      ),
-      selected: isSelected,
-      onSelected: (_) => widget.onChanged(item.value),
-      labelPadding: EdgeInsetsDirectional.symmetric(horizontal: AppSpacing.sm),
-      padding: EdgeInsetsDirectional.symmetric(
-        horizontal: AppSpacing.md,
-        vertical: AppSpacing.xs,
-      ),
-      backgroundColor: effectiveBackgroundColor,
-      selectedColor: colors.primary,
-      checkmarkColor: colors.onPrimary,
-      shape: RoundedRectangleBorder(
-        borderRadius: AppRadius.borderFull,
-        side: BorderSide(
-          color: isSelected ? Colors.transparent : colors.border,
-        ),
-      ),
+          ),
+      ],
+    );
+
+    return Stack(
+      key: _stackKey,
+      clipBehavior: Clip.none,
+      children: [indicator, row],
     );
   }
 }

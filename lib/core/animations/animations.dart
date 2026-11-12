@@ -72,6 +72,7 @@ export 'staggered/staggered_list_item.dart';
 export 'state/animated_counter.dart';
 export 'state/animated_size_wrapper.dart';
 export 'state/animated_visibility.dart';
+export 'state/drawn_check.dart';
 export 'state/app_animated_switcher.dart';
 export 'state/expandable_section.dart';
 export 'state/idle_loop.dart';

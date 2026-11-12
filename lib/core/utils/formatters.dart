@@ -39,6 +39,22 @@ final class Formatters {
     return '$amount $currencyCode';
   }
 
+  /// Short amount for tight spots such as chart labels and KPI cards:
+  /// `950`, `12.5K`, `2.7M`, `1.2B` (one decimal at most, no trailing `.0`).
+  static String compact(num value) {
+    final abs = value.abs();
+    final sign = value < 0 ? '-' : '';
+    String scaled(double divisor, String suffix) {
+      final text = (abs / divisor).toStringAsFixed(1);
+      return '$sign${text.endsWith('.0') ? text.substring(0, text.length - 2) : text}$suffix';
+    }
+
+    if (abs >= 1e9) return scaled(1e9, 'B');
+    if (abs >= 1e6) return scaled(1e6, 'M');
+    if (abs >= 1e3) return scaled(1e3, 'K');
+    return '$sign${abs == abs.truncate() ? abs.truncate() : abs.toStringAsFixed(1)}';
+  }
+
   /// Groups the integer part of [value] with thousands separators, keeping
   /// decimals only when [value] is not an integer.
   static String _grouped(num value) {
