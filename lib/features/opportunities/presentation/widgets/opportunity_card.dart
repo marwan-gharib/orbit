@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:orbit/core/animations/feedback/pulse_widget.dart';
+import 'package:orbit/core/animations/navigation/app_hero.dart';
 import 'package:orbit/core/i18n/strings.g.dart';
 import 'package:orbit/core/theme/app_radius.dart';
 import 'package:orbit/core/theme/app_spacing.dart';
@@ -11,6 +13,7 @@ import 'package:orbit/core/widgets/status_badge.dart';
 import 'package:orbit/features/opportunities/domain/entities/opportunity_entity.dart';
 import 'package:orbit/features/opportunities/domain/enums/opportunity_stage.dart';
 import 'package:orbit/features/opportunities/domain/enums/opportunity_status.dart';
+import 'package:orbit/features/opportunities/presentation/constants/opportunity_hero_tags.dart';
 import 'package:orbit/features/opportunities/presentation/constants/opportunity_layout_constants.dart';
 
 /// A single opportunity card in the list.
@@ -43,15 +46,24 @@ class OpportunityCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(
-                child: Text(
-                  opportunity.title,
-                  style: textStyles.titleMedium,
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
+                child: AppHero(
+                  id: OpportunityHeroTag.title(opportunity.opportunityId),
+                  child: Material(
+                    type: MaterialType.transparency,
+                    child: Text(
+                      opportunity.title,
+                      style: textStyles.titleMedium,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
                 ),
               ),
               SizedBox(width: AppSpacing.sm),
-              _StatusBadge(status: opportunity.status),
+              AppHero(
+                id: OpportunityHeroTag.status(opportunity.opportunityId),
+                child: _StatusBadge(status: opportunity.status),
+              ),
             ],
           ),
           SizedBox(height: OpportunityLayoutConstants.cardRowGap),
@@ -85,17 +97,26 @@ class OpportunityCard extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: Text(
-                  Formatters.money(
-                    opportunity.estimatedValue,
-                    opportunity.currency,
+                child: Align(
+                  alignment: AlignmentDirectional.centerStart,
+                  child: AppHero(
+                    id: OpportunityHeroTag.value(opportunity.opportunityId),
+                    child: Material(
+                      type: MaterialType.transparency,
+                      child: Text(
+                        Formatters.money(
+                          opportunity.estimatedValue,
+                          opportunity.currency,
+                        ),
+                        style: textStyles.titleMedium.copyWith(
+                          color: colors.primary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
                   ),
-                  style: textStyles.titleMedium.copyWith(
-                    color: colors.primary,
-                    fontWeight: FontWeight.w600,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
                 ),
               ),
               SizedBox(width: AppSpacing.sm),
@@ -126,7 +147,7 @@ class OpportunityCard extends StatelessWidget {
                   ),
                   if (isOverdue) ...[
                     SizedBox(width: AppSpacing.sm),
-                    _OverdueTag(),
+                    const PulseWidget(active: true, child: _OverdueTag()),
                   ],
                 ],
               ),
@@ -180,27 +201,30 @@ class _ProbabilityRingSmall extends StatelessWidget {
     final colors = context.colors;
     final sweep = (probability / 100).clamp(0.0, 1.0);
 
-    return SizedBox(
-      width: OpportunityLayoutConstants.cardRingSizeSmall,
-      height: OpportunityLayoutConstants.cardRingSizeSmall,
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          ProgressRing(
-            progress: sweep,
-            strokeWidth: OpportunityLayoutConstants.cardRingStrokeWidth,
-            trackColor: colors.border,
-            progressColor: colors.primary,
-          ),
-          Text(
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        ProgressRing(
+          progress: sweep,
+          size: OpportunityLayoutConstants.cardRingSizeSmall,
+          strokeWidth: OpportunityLayoutConstants.cardRingStrokeWidth,
+          trackColor: colors.border,
+          progressColor: colors.primary,
+        ),
+        SizedBox(width: AppSpacing.xs),
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
             '$probability%',
             style: context.textStyles.labelSmall.copyWith(
               fontWeight: FontWeight.w600,
               fontFeatures: const [FontFeature.tabularFigures()],
             ),
+            maxLines: 1,
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

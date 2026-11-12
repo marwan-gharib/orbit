@@ -11,6 +11,7 @@ import 'package:orbit/core/theme/extensions/text_styles_extension.dart';
 import 'package:orbit/core/widgets/app_button.dart';
 import 'package:orbit/features/onboarding/presentation/cubit/onboarding_cubit.dart';
 import 'package:orbit/features/onboarding/presentation/screens/onboarding_screen.dart';
+import 'package:orbit/features/opportunities/presentation/cubits/opportunity_details/opportunity_details_cubit.dart';
 import 'package:orbit/features/splash/presentation/cubit/splash_cubit.dart';
 import 'package:orbit/features/splash/presentation/screens/splash_screen.dart';
 
@@ -113,7 +114,10 @@ abstract final class AppRouterRoutes {
         if (id == null) {
           return const _CrmInvalidIdPage();
         }
-        return OpportunityDetailPage(opportunityId: id);
+        return BlocProvider(
+          create: (context) => getIt<OpportunityDetailsCubit>(),
+          child: OpportunityDetailPage(opportunityId: id),
+        );
       },
     ),
   ];

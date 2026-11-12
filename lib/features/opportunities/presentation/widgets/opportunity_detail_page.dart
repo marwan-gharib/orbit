@@ -1,22 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:orbit/core/animations/animations.dart';
+import 'package:orbit/core/animations/state/animated_visibility.dart';
 import 'package:orbit/core/animations/state/app_animated_switcher.dart';
-import 'package:orbit/core/extensions/context_extensions.dart';
-import 'package:orbit/core/i18n/strings.g.dart';
+import 'package:orbit/core/di/injection_container.dart';
+import 'package:orbit/core/errors/failures.dart';
 import 'package:orbit/core/theme/app_spacing.dart';
 import 'package:orbit/core/theme/extensions/colors_extension.dart';
-import 'package:orbit/core/widgets/error_state.dart';
+import 'package:orbit/features/customer_notes/presentation/cubits/customer_notes_list/customer_notes_list_cubit.dart';
+import 'package:orbit/features/customer_notes/presentation/widgets/customer_note_composer.dart';
+import 'package:orbit/features/interactions/presentation/blocs/interactions_list/interactions_list_bloc.dart';
+import 'package:orbit/features/interactions/presentation/blocs/interactions_list/interactions_list_event.dart';
+import 'package:orbit/features/interactions/presentation/blocs/interactions_list/interactions_list_state.dart';
 import 'package:orbit/features/opportunities/domain/entities/opportunity_entity.dart';
 import 'package:orbit/features/opportunities/domain/enums/opportunity_status.dart';
+import 'package:orbit/features/opportunities/presentation/constants/opportunity_layout_constants.dart';
 import 'package:orbit/features/opportunities/presentation/cubits/opportunity_details/opportunity_details_cubit.dart';
 import 'package:orbit/features/opportunities/presentation/cubits/opportunity_details/opportunity_details_state.dart';
 import 'package:orbit/features/opportunities/presentation/widgets/contacts_tab.dart';
 import 'package:orbit/features/opportunities/presentation/widgets/interactions_tab.dart';
 import 'package:orbit/features/opportunities/presentation/widgets/notes_tab.dart';
+import 'package:orbit/features/opportunities/presentation/widgets/opportunity_detail_app_bar.dart';
+import 'package:orbit/features/opportunities/presentation/widgets/opportunity_detail_error_view.dart';
 import 'package:orbit/features/opportunities/presentation/widgets/opportunity_detail_skeleton.dart';
-import 'package:orbit/features/opportunities/presentation/widgets/opportunity_header.dart';
 import 'package:orbit/features/opportunities/presentation/widgets/opportunity_tab_bar.dart';
+import 'package:orbit/features/opportunities/presentation/widgets/opportunity_tab_bar_delegate.dart';
 import 'package:orbit/features/opportunities/presentation/widgets/overview_tab.dart';
 import 'package:orbit/features/opportunities/presentation/widgets/progress_card.dart';
 import 'package:orbit/features/opportunities/presentation/widgets/status_banner.dart';
@@ -62,11 +69,13 @@ class _DetailPageContent extends StatelessWidget {
                 isRefreshing: isRefreshing,
                 refreshFailure: refreshFailure,
               ),
-            OpportunityDetailsError(failure: final failure) => _ErrorView(
-              key: const ValueKey('error'),
-              failure: failure,
-              onRetry: () => context.read<OpportunityDetailsCubit>().refresh(),
-            ),
+            OpportunityDetailsError(failure: final failure) =>
+              OpportunityDetailErrorView(
+                key: const ValueKey('error'),
+                failure: failure,
+                onRetry: () =>
+                    context.read<OpportunityDetailsCubit>().refresh(),
+              ),
           },
         );
       },
@@ -84,7 +93,7 @@ class _DetailPage extends StatefulWidget {
 
   final Opportunity opportunity;
   final bool isRefreshing;
-  final dynamic refreshFailure;
+  final Failure? refreshFailure;
 
   @override
   State<_DetailPage> createState() => _DetailPageState();
@@ -93,170 +102,186 @@ class _DetailPage extends StatefulWidget {
 class _DetailPageState extends State<_DetailPage>
     with SingleTickerProviderStateMixin {
   late final TabController _tabController;
+  final ScrollController _scrollController = ScrollController();
+
+  /// Page-scoped sources for the tabs: they live as long as the page, so a
+  /// tab keeps its loaded data while the user visits other tabs.
+  late final CustomerNotesListCubit _notesCubit;
+  late final InteractionsListBloc _interactionsBloc;
+
+  /// 0 = header fully visible, 1 = scrolled past it (compact title shown).
+  final ValueNotifier<double> _collapse = ValueNotifier<double>(0);
+  int _selectedTab = 0;
+
+  /// Tabs opened at least once; the rest are not built (and not loaded) yet.
+  final Set<int> _visitedTabs = {0};
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 4, vsync: this);
+    _tabController.addListener(_onTabChanged);
+    _scrollController.addListener(_syncCollapse);
+
+    final opportunity = widget.opportunity;
+    _notesCubit = getIt<CustomerNotesListCubit>()
+      ..load(opportunity.customer.customerId);
+    _interactionsBloc = getIt<InteractionsListBloc>()
+      ..add(
+        InteractionsListFiltersChanged(
+          opportunityId: opportunity.opportunityId,
+        ),
+      );
+  }
+
+  void _syncCollapse() {
+    if (!_scrollController.hasClients) return;
+    _collapse.value =
+        (_scrollController.offset /
+                OpportunityLayoutConstants.headerFadeDistance)
+            .clamp(0.0, 1.0);
+  }
+
+  /// The scroll position is clamped without a scroll event when the content
+  /// gets shorter (e.g. switching to a shorter tab); re-read it afterwards.
+  bool _onMetricsChanged(ScrollMetricsNotification notification) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _syncCollapse();
+    });
+    return false;
+  }
+
+  void _onTabChanged() {
+    if (_tabController.index != _selectedTab) {
+      setState(() {
+        _selectedTab = _tabController.index;
+        _visitedTabs.add(_selectedTab);
+      });
+    }
+  }
+
+  /// Tapping the tab that is already open refreshes its data.
+  void _onTabTap(int index) {
+    if (_tabController.indexIsChanging) return;
+    switch (index) {
+      case 0 || 1:
+        context.read<OpportunityDetailsCubit>().refresh();
+      case 2:
+        _interactionsBloc.add(const InteractionsListRefreshed());
+      default:
+        _notesCubit.refresh();
+    }
   }
 
   @override
   void dispose() {
+    _tabController.removeListener(_onTabChanged);
     _tabController.dispose();
+    _scrollController
+      ..removeListener(_syncCollapse)
+      ..dispose();
+    _collapse.dispose();
+    _notesCubit.close();
+    _interactionsBloc.close();
     super.dispose();
   }
+
+  Widget _tabBody(int index, Opportunity opportunity) => switch (index) {
+    0 => OverviewTab(opportunity: opportunity),
+    1 => ContactsTab(opportunity: opportunity),
+    2 => InteractionsTab(opportunity: opportunity),
+    _ => NotesTab(opportunity: opportunity, cubit: _notesCubit),
+  };
 
   @override
   Widget build(BuildContext context) {
     final opportunity = widget.opportunity;
-
-    return Scaffold(
-      body: CustomScrollView(
-        slivers: [
-          // Collapsing SliverAppBar with back button only
-          SliverAppBar(
-            pinned: true,
-            elevation: 0,
-            backgroundColor: context.colors.surface,
-            leading: IconButton(
-              icon: Icon(
-                Icons.arrow_back_rounded,
-                color: context.colors.textPrimary,
-              ),
-              onPressed: () => Navigator.pop(context),
-            ),
-            flexibleSpace: FlexibleSpaceBar(
-              background: OpportunityHeader(opportunity: opportunity),
-              collapseMode: CollapseMode.parallax,
-            ),
-            expandedHeight: 320,
-          ),
-
-          // Status banner (won/lost only)
-          if (widget.opportunity.status != OpportunityStatus.open)
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: EdgeInsets.fromLTRB(
-                  AppSpacing.md,
-                  AppSpacing.sm,
-                  AppSpacing.md,
-                  AppSpacing.sm,
-                ),
-                child: StatusBanner(opportunity: widget.opportunity),
-              ),
-            ),
-
-          // Progress card
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: EdgeInsets.fromLTRB(
-                AppSpacing.md,
-                AppSpacing.sm,
-                AppSpacing.md,
-                AppSpacing.sm,
-              ),
-              child: ProgressCard(opportunity: widget.opportunity),
-            ),
-          ),
-
-          // Sticky tab bar
-          SliverPersistentHeader(
-            pinned: true,
-            delegate: _TabBarDelegate(
-              tabBar: OpportunityTabBar(
-                tabController: _tabController,
-                contactsCount: widget.opportunity.customer.contacts.length,
-                interactionsCount:
-                    widget.opportunity.customer.interactions.length,
-                notesCount: widget.opportunity.customer.notes.length,
-              ),
-            ),
-          ),
-
-          // Tab content with fade-through
-          SliverFillRemaining(
-            hasScrollBody: false,
-            child: TabBarView(
-              controller: _tabController,
-              children: [
-                OverviewTab(opportunity: widget.opportunity),
-                ContactsTab(opportunity: widget.opportunity),
-                InteractionsTab(opportunity: widget.opportunity),
-                NotesTab(opportunity: widget.opportunity),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _TabBarDelegate extends SliverPersistentHeaderDelegate {
-  const _TabBarDelegate({required this.tabBar});
-
-  final OpportunityTabBar tabBar;
-
-  @override
-  Widget build(
-    BuildContext context,
-    double shrinkOffset,
-    bool overlapsContent,
-  ) {
     final colors = context.colors;
 
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: colors.surface,
-        border: Border(
-          bottom: BorderSide(
-            color: colors.border,
-            width: shrinkOffset > 0 ? 1 : 0,
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider<CustomerNotesListCubit>.value(value: _notesCubit),
+        BlocProvider<InteractionsListBloc>.value(value: _interactionsBloc),
+      ],
+      child: Scaffold(
+        resizeToAvoidBottomInset: false,
+        body: NotificationListener<ScrollMetricsNotification>(
+          onNotification: _onMetricsChanged,
+          child: CustomScrollView(
+            controller: _scrollController,
+            slivers: [
+              DetailAppBar(collapse: _collapse, title: opportunity.title),
+              DetailHeaderSliver(collapse: _collapse, opportunity: opportunity),
+              if (opportunity.status != OpportunityStatus.open)
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsetsDirectional.symmetric(
+                      horizontal: AppSpacing.md,
+                      vertical: AppSpacing.sm,
+                    ),
+                    child: StatusBanner(opportunity: opportunity),
+                  ),
+                ),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsetsDirectional.symmetric(
+                    horizontal: AppSpacing.md,
+                    vertical: AppSpacing.sm,
+                  ),
+                  child: ProgressCard(opportunity: opportunity),
+                ),
+              ),
+              BlocBuilder<InteractionsListBloc, InteractionsListState>(
+                builder: (context, interactionsState) {
+                  final interactionsCount = switch (interactionsState) {
+                    InteractionsListSuccess(:final interactions) =>
+                      interactions.length,
+                    _ => 0,
+                  };
+                  return SliverPersistentHeader(
+                    pinned: true,
+                    delegate: OpportunityTabBarDelegate(
+                      tabBar: OpportunityTabBar(
+                        tabController: _tabController,
+                        onTap: _onTabTap,
+                        contactsCount: opportunity.customer.contacts.length,
+                        interactionsCount: interactionsCount,
+                        notesCount: opportunity.customer.notes.length,
+                      ),
+                    ),
+                  );
+                },
+              ),
+              // Every visited tab stays mounted (state + data kept); only the
+              // selected one takes space.
+              SliverToBoxAdapter(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    for (var i = 0; i < 4; i++)
+                      AnimatedVisibility(
+                        visible: i == _selectedTab,
+                        maintainState: true,
+                        child: _visitedTabs.contains(i)
+                            ? _tabBody(i, opportunity)
+                            : const SizedBox.shrink(),
+                      ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ),
-      ),
-      child: tabBar,
-    );
-  }
-
-  @override
-  double get maxExtent => 48;
-
-  @override
-  double get minExtent => 48;
-
-  @override
-  bool shouldRebuild(covariant _TabBarDelegate oldDelegate) => false;
-}
-
-class _ErrorView extends StatelessWidget {
-  const _ErrorView({super.key, required this.failure, required this.onRetry});
-
-  final dynamic failure;
-  final VoidCallback onRetry;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_rounded),
-          onPressed: () => Navigator.pop(context),
-        ),
-      ),
-      body: RefreshIndicator(
-        onRefresh: () async => onRetry(),
-        child: ListView(
-          padding: EdgeInsets.all(AppSpacing.xl),
-          children: [
-            ErrorState(
-              message: context.failureText(failure),
-              retryAction: (
-                label: context.t.crm.common.retry,
-                onPressed: onRetry,
-              ),
+        bottomNavigationBar: AnimatedVisibility(
+          visible: _selectedTab == 3,
+          axis: Axis.vertical,
+          collapseSize: true,
+          child: ColoredBox(
+            color: colors.surface,
+            child: CustomerNoteComposer(
+              customerId: opportunity.customer.customerId,
             ),
-          ],
+          ),
         ),
       ),
     );

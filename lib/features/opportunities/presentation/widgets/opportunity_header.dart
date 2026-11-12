@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:orbit/core/animations/feedback/pulse_widget.dart';
+import 'package:orbit/core/animations/navigation/app_hero.dart';
+import 'package:orbit/core/animations/state/animated_counter.dart';
 import 'package:orbit/core/i18n/strings.g.dart';
 import 'package:orbit/core/theme/app_radius.dart';
 import 'package:orbit/core/theme/app_spacing.dart';
@@ -9,9 +12,13 @@ import 'package:orbit/core/widgets/status_badge.dart';
 import 'package:orbit/features/opportunities/domain/entities/opportunity_entity.dart';
 import 'package:orbit/features/opportunities/domain/enums/opportunity_stage.dart';
 import 'package:orbit/features/opportunities/domain/enums/opportunity_status.dart';
+import 'package:orbit/features/opportunities/presentation/constants/opportunity_hero_tags.dart';
 import 'package:orbit/features/opportunities/presentation/constants/opportunity_layout_constants.dart';
 
-/// Header section for the opportunity detail — shown in the collapsing SliverAppBar.
+/// Expanded content of the collapsing detail header: title, status + stage,
+/// value (counts up on first display) and the expected close date.
+///
+/// Title, value and status badge are `AppHero`s that pair with the list card.
 class OpportunityHeader extends StatelessWidget {
   const OpportunityHeader({super.key, required this.opportunity});
 
@@ -22,64 +29,78 @@ class OpportunityHeader extends StatelessWidget {
     final colors = context.colors;
     final textStyles = context.textStyles;
     final t = context.t.crm.crmOpportunities.detail;
-    final isOverdue = _isOverdue(opportunity);
+    final id = opportunity.opportunityId;
 
     return Padding(
-      padding: EdgeInsets.all(OpportunityLayoutConstants.headerPadding),
+      padding: EdgeInsetsDirectional.only(
+        start: OpportunityLayoutConstants.headerPadding,
+        end: OpportunityLayoutConstants.headerPadding,
+        top: AppSpacing.xs,
+        bottom: OpportunityLayoutConstants.headerPadding,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Title (large, up to 2 lines)
-          Text(
-            opportunity.title,
-            style: textStyles.headlineMedium.copyWith(
-              fontWeight: FontWeight.w600,
+          AppHero(
+            id: OpportunityHeroTag.title(id),
+            child: Material(
+              type: MaterialType.transparency,
+              child: Text(
+                opportunity.title,
+                style: textStyles.headlineMedium.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
           ),
-          SizedBox(height: OpportunityLayoutConstants.headerTitleGap),
-
-          // Status badge + Stage chip
+          SizedBox(height: OpportunityLayoutConstants.headerRowGap),
           Row(
             children: [
-              _StatusBadge(status: opportunity.status),
+              AppHero(
+                id: OpportunityHeroTag.status(id),
+                child: _StatusBadge(status: opportunity.status),
+              ),
+              if (opportunity.status == OpportunityStatus.open) ...[
+                SizedBox(width: AppSpacing.xs),
+                PulseWidget(
+                  active: true,
+                  child: Container(
+                    width: AppSpacing.sm,
+                    height: AppSpacing.sm,
+                    decoration: BoxDecoration(
+                      color: colors.primary,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                ),
+              ],
               SizedBox(width: AppSpacing.sm),
               _StageChip(stage: opportunity.stage),
             ],
           ),
           SizedBox(height: OpportunityLayoutConstants.headerRowGap),
-
-          // Estimated value (prominent)
-          Text(
-            Formatters.money(opportunity.estimatedValue, opportunity.currency),
-            style: textStyles.headlineSmall.copyWith(
-              color: colors.primary,
-              fontWeight: FontWeight.w600,
+          AppHero(
+            id: OpportunityHeroTag.value(id),
+            child: Material(
+              type: MaterialType.transparency,
+              child: AnimatedCounter(
+                value: opportunity.estimatedValue,
+                formatter: (value) =>
+                    Formatters.money(value, opportunity.currency),
+                style: textStyles.headlineSmall.copyWith(
+                  color: colors.primary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ),
           ),
           SizedBox(height: OpportunityLayoutConstants.headerRowGap),
-
-          // Dates row
-          Row(
-            children: [
-              Expanded(
-                child: _DateRow(
-                  icon: Icons.calendar_today_rounded,
-                  label: t.facts.expectedClose,
-                  value: Formatters.crmDate(opportunity.expectedCloseDate),
-                  isOverdue: isOverdue,
-                ),
-              ),
-              if (opportunity.closedAt != null)
-                Expanded(
-                  child: _DateRow(
-                    icon: Icons.event_rounded,
-                    label: t.facts.closedAt,
-                    value: Formatters.crmDate(opportunity.closedAt!),
-                  ),
-                ),
-            ],
+          _DateRow(
+            label: t.facts.expectedClose,
+            value: Formatters.crmDate(opportunity.expectedCloseDate),
+            isOverdue: _isOverdue(opportunity),
           ),
         ],
       ),
@@ -126,11 +147,11 @@ class _StageChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final t = context.t.crm.crmOpportunities.detail;
+    final tStages = context.t.crm.crmOpportunities.stage;
     final colors = context.colors;
 
     return Container(
-      padding: EdgeInsets.symmetric(
+      padding: EdgeInsetsDirectional.symmetric(
         horizontal: AppSpacing.sm,
         vertical: AppSpacing.xs,
       ),
@@ -139,7 +160,7 @@ class _StageChip extends StatelessWidget {
         borderRadius: AppRadius.borderSm,
       ),
       child: Text(
-        _stageLabel(stage, t),
+        _stageLabel(stage, tStages),
         style: context.textStyles.labelSmall.copyWith(
           color: colors.textSecondary,
         ),
@@ -147,25 +168,26 @@ class _StageChip extends StatelessWidget {
     );
   }
 
-  String _stageLabel(OpportunityStage stage, dynamic t) => switch (stage) {
-    OpportunityStage.lead => t.stage.lead,
-    OpportunityStage.qualified => t.stage.qualified,
-    OpportunityStage.proposal => t.stage.proposal,
-    OpportunityStage.negotiation => t.stage.negotiation,
-    OpportunityStage.closed => t.stage.closed,
-    OpportunityStage.unknown => t.stage.all,
+  String _stageLabel(
+    OpportunityStage stage,
+    Translations$crm$crmOpportunities$stage$en tStages,
+  ) => switch (stage) {
+    OpportunityStage.lead => tStages.lead,
+    OpportunityStage.qualified => tStages.qualified,
+    OpportunityStage.proposal => tStages.proposal,
+    OpportunityStage.negotiation => tStages.negotiation,
+    OpportunityStage.closed => tStages.closed,
+    OpportunityStage.unknown => tStages.all,
   };
 }
 
 class _DateRow extends StatelessWidget {
   const _DateRow({
-    required this.icon,
     required this.label,
     required this.value,
-    this.isOverdue = false,
+    required this.isOverdue,
   });
 
-  final IconData icon;
   final String label;
   final String value;
   final bool isOverdue;
@@ -174,56 +196,52 @@ class _DateRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.colors;
     final textStyles = context.textStyles;
+    final valueColor = isOverdue ? colors.error : colors.textPrimary;
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return Row(
       children: [
+        Icon(
+          Icons.calendar_today_rounded,
+          size: OpportunityLayoutConstants.overviewIconSize,
+          color: colors.textSecondary,
+        ),
+        SizedBox(width: AppSpacing.xs),
         Text(
           label,
-          style: textStyles.labelSmall.copyWith(color: colors.textSecondary),
+          style: textStyles.labelMedium.copyWith(color: colors.textSecondary),
         ),
-        SizedBox(height: AppSpacing.xxs),
-        Row(
-          children: [
-            Icon(
-              icon,
-              size: OpportunityLayoutConstants.overviewIconSize,
-              color: colors.textSecondary,
+        SizedBox(width: AppSpacing.xs),
+        Flexible(
+          child: Text(
+            value,
+            style: textStyles.bodyMedium.copyWith(
+              color: valueColor,
+              fontWeight: isOverdue ? FontWeight.w600 : FontWeight.normal,
             ),
-            SizedBox(width: AppSpacing.xs),
-            Expanded(
-              child: Text(
-                value,
-                style: textStyles.bodyMedium.copyWith(
-                  color: isOverdue ? colors.error : colors.textPrimary,
-                  fontWeight: isOverdue ? FontWeight.w600 : FontWeight.normal,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+        if (isOverdue) ...[
+          SizedBox(width: AppSpacing.xs),
+          Container(
+            padding: EdgeInsetsDirectional.symmetric(
+              horizontal: AppSpacing.xs,
+              vertical: AppSpacing.xxs,
+            ),
+            decoration: BoxDecoration(
+              color: colors.errorContainer,
+              borderRadius: AppRadius.borderSm,
+            ),
+            child: Text(
+              context.t.crm.crmOpportunities.card.overdue,
+              style: textStyles.labelSmall.copyWith(
+                color: colors.onErrorContainer,
+                fontWeight: FontWeight.w600,
               ),
             ),
-            if (isOverdue) ...[
-              SizedBox(width: AppSpacing.xs),
-              Container(
-                padding: EdgeInsets.symmetric(
-                  horizontal: AppSpacing.xs,
-                  vertical: 2,
-                ),
-                decoration: BoxDecoration(
-                  color: colors.errorContainer,
-                  borderRadius: AppRadius.borderSm,
-                ),
-                child: Text(
-                  context.t.crm.crmOpportunities.card.overdue,
-                  style: textStyles.labelSmall.copyWith(
-                    color: colors.onErrorContainer,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ],
-          ],
-        ),
+          ),
+        ],
       ],
     );
   }

@@ -5,6 +5,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:stream_transform/stream_transform.dart';
 
 import 'package:orbit/core/constants/app_consts.dart';
+import 'package:orbit/core/errors/failures.dart';
 import 'package:orbit/core/services/crm_data_change.dart';
 
 import '../../../domain/entities/opportunity_entity.dart';
@@ -41,6 +42,10 @@ class OpportunitiesListBloc
     );
     on<OpportunitiesListFiltersChanged>(
       _onFiltersChanged,
+      transformer: restartable(),
+    );
+    on<OpportunitiesListFiltersCleared>(
+      _onFiltersCleared,
       transformer: restartable(),
     );
     on<OpportunitiesListRefreshed>(_onRefreshed, transformer: restartable());
@@ -85,7 +90,15 @@ class OpportunitiesListBloc
     Emitter<OpportunitiesListState> emit,
   ) async {
     final current = _criteria ?? const OpportunitiesCriteria();
-    final criteria = current.copyWith(title: event.text);
+    final text = event.text.trim();
+    // Built explicitly: `copyWith` cannot turn a field back into null.
+    final criteria = OpportunitiesCriteria(
+      title: text.isEmpty ? null : text,
+      stage: current.stage,
+      status: current.status,
+      customerId: current.customerId,
+    );
+    if (criteria == current && state is! OpportunitiesListInitial) return;
     await _loadPage(criteria, page: 1, emit: emit, replace: true);
   }
 
@@ -94,11 +107,23 @@ class OpportunitiesListBloc
     Emitter<OpportunitiesListState> emit,
   ) async {
     final current = _criteria ?? const OpportunitiesCriteria();
-    final criteria = current.copyWith(
+    // Filter events carry every filter; a null value means "no filter".
+    final criteria = OpportunitiesCriteria(
+      title: current.title,
       stage: event.stage,
       status: event.status,
       customerId: event.customerId,
     );
+    if (criteria == current && state is! OpportunitiesListInitial) return;
+    await _loadPage(criteria, page: 1, emit: emit, replace: true);
+  }
+
+  Future<void> _onFiltersCleared(
+    OpportunitiesListFiltersCleared event,
+    Emitter<OpportunitiesListState> emit,
+  ) async {
+    const criteria = OpportunitiesCriteria();
+    if (_criteria == criteria && state is! OpportunitiesListInitial) return;
     await _loadPage(criteria, page: 1, emit: emit, replace: true);
   }
 
@@ -107,7 +132,13 @@ class OpportunitiesListBloc
     Emitter<OpportunitiesListState> emit,
   ) async {
     final criteria = _criteria ?? const OpportunitiesCriteria();
-    await _loadPage(criteria, page: 1, emit: emit, replace: true);
+    await _loadPage(
+      criteria,
+      page: 1,
+      emit: emit,
+      replace: true,
+      keepContent: true,
+    );
   }
 
   Future<void> _onLoadMoreRequested(
@@ -150,17 +181,21 @@ class OpportunitiesListBloc
     required int page,
     required Emitter<OpportunitiesListState> emit,
     required bool replace,
+    bool keepContent = false,
     List<Opportunity> previousItems = const [],
   }) async {
     _criteria = criteria;
     _currentPage = page;
 
     final token = ++_queryToken;
-    final isFirstLoad =
-        state is OpportunitiesListInitial || state is OpportunitiesListError;
+    final prior = state;
 
-    if (replace && isFirstLoad) {
-      emit(OpportunitiesListLoading(criteria: criteria));
+    if (replace) {
+      // Pull-to-refresh keeps what is on screen and only flags it as
+      // refreshing; a new query (search / filters / first load) shows the
+      // loading state so the user gets immediate feedback.
+      final refreshing = keepContent ? _withRefresh(prior, refreshing: true) : null;
+      emit(refreshing ?? OpportunitiesListLoading(criteria: criteria));
     }
 
     final result = await _getOpportunities(
@@ -176,7 +211,11 @@ class OpportunitiesListBloc
     result.fold(
       (failure) {
         if (replace) {
-          emit(OpportunitiesListError(criteria: criteria, failure: failure));
+          // A failed silent refresh keeps the items and shows a notice.
+          final kept = keepContent
+              ? _withRefresh(prior, refreshing: false, failure: failure)
+              : null;
+          emit(kept ?? OpportunitiesListError(criteria: criteria, failure: failure));
         } else {
           // Load-more failure: keep items, surface failure, allow retry.
           final current = state;
@@ -227,5 +266,32 @@ class OpportunitiesListBloc
         }
       },
     );
+  }
+
+  /// [prior] as a "refreshing" (or "refresh failed") copy, or null when it has
+  /// no content to keep (the caller then falls back to Loading / Error).
+  OpportunitiesListState? _withRefresh(
+    OpportunitiesListState prior, {
+    required bool refreshing,
+    Failure? failure,
+  }) {
+    return switch (prior) {
+      OpportunitiesListSuccess() => OpportunitiesListSuccess(
+        criteria: prior.criteria,
+        items: prior.items,
+        hasMore: prior.hasMore,
+        nextPage: prior.nextPage,
+        totalCount: prior.totalCount,
+        isRefreshing: refreshing,
+        refreshFailure: failure,
+      ),
+      OpportunitiesListEmpty() => OpportunitiesListEmpty(
+        criteria: prior.criteria,
+        totalCount: prior.totalCount,
+        isRefreshing: refreshing,
+        refreshFailure: failure,
+      ),
+      _ => null,
+    };
   }
 }

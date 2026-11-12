@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import 'package:orbit/core/responsive/responsive.dart';
 import 'package:orbit/core/theme/app_radius.dart';
 import 'package:orbit/core/theme/app_spacing.dart';
@@ -13,6 +12,7 @@ abstract final class OpportunityLayoutConstants {
   // ---------------------------------------------------------------------------
   static double get cardPadding => AppSpacing.md;
   static BorderRadius get cardRadius => AppRadius.borderLg;
+  static double get cardListItemGap => AppSpacing.md;
   static double get cardRowGap => AppSpacing.sm;
   static double get cardDividerGap => AppSpacing.sm;
   static double get cardRingSizeSmall => Responsive.adapt(28);
@@ -21,10 +21,9 @@ abstract final class OpportunityLayoutConstants {
   // ---------------------------------------------------------------------------
   // Detail header (collapsing parallax)
   // ---------------------------------------------------------------------------
-  static double get headerPadding => AppSpacing.lg;
+  static double get headerPadding => AppSpacing.md;
   static double get headerTitleGap => AppSpacing.xs;
   static double get headerRowGap => AppSpacing.sm;
-
   // ---------------------------------------------------------------------------
   // Progress card
   // ---------------------------------------------------------------------------
@@ -33,8 +32,10 @@ abstract final class OpportunityLayoutConstants {
   static double get progressRingStrokeWidth => Responsive.adapt(6);
   static double get stepperNodeSize => Responsive.adapt(20);
   static double get stepperNodeSizeCurrent => Responsive.adapt(28);
-  static double get stepperConnectorHeight => Responsive.adapt(2);
-  static double get stepperLabelMaxWidth => Responsive.width(0.16); // ~1/5 minus gaps
+  static double get stepperConnectorHeight => Responsive.adapt(3);
+  static double get stepperNodeBorderWidth => Responsive.adapt(2);
+  static double get stepperLabelMaxWidth =>
+      Responsive.width(0.16); // ~1/5 minus gaps
 
   // ---------------------------------------------------------------------------
   // Sticky tab bar
@@ -43,11 +44,21 @@ abstract final class OpportunityLayoutConstants {
   static double get tabIndicatorHeight => Responsive.adapt(3);
   static double get tabBadgeSize => Responsive.adapt(16);
 
+  static double get statusIconSize => Responsive.adapt(48);
+
+  /// Scroll distance over which the detail header fades out / the compact
+  /// title fades in.
+  static double get headerFadeDistance => Responsive.adapt(96);
+
+  /// How far the header content lags behind the scroll (parallax).
+  static double get headerParallaxShift => Responsive.adapt(28);
+
   // ---------------------------------------------------------------------------
   // Overview cards
   // ---------------------------------------------------------------------------
   static double get overviewCardPadding => AppSpacing.md;
   static double get overviewRowGap => AppSpacing.xs;
+  static double get factIconBox => Responsive.adapt(36);
   static double get overviewIconSize => Responsive.adapt(20);
 
   // ---------------------------------------------------------------------------
@@ -58,8 +69,24 @@ abstract final class OpportunityLayoutConstants {
   static double get contactButtonSize => kMinInteractiveDimension;
 
   // ---------------------------------------------------------------------------
+  // List screen
+  // ---------------------------------------------------------------------------
+  static double get listBottomPadding => Responsive.adapt(40);
+  static double get loadMoreThreshold => Responsive.height(0.25);
+  static double get countSkeletonWidth => Responsive.adapt(120);
+  static double get countSkeletonHeight => Responsive.adapt(20);
+
+  /// Only the first items of a list play the staggered entrance.
+  static const int staggerItemCap = 8;
+
+  /// Upper bound the pull-to-refresh spinner waits for the bloc to settle.
+  static const Duration refreshTimeout = Duration(seconds: 15);
+
+  // ---------------------------------------------------------------------------
   // Skeleton structure
   // ---------------------------------------------------------------------------
   static const int cardSkeletonRows = 1;
-  static const int detailSkeletonSections = 5; // header, banner, progress, tabs, overview
+  static const int cardSkeletonCount = 3;
+  static const int detailSkeletonSections =
+      5; // header, banner, progress, tabs, overview
 }

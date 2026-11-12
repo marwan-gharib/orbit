@@ -1,4 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:orbit/core/animations/feedback/pulse_widget.dart';
+import 'package:orbit/core/animations/state/progress_driver.dart';
+import 'package:orbit/core/animations/tokens/app_curves.dart';
+import 'package:orbit/core/animations/tokens/app_durations.dart';
+import 'package:orbit/core/i18n/strings.g.dart';
+import 'package:orbit/core/theme/app_radius.dart';
 import 'package:orbit/core/theme/app_spacing.dart';
 import 'package:orbit/core/theme/extensions/colors_extension.dart';
 import 'package:orbit/core/theme/extensions/text_styles_extension.dart';
@@ -6,8 +12,11 @@ import 'package:orbit/features/opportunities/domain/enums/opportunity_stage.dart
 import 'package:orbit/features/opportunities/domain/enums/opportunity_status.dart';
 import 'package:orbit/features/opportunities/presentation/constants/opportunity_layout_constants.dart';
 
-/// 5-node stage stepper with connector lines.
-/// Nodes: Lead → Qualified → Proposal → Negotiation → Closed
+/// Five-node pipeline stepper (Lead → Closed).
+///
+/// On first display the progress line fills up to the current stage and the
+/// nodes pop in one after another; while the opportunity is open the current
+/// node breathes. Everything is driven by one [ProgressDriver].
 class StageStepper extends StatelessWidget {
   const StageStepper({
     super.key,
@@ -18,230 +27,195 @@ class StageStepper extends StatelessWidget {
   final OpportunityStage currentStage;
   final OpportunityStatus status;
 
+  static const double _nodeStagger = 0.12;
+  static const double _nodeSpan = 0.4;
+
   @override
   Widget build(BuildContext context) {
     final stages = OpportunityStage.values
         .where((s) => s != OpportunityStage.unknown)
         .toList();
-    final currentIndex = stages.indexOf(currentStage);
-    final isLost = status == OpportunityStatus.lost;
-    final isWon = status == OpportunityStatus.won;
+    final currentIndex = stages
+        .indexOf(currentStage)
+        .clamp(0, stages.length - 1)
+        .toInt();
+    final labels = context.t.crm.crmOpportunities.stage;
+    final colors = context.colors;
+    final accent = switch (status) {
+      OpportunityStatus.won => colors.success,
+      OpportunityStatus.lost => colors.error,
+      _ => colors.primary,
+    };
+    final targetFill = stages.length > 1 ? currentIndex / (stages.length - 1) : 0.0;
 
-    final colors = _StepperColors(
-      completed: isWon ? context.colors.success : context.colors.primary,
-      current: isLost
-          ? context.colors.error
-          : (isWon ? context.colors.success : context.colors.primary),
-      upcoming: context.colors.outline,
-      lost: context.colors.error,
-    );
-
-    return Row(
-      children: List.generate(stages.length * 2 - 1, (index) {
-        if (index.isEven) {
-          // Node
-          final stageIndex = index ~/ 2;
-          final stage = stages[stageIndex];
-          final isCurrent = stageIndex == currentIndex;
-          final isCompleted =
-              stageIndex < currentIndex || (isCurrent && (isWon || isLost));
-          final isLostStage = isLost && stage == OpportunityStage.closed;
-
-          return _StageNode(
-            stage: stage,
-            isCompleted: isCompleted,
-            isCurrent: isCurrent,
-            isLost: isLostStage,
-            colors: colors,
-            label: _stageLabelShort(stage),
-          );
-        } else {
-          // Connector
-          final connectorIndex = index ~/ 2;
-          final isCompleted =
-              connectorIndex < currentIndex ||
-              (connectorIndex == currentIndex && (isWon || isLost));
-          final isLostConnector =
-              isLost &&
-              connectorIndex >= stages.indexOf(OpportunityStage.closed) - 1;
-
-          return _Connector(
-            isCompleted: isCompleted,
-            isLost: isLostConnector,
-            colors: colors,
-          );
-        }
-      }),
+    return ProgressDriver(
+      duration: AppDurations.extraSlow,
+      active: true,
+      builder: (context, progress, child) {
+        final fill = targetFill * AppCurves.standard.transform(progress);
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              height: OpportunityLayoutConstants.stepperNodeSizeCurrent,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  FractionallySizedBox(
+                    widthFactor: (stages.length - 1) / stages.length,
+                    child: _Line(fill: fill, accent: accent),
+                  ),
+                  Row(
+                    children: [
+                      for (final (i, _) in stages.indexed)
+                        Expanded(
+                          child: Center(
+                            child: Transform.scale(
+                              scale: Interval(
+                                i * _nodeStagger,
+                                i * _nodeStagger + _nodeSpan,
+                                curve: AppCurves.spring,
+                              ).transform(progress),
+                              child: _Node(
+                                isDone: i < currentIndex,
+                                isCurrent: i == currentIndex,
+                                status: status,
+                                accent: accent,
+                              ),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            SizedBox(height: AppSpacing.xs),
+            Row(
+              children: [
+                for (final (i, stage) in stages.indexed)
+                  Expanded(
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        _label(stage, labels),
+                        maxLines: 1,
+                        style: context.textStyles.labelSmall.copyWith(
+                          color: i == currentIndex
+                              ? colors.textPrimary
+                              : colors.textSecondary,
+                          fontWeight: i == currentIndex
+                              ? FontWeight.w600
+                              : FontWeight.normal,
+                        ),
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+          ],
+        );
+      },
+      child: const SizedBox.shrink(),
     );
   }
 
-  String _stageLabelShort(OpportunityStage stage) => switch (stage) {
-    OpportunityStage.lead => 'L',
-    OpportunityStage.qualified => 'Q',
-    OpportunityStage.proposal => 'P',
-    OpportunityStage.negotiation => 'N',
-    OpportunityStage.closed => 'C',
-    OpportunityStage.unknown => '?',
+  String _label(
+    OpportunityStage stage,
+    Translations$crm$crmOpportunities$stage$en t,
+  ) => switch (stage) {
+    OpportunityStage.lead => t.lead,
+    OpportunityStage.qualified => t.qualified,
+    OpportunityStage.proposal => t.proposal,
+    OpportunityStage.negotiation => t.negotiation,
+    OpportunityStage.closed => t.closed,
+    OpportunityStage.unknown => t.all,
   };
 }
 
-class _StepperColors {
-  const _StepperColors({
-    required this.completed,
-    required this.current,
-    required this.upcoming,
-    required this.lost,
-  });
+class _Line extends StatelessWidget {
+  const _Line({required this.fill, required this.accent});
 
-  final Color completed;
-  final Color current;
-  final Color upcoming;
-  final Color lost;
-}
-
-class _StageNode extends StatelessWidget {
-  const _StageNode({
-    required this.stage,
-    required this.isCompleted,
-    required this.isCurrent,
-    required this.isLost,
-    required this.colors,
-    required this.label,
-  });
-
-  final OpportunityStage stage;
-  final bool isCompleted;
-  final bool isCurrent;
-  final bool isLost;
-  final _StepperColors colors;
-  final String label;
+  final double fill;
+  final Color accent;
 
   @override
   Widget build(BuildContext context) {
-    final nodeSize = isCurrent
-        ? OpportunityLayoutConstants.stepperNodeSizeCurrent
-        : OpportunityLayoutConstants.stepperNodeSize;
-
-    Color nodeColor;
-    Color borderColor;
-    Widget? centerWidget;
-
-    if (isLost) {
-      nodeColor = colors.lost;
-      borderColor = colors.lost;
-      centerWidget = Icon(
-        Icons.close_rounded,
-        size: nodeSize * 0.5,
-        color: Colors.white,
-      );
-    } else if (isCompleted) {
-      nodeColor = colors.completed;
-      borderColor = colors.completed;
-      centerWidget = Icon(
-        Icons.check_rounded,
-        size: nodeSize * 0.5,
-        color: Colors.white,
-      );
-    } else if (isCurrent) {
-      nodeColor = Colors.transparent;
-      borderColor = colors.current;
-      centerWidget = null;
-    } else {
-      nodeColor = Colors.transparent;
-      borderColor = colors.upcoming;
-      centerWidget = null;
-    }
-
-    return Expanded(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          SizedBox(
-            width: nodeSize,
-            height: nodeSize,
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                // Ring for current node
-                if (isCurrent && !isLost)
-                  SizedBox(
-                    width: nodeSize,
-                    height: nodeSize,
-                    child: CircularProgressIndicator(
-                      value: 1.0,
-                      strokeWidth:
-                          OpportunityLayoutConstants.progressRingStrokeWidth,
-                      valueColor: AlwaysStoppedAnimation(colors.current),
-                      backgroundColor: Colors.transparent,
-                    ),
-                  ),
-                // Node circle
-                Container(
-                  width: nodeSize,
-                  height: nodeSize,
-                  decoration: BoxDecoration(
-                    color: nodeColor,
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: borderColor,
-                      width: isCurrent
-                          ? OpportunityLayoutConstants.progressRingStrokeWidth
-                          : 2,
-                    ),
-                  ),
-                  child: centerWidget != null
-                      ? Center(child: centerWidget)
-                      : null,
-                ),
-              ],
+    final height = OpportunityLayoutConstants.stepperConnectorHeight;
+    return SizedBox(
+      height: height,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          color: context.colors.surfaceContainerHighest,
+          borderRadius: AppRadius.borderFull,
+        ),
+        child: FractionallySizedBox(
+          alignment: AlignmentDirectional.centerStart,
+          widthFactor: fill.clamp(0.0, 1.0),
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              color: accent,
+              borderRadius: AppRadius.borderFull,
             ),
           ),
-          SizedBox(height: AppSpacing.xs),
-          Text(
-            label,
-            style: context.textStyles.labelSmall.copyWith(
-              fontSize: 10,
-              color: context.colors.textSecondary,
-            ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
+        ),
       ),
     );
   }
 }
 
-class _Connector extends StatelessWidget {
-  const _Connector({
-    required this.isCompleted,
-    required this.isLost,
-    required this.colors,
+class _Node extends StatelessWidget {
+  const _Node({
+    required this.isDone,
+    required this.isCurrent,
+    required this.status,
+    required this.accent,
   });
 
-  final bool isCompleted;
-  final bool isLost;
-  final _StepperColors colors;
+  final bool isDone;
+  final bool isCurrent;
+  final OpportunityStatus status;
+  final Color accent;
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
-      child: Container(
-        height: OpportunityLayoutConstants.stepperConnectorHeight,
-        margin: EdgeInsets.symmetric(
-          vertical: OpportunityLayoutConstants.stepperNodeSizeCurrent / 2,
-        ),
-        decoration: BoxDecoration(
-          color: isLost
-              ? colors.lost
-              : isCompleted
-              ? colors.completed
-              : colors.upcoming,
-          borderRadius: BorderRadius.circular(
-            OpportunityLayoutConstants.stepperConnectorHeight / 2,
-          ),
+    final colors = context.colors;
+    final size = isCurrent
+        ? OpportunityLayoutConstants.stepperNodeSizeCurrent
+        : OpportunityLayoutConstants.stepperNodeSize;
+    final isOpenCurrent = isCurrent && status == OpportunityStatus.open;
+    final filled = isDone || (isCurrent && status != OpportunityStatus.open);
+
+    final IconData? icon = !filled
+        ? null
+        : (isCurrent && status == OpportunityStatus.lost)
+        ? Icons.close_rounded
+        : Icons.check_rounded;
+
+    final node = Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: filled ? accent : colors.surface,
+        border: Border.all(
+          color: (isCurrent || isDone) ? accent : colors.outline,
+          width: OpportunityLayoutConstants.stepperNodeBorderWidth,
         ),
       ),
+      child: icon != null
+          ? Icon(icon, size: size * 0.6, color: colors.onPrimary)
+          : isCurrent
+          ? Center(
+              child: Container(
+                width: size * 0.4,
+                height: size * 0.4,
+                decoration: BoxDecoration(color: accent, shape: BoxShape.circle),
+              ),
+            )
+          : null,
     );
+
+    return isOpenCurrent ? PulseWidget(active: true, child: node) : node;
   }
 }

@@ -47,6 +47,9 @@ final class OpportunitiesListFiltersChanged extends OpportunitiesListEvent {
 /// mutations on opportunities this list might touch (conservatively always
 /// refreshes — the signal carries customer/opportunity ids that may not
 /// match list filters).
+/// Drops the search text and every filter in one step.
+final class OpportunitiesListFiltersCleared extends OpportunitiesListEvent {}
+
 final class OpportunitiesListRefreshed extends OpportunitiesListEvent {}
 
 /// Request the next page; droppable so repeats while one is in flight are
