@@ -1,6 +1,6 @@
 # Opportunities Feature
 
-> Last verified: 2026-11-12
+> Last verified: 2026-11-15
 > Path: `lib/features/opportunities/`
 
 ## 1. Purpose
@@ -105,26 +105,27 @@ a call/email). Mobile is read-only — no create, edit or stage move.
 
 ## 11. Tests
 
-`test/features/opportunities/` (mocktail + bloc_test), 12 files / 54 cases:
+`test/features/opportunities/` (mocktail + bloc_test), 21 files / 89 cases:
 
 | Area | Files (cases) | Covered behaviors |
 |------|---------------|-------------------|
 | Enums | opportunity_stage (5), opportunity_status (4) | Wire values + `unknown` fallback |
-| Models | opportunity_model (5), embedded_interaction_model (3), embedded_note_model (2), opportunities_page_response_model (3) | Strict parse, envelope, enum fallbacks |
+| Models | opportunity_model (5), embedded_interaction_model (3), embedded_note_model (2), opportunities_page_response_model (3), opportunity_customer (6), opportunity_employee (3), contact (3) | Strict parse, envelope, enum fallbacks; embedded customer children, defensive list handling, neutral defaults |
 | Data | opportunities_remote_data_source (4), opportunities_repository (4) | Query passthrough + detail query, error mapping; PagedResult mapping, order, not-found |
+| Domain | get_opportunities (2), get_opportunity (3), watch_crm_changes (2) | Param wrapping/passthrough, repository delegation |
 | Presentation | opportunities_list_bloc (9), opportunity_details_cubit (6) | Lifecycle, search/filters/clear, refresh, load-more; detail load/not-found/signal reload |
-| Pure mapper | embedded_interaction_to_tile_data (4) | Embedded interaction → tile data |
-| Widget | opportunity_card (5) | Whole-surface tap, overdue tag |
-| Shared | opportunities_test_mocks.dart | mocktail mocks |
+| Pure | embedded_interaction_to_tile_data (4), contact_to_interaction_option (3), list_highlight_ids (5) | Embedded interaction → tile data; contact → option mapping incl. unique labels; highlight-id derivation |
+| Widget | opportunity_card (5), opportunities_tab_view (6) | Whole-surface tap, overdue tag; tab view slivers per state, refresh notice, retry, card tap, load-more threshold |
+| Shared | opportunities_test_mocks.dart | mocktail mocks + fixtures |
 
 ## 12. Known issues / TODO
 
-- Coverage gap: use-case tests, remaining model tests (customer/employee/contact), `contact_to_interaction_option` and tab-view/detail-widget tests are absent from the working tree (pre-repair snapshot) — restore as its own task.
 - `OpportunityTabBarDelegate` still claims fixed min/max extents (`Responsive.adapt(48)`); the same drift class that hit the old pinned list header can appear on off-design-scale surfaces — needs watching or a dedicated task.
 - Core `AppButton` label rows can overflow under inflated font metrics (seen at text scale 1.3 in `EmptyState`); out of feature scope — core task.
 
 ## 13. Changelog
 
+- 2026-11-15 — Test suite completed (35 new cases: 3 use cases, customer/employee/contact models, contact→option + highlight-id pure mappers, tab-view widget tests incl. scroll-driven load-more); Tests table and file count updated, coverage-gap known issue removed.
 - 2026-11-12 — Doc repaired against the working tree after the CRM UI restructure: file map synced (list holder moved to `blocs/`, four new files listed), Tests rewritten to the 12 real files/54 cases, obsolete known issues dropped (animated count, removed pinned list header), detail page structure re-verified.
 - 2026-11-08: UI batch 4 — list Bloc: `FiltersCleared` + replace-semantics filters, silent pull-to-refresh (failure keeps items); detail: mounted tabs, page-scoped notes/interactions, fading pinned bar; unique contact labels.
 - 2026-11-07: UI batch 3 — inline status filter (sheet removed), header count skeleton, natural-height detail header with parallax, facts card redesign.
