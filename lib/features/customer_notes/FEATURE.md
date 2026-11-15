@@ -1,6 +1,6 @@
 # Customer Notes Feature
 
-> Last verified: 2026-11-12
+> Last verified: 2026-11-15
 > Path: `lib/features/customer_notes/`
 
 ## 1. Purpose
@@ -100,23 +100,26 @@ opportunity detail page.
 
 ## 11. Tests
 
-`test/features/customer_notes/` (mocktail + bloc_test), 20 files / 86 cases; shared `customer_notes_test_mocks.dart`:
+`test/features/customer_notes/` (mocktail + bloc_test), 27 files / 104 cases; shared `customer_notes_test_mocks.dart`:
 
 | Area | Files (cases) |
 |------|---------------|
+| Use cases | get (3), add (4), update (4), delete (3), watch (2) |
 | Models | note (3), note_customer_details (2), note_employee_details (2), customer_notes_response (3) |
 | Data | remote data source (5), repository (5) |
 | Cubits | list (9), form (7), delete (4) |
 | Mapper | customer_note_mapper (3) |
-| Widgets | timestamp (4), text body (3), tile (4), skeleton (2), thread content (5), view (6), composer (5), edit sheet (4), delete dialog (3), thread (5), layout at 360x640 + tablet at text scale 1.5 (2) |
+| Widgets | timestamp (4), text body (3), tile (4), skeleton (2), thread content (5), view (6), composer (5), edit sheet (4), delete dialog (3), thread (5), refresh notice (2), layout at 360x640 + tablet at text scale 1.5 (2) |
 
 Core additions covered by their own tests: `Formatters.relativeParts`, `AppTextField.minLines`, `AppBottomSheet.showDragHandle`.
 
 ## 12. Known issues / TODO
 
-- Use-case test coverage gap: no `*_usecase_test.dart` files exist in the working tree (the 2026-11-04 doc listed 8) — restore as its own task.
+none.
 
 ## 13. Changelog
+
+- 2026-11-15 — Test suite completed (18 new cases: 5 use-case tests — get/add/update/delete/watch — plus the refresh-notice widget test); Tests table updated to 27 files/104 cases, use-case-gap known issue removed.
 
 - 2026-11-12 — Doc repaired against the working tree: restructured to the 13 template sections, endpoints by constant name (`Endpoints.crmCustomerNotes` / `crmCustomerNoteById`), Tests rewritten to the real 20 files/86 cases (the doc's use-case tests do not exist), the thread's optional page-owned cubit documented, obsolete "no page wires the widgets yet" issue dropped.
 - 2026-11-08: `CustomerNotesThread` accepts an optional page-owned `cubit` so notes survive tab switches (used by the opportunity detail page).
