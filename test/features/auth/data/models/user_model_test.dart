@@ -9,6 +9,7 @@ Map<String, dynamic> tUserJson({
   Object? role = 1,
   Object? roleName = 'Admin',
   bool withPermissions = true,
+  Object? id = 46,
 }) {
   final json = <String, dynamic>{
     ApiKeys.firstNameKey: 'Adam',
@@ -18,6 +19,9 @@ Map<String, dynamic> tUserJson({
     ApiKeys.roleKey: role,
     ApiKeys.roleNameKey: roleName,
   };
+  if (id != null) {
+    json[ApiKeys.idKey] = id;
+  }
   if (withPermissions) {
     json[ApiKeys.permissionsKey] = [
       <String, dynamic>{
@@ -41,6 +45,17 @@ void main() {
       expect(model.role, UserRole.admin);
       expect(model.roleName, 'Admin');
       expect(model.permissions, hasLength(1));
+      expect(model.id, 46);
+    });
+
+    test('should tolerate a missing id (pre-update cached profile)', () {
+      final model = UserModel.fromJson(tUserJson(id: null));
+
+      expect(model.id, isNull);
+    });
+
+    test('should fall back to null for a non-int id', () {
+      expect(UserModel.fromJson(tUserJson(id: '46')).id, isNull);
     });
 
     test('should map every known role id to its enum value', () {
@@ -90,8 +105,15 @@ void main() {
       final json = model.toJson();
 
       expect(UserModel.fromJson(json), model);
+      expect(json[ApiKeys.idKey], 46);
       expect(json.containsKey(ApiKeys.accessTokenKey), isFalse);
       expect(json.containsKey(ApiKeys.refreshTokenKey), isFalse);
+    });
+
+    test('should omit the id when it is absent', () {
+      final json = UserModel.fromJson(tUserJson(id: null)).toJson();
+
+      expect(json.containsKey(ApiKeys.idKey), isFalse);
     });
   });
 
@@ -108,6 +130,7 @@ void main() {
       expect(entity.roleName, 'Admin');
       expect(entity.permissions.first.module, 'projects');
       expect(entity.permissions.first.permission, 'view');
+      expect(entity.id, 46);
     });
   });
 }

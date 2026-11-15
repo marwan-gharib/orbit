@@ -11,6 +11,7 @@ class PagedResult<T> extends Equatable {
     required this.hasMore,
     this.nextPage,
     this.nextCursor,
+    this.totalItems,
   });
 
   final List<T> items;
@@ -18,12 +19,17 @@ class PagedResult<T> extends Equatable {
   /// Whether another page can be requested.
   final bool hasMore;
 
-  /// Offset-based cursor; `null` when the API pages by [nextCursor].
+  /// Offset-based cursor; `null` when the API pages by [nextPage].
   final int? nextPage;
 
-  /// Opaque cursor returned by the API; `null` when the API pages by [nextPage].
+  /// Opaque cursor returned by the API; `null` when the API pages by [nextCursor].
   final String? nextCursor;
 
+  /// Total number of matching rows in the database, as reported by the API
+  /// envelope. Display-only: [hasMore] is derived from `next != null` only,
+  /// never from this field. `null` when the backend omits the envelope total.
+  final int? totalItems;
+
   @override
-  List<Object?> get props => [items, hasMore, nextPage, nextCursor];
+  List<Object?> get props => [items, hasMore, nextPage, nextCursor, totalItems];
 }

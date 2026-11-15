@@ -8,6 +8,7 @@ import 'package:orbit/core/network/base_api_client.dart';
 import 'package:orbit/core/network/session/session_cleaner.dart';
 import 'package:orbit/core/network/session/session_expired_notifier.dart';
 import 'package:orbit/core/router/pending_signup_session.dart';
+import 'package:orbit/core/services/current_employee_id_provider.dart';
 import 'package:orbit/core/utils/logger.dart';
 import 'package:orbit/features/auth/data/datasources/google/google_auth_client.dart';
 import 'package:orbit/features/auth/data/datasources/local/auth_local_data_source.dart';
@@ -53,6 +54,9 @@ Future<void> initAuthModule(GetIt getIt) async {
     ),
   );
   getIt.registerLazySingleton<SessionCleaner>(
+    () => getIt<AuthLocalDataSource>(),
+  );
+  getIt.registerLazySingleton<CurrentEmployeeIdProvider>(
     () => getIt<AuthLocalDataSource>(),
   );
 

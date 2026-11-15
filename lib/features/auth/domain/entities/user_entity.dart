@@ -14,6 +14,7 @@ final class User extends Equatable {
     required this.role,
     required this.roleName,
     required this.permissions,
+    this.id,
   });
 
   final String firstName;
@@ -26,6 +27,10 @@ final class User extends Equatable {
   final String roleName;
   final List<Permission> permissions;
 
+  /// Numeric employee id from the login response (`user.id`); null only for
+  /// sessions cached before the field existed.
+  final int? id;
+
   @override
   List<Object?> get props => [
     firstName,
@@ -35,5 +40,6 @@ final class User extends Equatable {
     role,
     roleName,
     permissions,
+    id,
   ];
 }

@@ -31,8 +31,8 @@ class MockLoginUseCase extends Mock implements LoginUseCase {}
 class MockGoogleSignInCubit extends MockCubit<GoogleSignInState>
     implements GoogleSignInCubit {}
 
-// The home destination in AppRouterRoutes is still a private placeholder.
-const String homePlaceholderText = 'Home (Placeholder)';
+// The home destination in AppRouterRoutes now shows a CRM entry button.
+const String homeCrmTitle = 'CRM';
 
 // Startup statuses from the routing decision table (FEATURE.md §7).
 const SplashStateEntity noAuthOnboardingSeen = SplashStateEntity(
@@ -146,7 +146,7 @@ void main() {
         await tester.pumpAndSettle();
 
         expect(find.byType(SplashScreen), findsNothing);
-        expect(find.text(homePlaceholderText), findsOneWidget);
+        expect(find.text(homeCrmTitle), findsOneWidget);
       },
     );
 

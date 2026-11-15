@@ -35,6 +35,12 @@ abstract final class AppConsts {
   /// Read by splash on startup; written by onboarding on completion/skip.
   static const String onboardingSeenKey = 'onboarding_seen';
 
-  /// Extra key used by TokenRefreshInterceptor to prevent infinite retry loops.
+  /// Extra key used by TokenRefreshInterceptor to prevent infinite retry loop.
   static const String retryAttemptedExtraKey = 'retry_attempted';
+
+  /// Opportunities page size sent as `page_size` (backend default page).
+  static const int crmOpportunitiesPageSize = 10;
+
+  /// Wait between CRM list keystrokes before a search request fires.
+  static const Duration crmSearchDebounce = Duration(milliseconds: 300);
 }

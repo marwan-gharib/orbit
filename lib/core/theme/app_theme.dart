@@ -31,6 +31,26 @@ abstract final class AppTheme {
     );
   }
 
+  /// Like [overlayStyle] but paints the system navigation bar with the theme
+  /// surface so it does not render white under dark CRM UI. Used on CRM routes
+  /// where the scaffold background is dark.
+  static SystemUiOverlayStyle overlayStyleWithNavBar(Brightness brightness) {
+    final isDark = brightness == Brightness.dark;
+    return SystemUiOverlayStyle(
+      statusBarColor: Colors.transparent,
+      statusBarBrightness: isDark ? Brightness.dark : Brightness.light,
+      statusBarIconBrightness: isDark ? Brightness.light : Brightness.dark,
+      systemNavigationBarColor: isDark
+          ? AppColorsExtension.dark.surface
+          : AppColorsExtension.light.surface,
+      systemNavigationBarIconBrightness: isDark
+          ? Brightness.light
+          : Brightness.dark,
+      systemStatusBarContrastEnforced: false,
+      systemNavigationBarContrastEnforced: false,
+    );
+  }
+
   // Material 3 state-layer alphas: hover/focus tints, pressed tints, and the
   // text-selection highlight.
   static const double _hoverOverlayAlpha = 0.08;

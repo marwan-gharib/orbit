@@ -13,6 +13,11 @@ import 'app_overlay_motion.dart';
 /// indicator and the keyboard; content that must grow past the default height
 /// (forms, pickers) is what [isScrollControlled] is for.
 ///
+/// A form that must not lose typed text can be made non-dismissible
+/// (`isDismissible: false`, `enableDrag: false`) and hide the handle with
+/// `showDragHandle: false`; dismissal then only happens through the sheet's
+/// own actions or a handled system back.
+///
 /// ```dart
 /// final filter = await AppBottomSheet.show<ProjectFilter>(
 ///   context: context,
@@ -29,6 +34,7 @@ abstract final class AppBottomSheet {
     bool isScrollControlled = false,
     bool isDismissible = true,
     bool enableDrag = true,
+    bool showDragHandle = true,
     bool useSafeArea = true,
     RouteSettings? routeSettings,
   }) => showModalBottomSheet<T>(
@@ -37,7 +43,7 @@ abstract final class AppBottomSheet {
     isScrollControlled: isScrollControlled,
     isDismissible: isDismissible,
     enableDrag: enableDrag,
-    showDragHandle: true,
+    showDragHandle: showDragHandle,
     useSafeArea: useSafeArea,
     routeSettings: routeSettings,
     sheetAnimationStyle: AppOverlayMotion.modalOf(context),

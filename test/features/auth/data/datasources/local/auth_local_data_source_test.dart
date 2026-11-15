@@ -26,6 +26,7 @@ LoginResponseModel _tSession() {
     ApiKeys.roleKey: 1,
     ApiKeys.roleNameKey: 'Admin',
     ApiKeys.permissionsKey: const <Object?>[],
+    ApiKeys.idKey: 46,
   };
   return LoginResponseModel.fromJson(<String, dynamic>{
     ApiKeys.accessTokenKey: 'access-1',
@@ -137,19 +138,22 @@ void main() {
     // clearSession() satisfies the SessionCleaner interface (Future<void>).
     // clearSessionWithResult() is the testable surface that exposes ApiResult.
 
-    test('should delete both tokens and the cached user and increment generation', () async {
-      expect(sessionNotifier.currentGeneration, 0);
+    test(
+      'should delete both tokens and the cached user and increment generation',
+      () async {
+        expect(sessionNotifier.currentGeneration, 0);
 
-      final result = await dataSource.clearSessionWithResult();
+        final result = await dataSource.clearSessionWithResult();
 
-      expect(result.isSuccess, isTrue);
-      expect(sessionNotifier.currentGeneration, 1);
-      verifyInOrder([
-        () => secureStorage.delete(AppConsts.accessTokenKey),
-        () => secureStorage.delete(AppConsts.refreshTokenKey),
-        () => cache.delete(AppConsts.authUserCacheKey),
-      ]);
-    });
+        expect(result.isSuccess, isTrue);
+        expect(sessionNotifier.currentGeneration, 1);
+        verifyInOrder([
+          () => secureStorage.delete(AppConsts.accessTokenKey),
+          () => secureStorage.delete(AppConsts.refreshTokenKey),
+          () => cache.delete(AppConsts.authUserCacheKey),
+        ]);
+      },
+    );
 
     test('clearSession (SessionCleaner override) completes without throwing', () async {
       // Verifies that the void wrapper delegates correctly and does not throw.
@@ -275,5 +279,41 @@ void main() {
 
       expect((result as ResultFailure).failure, isA<StorageFailure>());
     });
+  });
+
+  group('currentEmployeeId', () {
+    test('should return the cached employee id', () async {
+      when(() => cache.readJsonMap(AppConsts.authUserCacheKey))
+          .thenAnswer((_) async => session.user.toJson());
+
+      final result = await dataSource.currentEmployeeId();
+
+      expect((result as Success).data, 46);
+    });
+
+    test(
+      'should fail with UnauthorizedFailure when no user is cached',
+      () async {
+        when(() => cache.readJsonMap(AppConsts.authUserCacheKey))
+            .thenAnswer((_) async => null);
+
+        final result = await dataSource.currentEmployeeId();
+
+        expect((result as ResultFailure).failure, isA<UnauthorizedFailure>());
+      },
+    );
+
+    test(
+      'should fail with UnauthorizedFailure when the cached user has no id',
+      () async {
+        when(
+          () => cache.readJsonMap(AppConsts.authUserCacheKey),
+        ).thenAnswer((_) async => session.user.toJson()..remove(ApiKeys.idKey));
+
+        final result = await dataSource.currentEmployeeId();
+
+        expect((result as ResultFailure).failure, isA<UnauthorizedFailure>());
+      },
+    );
   });
 }

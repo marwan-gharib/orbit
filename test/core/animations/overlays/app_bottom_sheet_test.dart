@@ -11,6 +11,7 @@ void main() {
     WidgetTester tester, {
     required void Function(Future<String?> sheet) onSheet,
     bool disableAnimations = false,
+    bool showDragHandle = true,
   }) {
     return pumpOverlays(
       tester,
@@ -21,6 +22,7 @@ void main() {
               AppBottomSheet.show<String>(
                 context: context,
                 isScrollControlled: true,
+                showDragHandle: showDragHandle,
                 builder: (context) => TextButton(
                   onPressed: () => Navigator.pop(context, 'chosen'),
                   child: const Text('pick'),
@@ -73,4 +75,18 @@ void main() {
       expect(find.text('pick'), findsOneWidget);
     },
   );
+
+  testWidgets('should omit the drag handle when showDragHandle is false', (
+    tester,
+  ) async {
+    await pumpPickSheet(tester, onSheet: (_) {}, showDragHandle: false);
+
+    await tester.tap(find.text('open'));
+    await tester.pumpAndSettle();
+
+    final BottomSheet sheet = tester.widget<BottomSheet>(
+      find.byType(BottomSheet),
+    );
+    expect(sheet.showDragHandle, isFalse);
+  });
 }

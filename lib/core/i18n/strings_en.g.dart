@@ -48,6 +48,7 @@ class Translations with BaseTranslations<AppLocale, Translations> {
 	late final Translations$splash$en splash = Translations$splash$en._(_root);
 	late final Translations$onboarding$en onboarding = Translations$onboarding$en._(_root);
 	late final Translations$auth$en auth = Translations$auth$en._(_root);
+	late final Translations$crm$en crm = Translations$crm$en._(_root);
 }
 
 // Path: app
@@ -290,6 +291,26 @@ class Translations$auth$en {
 	late final Translations$auth$login$en login = Translations$auth$login$en._(_root);
 	late final Translations$auth$signup$en signup = Translations$auth$signup$en._(_root);
 	late final Translations$auth$pending$en pending = Translations$auth$pending$en._(_root);
+}
+
+// Path: crm
+class Translations$crm$en {
+	Translations$crm$en._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'CRM'
+	String get title => 'CRM';
+
+	late final Translations$crm$tabs$en tabs = Translations$crm$tabs$en._(_root);
+	late final Translations$crm$dashboard$en dashboard = Translations$crm$dashboard$en._(_root);
+	late final Translations$crm$editor$en editor = Translations$crm$editor$en._(_root);
+	late final Translations$crm$common$en common = Translations$crm$common$en._(_root);
+	late final Translations$crm$crmOpportunities$en crmOpportunities = Translations$crm$crmOpportunities$en._(_root);
+	late final Translations$crm$crmInteractions$en crmInteractions = Translations$crm$crmInteractions$en._(_root);
+	late final Translations$crm$crmNotes$en crmNotes = Translations$crm$crmNotes$en._(_root);
 }
 
 // Path: app.homePlaceholder
@@ -598,6 +619,336 @@ class Translations$auth$pending$en {
 	late final Translations$auth$pending$a11y$en a11y = Translations$auth$pending$a11y$en._(_root);
 }
 
+// Path: crm.tabs
+class Translations$crm$tabs$en {
+	Translations$crm$tabs$en._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Dashboard'
+	String get dashboard => 'Dashboard';
+
+	/// en: 'Opportunities'
+	String get opportunities => 'Opportunities';
+
+	/// en: 'Interactions'
+	String get interactions => 'Interactions';
+}
+
+// Path: crm.dashboard
+class Translations$crm$dashboard$en {
+	Translations$crm$dashboard$en._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Sales dashboard'
+	String get title => 'Sales dashboard';
+
+	/// en: 'Live overview of your pipeline'
+	String get subtitle => 'Live overview of your pipeline';
+
+	late final Translations$crm$dashboard$hero$en hero = Translations$crm$dashboard$hero$en._(_root);
+	late final Translations$crm$dashboard$kpi$en kpi = Translations$crm$dashboard$kpi$en._(_root);
+	late final Translations$crm$dashboard$winRatio$en winRatio = Translations$crm$dashboard$winRatio$en._(_root);
+	late final Translations$crm$dashboard$pipeline$en pipeline = Translations$crm$dashboard$pipeline$en._(_root);
+	late final Translations$crm$dashboard$closings$en closings = Translations$crm$dashboard$closings$en._(_root);
+	late final Translations$crm$dashboard$team$en team = Translations$crm$dashboard$team$en._(_root);
+	late final Translations$crm$dashboard$empty$en empty = Translations$crm$dashboard$empty$en._(_root);
+}
+
+// Path: crm.editor
+class Translations$crm$editor$en {
+	Translations$crm$editor$en._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Log interaction'
+	String get titleAdd => 'Log interaction';
+
+	/// en: 'Edit interaction'
+	String get titleEdit => 'Edit interaction';
+
+	/// en: 'Type'
+	String get type => 'Type';
+
+	/// en: 'Subject'
+	String get subject => 'Subject';
+
+	/// en: 'Description'
+	String get description => 'Description';
+
+	/// en: 'Date'
+	String get date => 'Date';
+
+	/// en: 'Contact (optional)'
+	String get contactOptional => 'Contact (optional)';
+
+	/// en: 'None'
+	String get contactNone => 'None';
+
+	/// en: 'Call'
+	String get typeCall => 'Call';
+
+	/// en: 'Email'
+	String get typeEmail => 'Email';
+
+	/// en: 'Meeting'
+	String get typeMeeting => 'Meeting';
+
+	/// en: 'Save'
+	String get submit => 'Save';
+
+	/// en: 'Subject is required'
+	String get subjectRequired => 'Subject is required';
+
+	/// en: 'Date is required'
+	String get dateRequired => 'Date is required';
+
+	/// en: 'Discard changes?'
+	String get discardTitle => 'Discard changes?';
+
+	/// en: 'You have unsaved changes. Discard them?'
+	String get discardBody => 'You have unsaved changes. Discard them?';
+}
+
+// Path: crm.common
+class Translations$crm$common$en {
+	Translations$crm$common$en._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Retry'
+	String get retry => 'Retry';
+
+	/// en: 'Loading…'
+	String get loading => 'Loading…';
+
+	/// en: 'Clear filters'
+	String get clearFilters => 'Clear filters';
+
+	/// en: 'Cancel'
+	String get cancel => 'Cancel';
+
+	/// en: 'Save'
+	String get save => 'Save';
+
+	/// en: 'Delete'
+	String get delete => 'Delete';
+
+	/// en: 'Edit'
+	String get edit => 'Edit';
+
+	/// en: 'Today'
+	String get today => 'Today';
+
+	/// en: 'Yesterday'
+	String get yesterday => 'Yesterday';
+
+	/// en: 'End of list'
+	String get endOfList => 'End of list';
+
+	/// en: 'Refresh failed — previous data kept'
+	String get refreshFailedNotice => 'Refresh failed — previous data kept';
+
+	/// en: 'Dismiss'
+	String get dismiss => 'Dismiss';
+
+	/// en: 'Call'
+	String get call => 'Call';
+
+	/// en: 'Email'
+	String get email => 'Email';
+
+	/// en: 'More actions'
+	String get moreActions => 'More actions';
+
+	/// en: 'Couldn't launch {app}. Try again later.'
+	String launchFailed({required Object app}) => 'Couldn\'t launch ${app}. Try again later.';
+
+	/// en: '{n} active filters'
+	String activeFilters({required Object n}) => '${n} active filters';
+
+	/// en: 'Updated'
+	String get updated => 'Updated';
+
+	/// en: 'Saved'
+	String get saved => 'Saved';
+
+	/// en: 'Deleted'
+	String get deleted => 'Deleted';
+
+	/// en: 'Invalid opportunity ID'
+	String get invalidId => 'Invalid opportunity ID';
+
+	/// en: 'Back'
+	String get back => 'Back';
+
+	/// en: 'Not found'
+	String get notFound => 'Not found';
+
+	late final Translations$crm$common$a11y$en a11y = Translations$crm$common$a11y$en._(_root);
+}
+
+// Path: crm.crmOpportunities
+class Translations$crm$crmOpportunities$en {
+	Translations$crm$crmOpportunities$en._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Search opportunities by title'
+	String get searchHint => 'Search opportunities by title';
+
+	/// en: 'Filter by stage'
+	String get filterTitle => 'Filter by stage';
+
+	late final Translations$crm$crmOpportunities$status$en status = Translations$crm$crmOpportunities$status$en._(_root);
+	late final Translations$crm$crmOpportunities$stage$en stage = Translations$crm$crmOpportunities$stage$en._(_root);
+	late final Translations$crm$crmOpportunities$card$en card = Translations$crm$crmOpportunities$card$en._(_root);
+
+	/// en: 'No opportunities'
+	String get listEmpty => 'No opportunities';
+
+	/// en: 'No opportunities match your filters'
+	String get listNoResults => 'No opportunities match your filters';
+
+	/// en: '1 opportunity'
+	String get listOpportunityCountOne => '1 opportunity';
+
+	/// en: '{n} opportunities'
+	String listOpportunityCountOther({required Object n}) => '${n} opportunities';
+
+	/// en: 'Loading opportunities.'
+	String get loadingOpportunities => 'Loading opportunities.';
+
+	/// en: 'Loading opportunity.'
+	String get loadingOpportunityDetail => 'Loading opportunity.';
+
+	late final Translations$crm$crmOpportunities$detail$en detail = Translations$crm$crmOpportunities$detail$en._(_root);
+}
+
+// Path: crm.crmInteractions
+class Translations$crm$crmInteractions$en {
+	Translations$crm$crmInteractions$en._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Search interactions by subject or description'
+	String get searchHint => 'Search interactions by subject or description';
+
+	late final Translations$crm$crmInteractions$type$en type = Translations$crm$crmInteractions$type$en._(_root);
+	late final Translations$crm$crmInteractions$item$en item = Translations$crm$crmInteractions$item$en._(_root);
+
+	/// en: 'No interactions'
+	String get feedEmpty => 'No interactions';
+
+	/// en: 'Interactions you add will appear here.'
+	String get feedEmptyMessage => 'Interactions you add will appear here.';
+
+	/// en: 'No interactions match your filters'
+	String get feedNoResults => 'No interactions match your filters';
+
+	/// en: 'Loading interactions…'
+	String get loading => 'Loading interactions…';
+
+	/// en: 'Edit'
+	String get edit => 'Edit';
+
+	/// en: 'Delete'
+	String get delete => 'Delete';
+
+	/// en: 'No interactions logged'
+	String get interactionsEmpty => 'No interactions logged';
+
+	late final Translations$crm$crmInteractions$deleteConfirm$en deleteConfirm = Translations$crm$crmInteractions$deleteConfirm$en._(_root);
+}
+
+// Path: crm.crmNotes
+class Translations$crm$crmNotes$en {
+	Translations$crm$crmNotes$en._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Notes'
+	String get threadTitle => 'Notes';
+
+	/// en: '1 note'
+	String get countOne => '1 note';
+
+	/// en: '{n} notes'
+	String countOther({required Object n}) => '${n} notes';
+
+	/// en: 'Loading notes…'
+	String get loading => 'Loading notes…';
+
+	/// en: 'Notes you add for this customer will appear here.'
+	String get emptyMessage => 'Notes you add for this customer will appear here.';
+
+	/// en: 'Note'
+	String get composerLabel => 'Note';
+
+	/// en: 'Add a note…'
+	String get composerHint => 'Add a note…';
+
+	/// en: 'Send'
+	String get send => 'Send';
+
+	/// en: 'Send note'
+	String get sendA11y => 'Send note';
+
+	/// en: 'Sending note'
+	String get sending => 'Sending note';
+
+	/// en: 'Note sent'
+	String get sent => 'Note sent';
+
+	/// en: 'Couldn't send the note. Try again.'
+	String get sendFailed => 'Couldn\'t send the note. Try again.';
+
+	/// en: 'Show more'
+	String get showMore => 'Show more';
+
+	/// en: 'Show less'
+	String get showLess => 'Show less';
+
+	/// en: 'Discard'
+	String get discard => 'Discard';
+
+	/// en: 'Note actions'
+	String get moreActions => 'Note actions';
+
+	/// en: '{relative}, {date}'
+	String timestampA11y({required Object relative, required Object date}) => '${relative}, ${date}';
+
+	/// en: 'Couldn't refresh notes. Showing the last loaded notes.'
+	String get refreshFailed => 'Couldn\'t refresh notes. Showing the last loaded notes.';
+
+	/// en: 'No notes yet'
+	String get empty => 'No notes yet';
+
+	/// en: 'Edit note'
+	String get edit => 'Edit note';
+
+	/// en: 'Delete note'
+	String get delete => 'Delete note';
+
+	late final Translations$crm$crmNotes$deleteConfirm$en deleteConfirm = Translations$crm$crmNotes$deleteConfirm$en._(_root);
+	late final Translations$crm$crmNotes$relative$en relative = Translations$crm$crmNotes$relative$en._(_root);
+}
+
 // Path: auth.login.a11y
 class Translations$auth$login$a11y$en {
 	Translations$auth$login$a11y$en._(this._root);
@@ -746,6 +1097,525 @@ class Translations$auth$pending$a11y$en {
 
 	/// en: 'Check your approval status'
 	String get checkStatus => 'Check your approval status';
+}
+
+// Path: crm.dashboard.hero
+class Translations$crm$dashboard$hero$en {
+	Translations$crm$dashboard$hero$en._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Open pipeline'
+	String get openPipeline => 'Open pipeline';
+
+	/// en: '{count} open opportunities'
+	String opportunities({required Object count}) => '${count} open opportunities';
+
+	/// en: 'Forecast coverage'
+	String get forecastCoverage => 'Forecast coverage';
+
+	/// en: 'Weighted forecast vs open pipeline'
+	String get weightedOfOpen => 'Weighted forecast vs open pipeline';
+}
+
+// Path: crm.dashboard.kpi
+class Translations$crm$dashboard$kpi$en {
+	Translations$crm$dashboard$kpi$en._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Won revenue'
+	String get won => 'Won revenue';
+
+	/// en: '{count} deals won'
+	String wonDeals({required Object count}) => '${count} deals won';
+
+	/// en: 'Weighted forecast'
+	String get weighted => 'Weighted forecast';
+
+	/// en: 'Adjusted by probability'
+	String get weightedHint => 'Adjusted by probability';
+
+	/// en: 'Avg. open deal'
+	String get avgDeal => 'Avg. open deal';
+
+	/// en: 'Per open opportunity'
+	String get avgDealHint => 'Per open opportunity';
+
+	/// en: 'Past close date'
+	String get pastDue => 'Past close date';
+
+	/// en: 'Open deals overdue'
+	String get pastDueHint => 'Open deals overdue';
+
+	/// en: 'All on schedule'
+	String get pastDueClear => 'All on schedule';
+}
+
+// Path: crm.dashboard.winRatio
+class Translations$crm$dashboard$winRatio$en {
+	Translations$crm$dashboard$winRatio$en._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Win ratio'
+	String get title => 'Win ratio';
+
+	/// en: 'Won vs lost deals'
+	String get subtitle => 'Won vs lost deals';
+
+	/// en: 'Won'
+	String get won => 'Won';
+
+	/// en: 'Lost'
+	String get lost => 'Lost';
+
+	/// en: '{count} closed deals'
+	String closedDeals({required Object count}) => '${count} closed deals';
+
+	/// en: 'No closed deals yet'
+	String get noClosed => 'No closed deals yet';
+}
+
+// Path: crm.dashboard.pipeline
+class Translations$crm$dashboard$pipeline$en {
+	Translations$crm$dashboard$pipeline$en._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Pipeline by stage'
+	String get title => 'Pipeline by stage';
+
+	/// en: 'Where your open deals are'
+	String get subtitle => 'Where your open deals are';
+
+	/// en: 'Funnel'
+	String get viewFunnel => 'Funnel';
+
+	/// en: 'Donut'
+	String get viewDonut => 'Donut';
+
+	/// en: 'Bars'
+	String get viewBars => 'Bars';
+
+	/// en: 'Value'
+	String get metricValue => 'Value';
+
+	/// en: 'Count'
+	String get metricCount => 'Count';
+
+	/// en: 'Total'
+	String get total => 'Total';
+
+	/// en: '{count} deals'
+	String dealsCount({required Object count}) => '${count} deals';
+
+	/// en: 'No open deals in the pipeline'
+	String get empty => 'No open deals in the pipeline';
+}
+
+// Path: crm.dashboard.closings
+class Translations$crm$dashboard$closings$en {
+	Translations$crm$dashboard$closings$en._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Expected closings'
+	String get title => 'Expected closings';
+
+	/// en: 'Deals by expected close month'
+	String get subtitle => 'Deals by expected close month';
+
+	/// en: 'Bars'
+	String get viewBars => 'Bars';
+
+	/// en: 'Trend'
+	String get viewLine => 'Trend';
+
+	/// en: 'Deal value'
+	String get deal => 'Deal value';
+
+	/// en: 'Weighted'
+	String get weighted => 'Weighted';
+
+	/// en: 'Best month'
+	String get bestMonth => 'Best month';
+
+	/// en: 'No expected closings'
+	String get empty => 'No expected closings';
+}
+
+// Path: crm.dashboard.team
+class Translations$crm$dashboard$team$en {
+	Translations$crm$dashboard$team$en._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Sales team'
+	String get title => 'Sales team';
+
+	/// en: 'Ranked by won revenue'
+	String get subtitle => 'Ranked by won revenue';
+
+	/// en: '{count} won'
+	String wonDeals({required Object count}) => '${count} won';
+
+	/// en: 'No won deals yet'
+	String get empty => 'No won deals yet';
+
+	/// en: 'Top performer'
+	String get topPerformer => 'Top performer';
+}
+
+// Path: crm.dashboard.empty
+class Translations$crm$dashboard$empty$en {
+	Translations$crm$dashboard$empty$en._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Nothing to show yet'
+	String get title => 'Nothing to show yet';
+
+	/// en: 'Dashboard figures appear once your team has opportunities.'
+	String get message => 'Dashboard figures appear once your team has opportunities.';
+}
+
+// Path: crm.common.a11y
+class Translations$crm$common$a11y$en {
+	Translations$crm$common$a11y$en._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Search'
+	String get search => 'Search';
+
+	/// en: 'Clear search'
+	String get clearSearch => 'Clear search';
+
+	/// en: 'Filters'
+	String get filterButton => 'Filters';
+
+	/// en: 'Selected'
+	String get chipSelected => 'Selected';
+}
+
+// Path: crm.crmOpportunities.status
+class Translations$crm$crmOpportunities$status$en {
+	Translations$crm$crmOpportunities$status$en._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'All'
+	String get all => 'All';
+
+	/// en: 'Open'
+	String get open => 'Open';
+
+	/// en: 'Won'
+	String get won => 'Won';
+
+	/// en: 'Lost'
+	String get lost => 'Lost';
+}
+
+// Path: crm.crmOpportunities.stage
+class Translations$crm$crmOpportunities$stage$en {
+	Translations$crm$crmOpportunities$stage$en._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'All'
+	String get all => 'All';
+
+	/// en: 'Lead'
+	String get lead => 'Lead';
+
+	/// en: 'Qualified'
+	String get qualified => 'Qualified';
+
+	/// en: 'Proposal'
+	String get proposal => 'Proposal';
+
+	/// en: 'Negotiation'
+	String get negotiation => 'Negotiation';
+
+	/// en: 'Closed'
+	String get closed => 'Closed';
+}
+
+// Path: crm.crmOpportunities.card
+class Translations$crm$crmOpportunities$card$en {
+	Translations$crm$crmOpportunities$card$en._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Overdue'
+	String get overdue => 'Overdue';
+
+	/// en: 'Estimated value'
+	String get valueA11y => 'Estimated value';
+
+	/// en: 'Probability'
+	String get probabilityA11y => 'Probability';
+}
+
+// Path: crm.crmOpportunities.detail
+class Translations$crm$crmOpportunities$detail$en {
+	Translations$crm$crmOpportunities$detail$en._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+	late final Translations$crm$crmOpportunities$detail$tabs$en tabs = Translations$crm$crmOpportunities$detail$tabs$en._(_root);
+
+	/// en: 'Open'
+	String get statusOpen => 'Open';
+
+	/// en: 'Won'
+	String get statusWon => 'Won';
+
+	/// en: 'Lost'
+	String get statusLost => 'Lost';
+
+	/// en: 'No reason recorded'
+	String get lostReasonEmpty => 'No reason recorded';
+
+	late final Translations$crm$crmOpportunities$detail$facts$en facts = Translations$crm$crmOpportunities$detail$facts$en._(_root);
+	late final Translations$crm$crmOpportunities$detail$contacts$en contacts = Translations$crm$crmOpportunities$detail$contacts$en._(_root);
+
+	/// en: 'No contacts for this customer'
+	String get contactsEmpty => 'No contacts for this customer';
+
+	/// en: 'No interactions logged'
+	String get interactionsEmpty => 'No interactions logged';
+
+	/// en: 'No notes yet'
+	String get notesEmpty => 'No notes yet';
+
+	late final Translations$crm$crmOpportunities$detail$logIt$en logIt = Translations$crm$crmOpportunities$detail$logIt$en._(_root);
+}
+
+// Path: crm.crmInteractions.type
+class Translations$crm$crmInteractions$type$en {
+	Translations$crm$crmInteractions$type$en._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'All'
+	String get all => 'All';
+
+	/// en: 'Call'
+	String get call => 'Call';
+
+	/// en: 'Email'
+	String get email => 'Email';
+
+	/// en: 'Meeting'
+	String get meeting => 'Meeting';
+}
+
+// Path: crm.crmInteractions.item
+class Translations$crm$crmInteractions$item$en {
+	Translations$crm$crmInteractions$item$en._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'No description'
+	String get noDescription => 'No description';
+
+	/// en: 'Opportunity'
+	String get openOpportunity => 'Opportunity';
+}
+
+// Path: crm.crmInteractions.deleteConfirm
+class Translations$crm$crmInteractions$deleteConfirm$en {
+	Translations$crm$crmInteractions$deleteConfirm$en._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Delete interaction?'
+	String get title => 'Delete interaction?';
+
+	/// en: 'This interaction will be removed permanently.'
+	String get body => 'This interaction will be removed permanently.';
+}
+
+// Path: crm.crmNotes.deleteConfirm
+class Translations$crm$crmNotes$deleteConfirm$en {
+	Translations$crm$crmNotes$deleteConfirm$en._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Delete note?'
+	String get title => 'Delete note?';
+
+	/// en: 'This note will be removed permanently.'
+	String get body => 'This note will be removed permanently.';
+}
+
+// Path: crm.crmNotes.relative
+class Translations$crm$crmNotes$relative$en {
+	Translations$crm$crmNotes$relative$en._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Just now'
+	String get now => 'Just now';
+
+	/// en: '1 minute ago'
+	String get minuteAgo => '1 minute ago';
+
+	/// en: '{n} minutes ago'
+	String minutesAgo({required Object n}) => '${n} minutes ago';
+
+	/// en: '1 hour ago'
+	String get hourAgo => '1 hour ago';
+
+	/// en: '{n} hours ago'
+	String hoursAgo({required Object n}) => '${n} hours ago';
+
+	/// en: '1 day ago'
+	String get dayAgo => '1 day ago';
+
+	/// en: '{n} days ago'
+	String daysAgo({required Object n}) => '${n} days ago';
+}
+
+// Path: crm.crmOpportunities.detail.tabs
+class Translations$crm$crmOpportunities$detail$tabs$en {
+	Translations$crm$crmOpportunities$detail$tabs$en._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Overview'
+	String get overview => 'Overview';
+
+	/// en: 'Contacts'
+	String get contacts => 'Contacts';
+
+	/// en: 'Interactions'
+	String get interactions => 'Interactions';
+
+	/// en: 'Notes'
+	String get notes => 'Notes';
+}
+
+// Path: crm.crmOpportunities.detail.facts
+class Translations$crm$crmOpportunities$detail$facts$en {
+	Translations$crm$crmOpportunities$detail$facts$en._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Created'
+	String get created => 'Created';
+
+	/// en: 'Expected close'
+	String get expectedClose => 'Expected close';
+
+	/// en: 'Closed'
+	String get closedAt => 'Closed';
+
+	/// en: 'Owner'
+	String get owner => 'Owner';
+
+	/// en: 'Lead source'
+	String get leadSource => 'Lead source';
+
+	/// en: 'Customer code'
+	String get customerCode => 'Customer code';
+
+	/// en: 'Company'
+	String get company => 'Company';
+
+	/// en: 'Address'
+	String get address => 'Address';
+
+	/// en: 'Phone'
+	String get phone => 'Phone';
+
+	/// en: 'Email'
+	String get email => 'Email';
+
+	/// en: 'Stage'
+	String get stage => 'Stage';
+
+	/// en: 'Probability'
+	String get probability => 'Probability';
+}
+
+// Path: crm.crmOpportunities.detail.contacts
+class Translations$crm$crmOpportunities$detail$contacts$en {
+	Translations$crm$crmOpportunities$detail$contacts$en._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Primary'
+	String get primary => 'Primary';
+
+	/// en: 'No contacts'
+	String get empty => 'No contacts';
+}
+
+// Path: crm.crmOpportunities.detail.logIt
+class Translations$crm$crmOpportunities$detail$logIt$en {
+	Translations$crm$crmOpportunities$detail$logIt$en._(this._root);
+
+	final Translations _root; // ignore: unused_field
+
+	// Translations
+
+	/// en: 'Log this call?'
+	String get callTitle => 'Log this call?';
+
+	/// en: 'Log this email?'
+	String get emailTitle => 'Log this email?';
+
+	/// en: 'Log this interaction under this opportunity?'
+	String get body => 'Log this interaction under this opportunity?';
+
+	/// en: 'Log it'
+	String get log => 'Log it';
+
+	/// en: 'Not now'
+	String get notNow => 'Not now';
 }
 
 /// The flat map containing all translations for locale <en>.
@@ -900,6 +1770,196 @@ extension on Translations {
 			'auth.pending.a11y.hero' => 'Orbit approval status',
 			'auth.pending.a11y.stepper' => 'Approval progress',
 			'auth.pending.a11y.checkStatus' => 'Check your approval status',
+			'crm.title' => 'CRM',
+			'crm.tabs.dashboard' => 'Dashboard',
+			'crm.tabs.opportunities' => 'Opportunities',
+			'crm.tabs.interactions' => 'Interactions',
+			'crm.dashboard.title' => 'Sales dashboard',
+			'crm.dashboard.subtitle' => 'Live overview of your pipeline',
+			'crm.dashboard.hero.openPipeline' => 'Open pipeline',
+			'crm.dashboard.hero.opportunities' => ({required Object count}) => '${count} open opportunities',
+			'crm.dashboard.hero.forecastCoverage' => 'Forecast coverage',
+			'crm.dashboard.hero.weightedOfOpen' => 'Weighted forecast vs open pipeline',
+			'crm.dashboard.kpi.won' => 'Won revenue',
+			'crm.dashboard.kpi.wonDeals' => ({required Object count}) => '${count} deals won',
+			'crm.dashboard.kpi.weighted' => 'Weighted forecast',
+			'crm.dashboard.kpi.weightedHint' => 'Adjusted by probability',
+			'crm.dashboard.kpi.avgDeal' => 'Avg. open deal',
+			'crm.dashboard.kpi.avgDealHint' => 'Per open opportunity',
+			'crm.dashboard.kpi.pastDue' => 'Past close date',
+			'crm.dashboard.kpi.pastDueHint' => 'Open deals overdue',
+			'crm.dashboard.kpi.pastDueClear' => 'All on schedule',
+			'crm.dashboard.winRatio.title' => 'Win ratio',
+			'crm.dashboard.winRatio.subtitle' => 'Won vs lost deals',
+			'crm.dashboard.winRatio.won' => 'Won',
+			'crm.dashboard.winRatio.lost' => 'Lost',
+			'crm.dashboard.winRatio.closedDeals' => ({required Object count}) => '${count} closed deals',
+			'crm.dashboard.winRatio.noClosed' => 'No closed deals yet',
+			'crm.dashboard.pipeline.title' => 'Pipeline by stage',
+			'crm.dashboard.pipeline.subtitle' => 'Where your open deals are',
+			'crm.dashboard.pipeline.viewFunnel' => 'Funnel',
+			'crm.dashboard.pipeline.viewDonut' => 'Donut',
+			'crm.dashboard.pipeline.viewBars' => 'Bars',
+			'crm.dashboard.pipeline.metricValue' => 'Value',
+			'crm.dashboard.pipeline.metricCount' => 'Count',
+			'crm.dashboard.pipeline.total' => 'Total',
+			'crm.dashboard.pipeline.dealsCount' => ({required Object count}) => '${count} deals',
+			'crm.dashboard.pipeline.empty' => 'No open deals in the pipeline',
+			'crm.dashboard.closings.title' => 'Expected closings',
+			'crm.dashboard.closings.subtitle' => 'Deals by expected close month',
+			'crm.dashboard.closings.viewBars' => 'Bars',
+			'crm.dashboard.closings.viewLine' => 'Trend',
+			'crm.dashboard.closings.deal' => 'Deal value',
+			'crm.dashboard.closings.weighted' => 'Weighted',
+			'crm.dashboard.closings.bestMonth' => 'Best month',
+			'crm.dashboard.closings.empty' => 'No expected closings',
+			'crm.dashboard.team.title' => 'Sales team',
+			'crm.dashboard.team.subtitle' => 'Ranked by won revenue',
+			'crm.dashboard.team.wonDeals' => ({required Object count}) => '${count} won',
+			'crm.dashboard.team.empty' => 'No won deals yet',
+			'crm.dashboard.team.topPerformer' => 'Top performer',
+			'crm.dashboard.empty.title' => 'Nothing to show yet',
+			'crm.dashboard.empty.message' => 'Dashboard figures appear once your team has opportunities.',
+			'crm.editor.titleAdd' => 'Log interaction',
+			'crm.editor.titleEdit' => 'Edit interaction',
+			'crm.editor.type' => 'Type',
+			'crm.editor.subject' => 'Subject',
+			'crm.editor.description' => 'Description',
+			'crm.editor.date' => 'Date',
+			'crm.editor.contactOptional' => 'Contact (optional)',
+			'crm.editor.contactNone' => 'None',
+			'crm.editor.typeCall' => 'Call',
+			'crm.editor.typeEmail' => 'Email',
+			'crm.editor.typeMeeting' => 'Meeting',
+			'crm.editor.submit' => 'Save',
+			'crm.editor.subjectRequired' => 'Subject is required',
+			'crm.editor.dateRequired' => 'Date is required',
+			'crm.editor.discardTitle' => 'Discard changes?',
+			'crm.editor.discardBody' => 'You have unsaved changes. Discard them?',
+			'crm.common.retry' => 'Retry',
+			'crm.common.loading' => 'Loading…',
+			'crm.common.clearFilters' => 'Clear filters',
+			'crm.common.cancel' => 'Cancel',
+			'crm.common.save' => 'Save',
+			'crm.common.delete' => 'Delete',
+			'crm.common.edit' => 'Edit',
+			'crm.common.today' => 'Today',
+			'crm.common.yesterday' => 'Yesterday',
+			'crm.common.endOfList' => 'End of list',
+			'crm.common.refreshFailedNotice' => 'Refresh failed — previous data kept',
+			'crm.common.dismiss' => 'Dismiss',
+			'crm.common.call' => 'Call',
+			'crm.common.email' => 'Email',
+			'crm.common.moreActions' => 'More actions',
+			'crm.common.launchFailed' => ({required Object app}) => 'Couldn\'t launch ${app}. Try again later.',
+			'crm.common.activeFilters' => ({required Object n}) => '${n} active filters',
+			'crm.common.updated' => 'Updated',
+			'crm.common.saved' => 'Saved',
+			'crm.common.deleted' => 'Deleted',
+			'crm.common.invalidId' => 'Invalid opportunity ID',
+			'crm.common.back' => 'Back',
+			'crm.common.notFound' => 'Not found',
+			'crm.common.a11y.search' => 'Search',
+			'crm.common.a11y.clearSearch' => 'Clear search',
+			'crm.common.a11y.filterButton' => 'Filters',
+			'crm.common.a11y.chipSelected' => 'Selected',
+			'crm.crmOpportunities.searchHint' => 'Search opportunities by title',
+			'crm.crmOpportunities.filterTitle' => 'Filter by stage',
+			'crm.crmOpportunities.status.all' => 'All',
+			'crm.crmOpportunities.status.open' => 'Open',
+			'crm.crmOpportunities.status.won' => 'Won',
+			'crm.crmOpportunities.status.lost' => 'Lost',
+			'crm.crmOpportunities.stage.all' => 'All',
+			'crm.crmOpportunities.stage.lead' => 'Lead',
+			'crm.crmOpportunities.stage.qualified' => 'Qualified',
+			'crm.crmOpportunities.stage.proposal' => 'Proposal',
+			'crm.crmOpportunities.stage.negotiation' => 'Negotiation',
+			'crm.crmOpportunities.stage.closed' => 'Closed',
+			'crm.crmOpportunities.card.overdue' => 'Overdue',
+			'crm.crmOpportunities.card.valueA11y' => 'Estimated value',
+			'crm.crmOpportunities.card.probabilityA11y' => 'Probability',
+			'crm.crmOpportunities.listEmpty' => 'No opportunities',
+			'crm.crmOpportunities.listNoResults' => 'No opportunities match your filters',
+			'crm.crmOpportunities.listOpportunityCountOne' => '1 opportunity',
+			'crm.crmOpportunities.listOpportunityCountOther' => ({required Object n}) => '${n} opportunities',
+			'crm.crmOpportunities.loadingOpportunities' => 'Loading opportunities.',
+			'crm.crmOpportunities.loadingOpportunityDetail' => 'Loading opportunity.',
+			'crm.crmOpportunities.detail.tabs.overview' => 'Overview',
+			'crm.crmOpportunities.detail.tabs.contacts' => 'Contacts',
+			'crm.crmOpportunities.detail.tabs.interactions' => 'Interactions',
+			'crm.crmOpportunities.detail.tabs.notes' => 'Notes',
+			'crm.crmOpportunities.detail.statusOpen' => 'Open',
+			'crm.crmOpportunities.detail.statusWon' => 'Won',
+			'crm.crmOpportunities.detail.statusLost' => 'Lost',
+			'crm.crmOpportunities.detail.lostReasonEmpty' => 'No reason recorded',
+			'crm.crmOpportunities.detail.facts.created' => 'Created',
+			'crm.crmOpportunities.detail.facts.expectedClose' => 'Expected close',
+			'crm.crmOpportunities.detail.facts.closedAt' => 'Closed',
+			'crm.crmOpportunities.detail.facts.owner' => 'Owner',
+			'crm.crmOpportunities.detail.facts.leadSource' => 'Lead source',
+			'crm.crmOpportunities.detail.facts.customerCode' => 'Customer code',
+			'crm.crmOpportunities.detail.facts.company' => 'Company',
+			'crm.crmOpportunities.detail.facts.address' => 'Address',
+			'crm.crmOpportunities.detail.facts.phone' => 'Phone',
+			'crm.crmOpportunities.detail.facts.email' => 'Email',
+			'crm.crmOpportunities.detail.facts.stage' => 'Stage',
+			'crm.crmOpportunities.detail.facts.probability' => 'Probability',
+			'crm.crmOpportunities.detail.contacts.primary' => 'Primary',
+			'crm.crmOpportunities.detail.contacts.empty' => 'No contacts',
+			'crm.crmOpportunities.detail.contactsEmpty' => 'No contacts for this customer',
+			'crm.crmOpportunities.detail.interactionsEmpty' => 'No interactions logged',
+			'crm.crmOpportunities.detail.notesEmpty' => 'No notes yet',
+			'crm.crmOpportunities.detail.logIt.callTitle' => 'Log this call?',
+			'crm.crmOpportunities.detail.logIt.emailTitle' => 'Log this email?',
+			'crm.crmOpportunities.detail.logIt.body' => 'Log this interaction under this opportunity?',
+			'crm.crmOpportunities.detail.logIt.log' => 'Log it',
+			'crm.crmOpportunities.detail.logIt.notNow' => 'Not now',
+			'crm.crmInteractions.searchHint' => 'Search interactions by subject or description',
+			'crm.crmInteractions.type.all' => 'All',
+			'crm.crmInteractions.type.call' => 'Call',
+			'crm.crmInteractions.type.email' => 'Email',
+			'crm.crmInteractions.type.meeting' => 'Meeting',
+			'crm.crmInteractions.item.noDescription' => 'No description',
+			'crm.crmInteractions.item.openOpportunity' => 'Opportunity',
+			'crm.crmInteractions.feedEmpty' => 'No interactions',
+			'crm.crmInteractions.feedEmptyMessage' => 'Interactions you add will appear here.',
+			'crm.crmInteractions.feedNoResults' => 'No interactions match your filters',
+			'crm.crmInteractions.loading' => 'Loading interactions…',
+			'crm.crmInteractions.edit' => 'Edit',
+			'crm.crmInteractions.delete' => 'Delete',
+			'crm.crmInteractions.interactionsEmpty' => 'No interactions logged',
+			'crm.crmInteractions.deleteConfirm.title' => 'Delete interaction?',
+			'crm.crmInteractions.deleteConfirm.body' => 'This interaction will be removed permanently.',
+			'crm.crmNotes.threadTitle' => 'Notes',
+			'crm.crmNotes.countOne' => '1 note',
+			'crm.crmNotes.countOther' => ({required Object n}) => '${n} notes',
+			'crm.crmNotes.loading' => 'Loading notes…',
+			'crm.crmNotes.emptyMessage' => 'Notes you add for this customer will appear here.',
+			'crm.crmNotes.composerLabel' => 'Note',
+			'crm.crmNotes.composerHint' => 'Add a note…',
+			'crm.crmNotes.send' => 'Send',
+			'crm.crmNotes.sendA11y' => 'Send note',
+			'crm.crmNotes.sending' => 'Sending note',
+			'crm.crmNotes.sent' => 'Note sent',
+			'crm.crmNotes.sendFailed' => 'Couldn\'t send the note. Try again.',
+			'crm.crmNotes.showMore' => 'Show more',
+			'crm.crmNotes.showLess' => 'Show less',
+			'crm.crmNotes.discard' => 'Discard',
+			'crm.crmNotes.moreActions' => 'Note actions',
+			'crm.crmNotes.timestampA11y' => ({required Object relative, required Object date}) => '${relative}, ${date}',
+			'crm.crmNotes.refreshFailed' => 'Couldn\'t refresh notes. Showing the last loaded notes.',
+			'crm.crmNotes.empty' => 'No notes yet',
+			'crm.crmNotes.edit' => 'Edit note',
+			'crm.crmNotes.delete' => 'Delete note',
+			'crm.crmNotes.deleteConfirm.title' => 'Delete note?',
+			'crm.crmNotes.deleteConfirm.body' => 'This note will be removed permanently.',
+			'crm.crmNotes.relative.now' => 'Just now',
+			'crm.crmNotes.relative.minuteAgo' => '1 minute ago',
+			'crm.crmNotes.relative.minutesAgo' => ({required Object n}) => '${n} minutes ago',
+			'crm.crmNotes.relative.hourAgo' => '1 hour ago',
+			'crm.crmNotes.relative.hoursAgo' => ({required Object n}) => '${n} hours ago',
+			'crm.crmNotes.relative.dayAgo' => '1 day ago',
+			'crm.crmNotes.relative.daysAgo' => ({required Object n}) => '${n} days ago',
 			_ => null,
 		};
 	}
