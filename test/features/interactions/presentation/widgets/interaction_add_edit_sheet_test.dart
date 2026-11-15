@@ -1,16 +1,20 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mocktail/mocktail.dart';
 
 import 'package:orbit/core/widgets/app_text_field.dart' show AppTextField;
+import 'package:orbit/core/animations/selection/animated_chip_selector.dart';
 import 'package:orbit/features/interactions/domain/enums/interaction_type.dart';
 import 'package:orbit/features/interactions/presentation/cubits/interaction_form/interaction_form_cubit.dart';
 import 'package:orbit/features/interactions/presentation/cubits/interaction_form/interaction_form_state.dart';
 import 'package:orbit/features/interactions/presentation/widgets/interaction_add_edit_sheet.dart';
 import 'package:orbit/features/interactions/presentation/view_models/interaction_tile_data.dart'
-    show InteractionTileData, SheetMode, InteractionEditData, InteractionContactOption;
+    show
+        InteractionTileData,
+        SheetMode,
+        InteractionEditData,
+        InteractionContactOption;
 
 import '../../test_helpers.dart';
 
@@ -30,17 +34,20 @@ void main() {
     setUp(() {
       formCubit = _MockFormCubit();
       callbacks = _MockCallbacks();
-      registerFallbackValue(InteractionTileData(
-        id: 1,
-        type: InteractionType.call,
-        subject: 'Test',
-        description: 'Desc',
-        date: fixedToday,
-      ));
+      registerFallbackValue(
+        InteractionTileData(
+          id: 1,
+          type: InteractionType.call,
+          subject: 'Test',
+          description: 'Desc',
+          date: fixedToday,
+        ),
+      );
       registerFallbackValue(SheetMode.add);
     });
 
-    Future<void> pumpAddSheet(WidgetTester tester, {
+    Future<void> pumpAddSheet(
+      WidgetTester tester, {
       required int customerId,
       int? opportunityId,
       List<InteractionContactOption>? contacts,
@@ -74,7 +81,8 @@ void main() {
       );
     }
 
-    Future<void> pumpEditSheet(WidgetTester tester, {
+    Future<void> pumpEditSheet(
+      WidgetTester tester, {
       required InteractionEditData editData,
     }) async {
       whenListen(
@@ -99,8 +107,9 @@ void main() {
     }
 
     group('ADD mode', () {
-      testWidgets('shows contact selector only in ADD mode',
-          (WidgetTester tester) async {
+      testWidgets('shows contact selector only in ADD mode', (
+        WidgetTester tester,
+      ) async {
         await pumpAddSheet(
           tester,
           customerId: 1,
@@ -111,11 +120,19 @@ void main() {
         );
 
         expect(find.text('Contact (optional)'), findsOneWidget);
-        expect(find.byType(FilterChip), findsNWidgets(3)); // None + 2 contacts
+        // "None" + the two contacts in one chip row selector.
+        final selector = tester.widget<AnimatedChipSelector<int?>>(
+          find.byType(AnimatedChipSelector<int?>),
+        );
+        expect(
+          selector.items.map((item) => item.value),
+          orderedEquals(<int?>[null, 1, 2]),
+        );
       });
 
-      testWidgets('contact selector NOT shown in EDIT mode',
-          (WidgetTester tester) async {
+      testWidgets('contact selector NOT shown in EDIT mode', (
+        WidgetTester tester,
+      ) async {
         final editData = InteractionEditData(
           interactionId: 42,
           type: InteractionType.call,
@@ -129,13 +146,12 @@ void main() {
 
         // Contact selector should not be present
         expect(find.text('Contact (optional)'), findsNothing);
-        expect(find.byType(FilterChip), findsNothing);
+        expect(find.byType(AnimatedChipSelector<int?>), findsNothing);
       });
     });
 
     group('EDIT mode', () {
-      testWidgets('prefills fields with editData',
-          (WidgetTester tester) async {
+      testWidgets('prefills fields with editData', (WidgetTester tester) async {
         final editData = InteractionEditData(
           interactionId: 42,
           type: InteractionType.email,
@@ -149,16 +165,21 @@ void main() {
         await pumpEditSheet(tester, editData: editData);
 
         // Subject should be prefilled
-        final subjectField = tester.widget<AppTextField>(find.byType(AppTextField).first);
+        final subjectField = tester.widget<AppTextField>(
+          find.byType(AppTextField).first,
+        );
         expect(subjectField.controller?.text, equals('Original Subject'));
 
         // Description should be prefilled
-        final descField = tester.widget<AppTextField>(find.byType(AppTextField).last);
+        final descField = tester.widget<AppTextField>(
+          find.byType(AppTextField).last,
+        );
         expect(descField.controller?.text, equals('Original Description'));
       });
 
-      testWidgets('contact selector NOT shown in EDIT mode',
-          (WidgetTester tester) async {
+      testWidgets('contact selector NOT shown in EDIT mode', (
+        WidgetTester tester,
+      ) async {
         final editData = InteractionEditData(
           interactionId: 42,
           type: InteractionType.call,
@@ -172,7 +193,7 @@ void main() {
 
         // Contact selector should not be present
         expect(find.text('Contact (optional)'), findsNothing);
-        expect(find.byType(FilterChip), findsNothing);
+        expect(find.byType(AnimatedChipSelector<int?>), findsNothing);
       });
     });
   });

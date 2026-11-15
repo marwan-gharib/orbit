@@ -1,6 +1,6 @@
 # Interactions Feature
 
-> Last verified: 2026-11-12
+> Last verified: 2026-11-15
 > Path: `lib/features/interactions/`
 
 ## 1. Purpose
@@ -100,7 +100,7 @@ layer). No standalone routes: it lives inside the CRM shell.
 
 ## 11. Tests
 
-`test/features/interactions/` (mocktail + bloc_test), 29 files / 148 cases; shared helpers `interactions_test_mocks.dart` + `test_helpers.dart`:
+`test/features/interactions/` (mocktail + bloc_test), 37 files / 176 cases; shared helpers `interactions_test_mocks.dart` + `test_helpers.dart`:
 
 | Area | Files (cases) |
 |------|---------------|
@@ -108,19 +108,20 @@ layer). No standalone routes: it lives inside the CRM shell.
 | Models | interaction_model (7), interactions_response_model (3) |
 | Data | remote data source (8), repository search (6), repository mutations (6) |
 | Constants | interaction_layout_constants (3) |
-| Blocs/Cubits | list lifecycle (1), list CRM-signal refresh (4), form (8), delete (4) |
+| Blocs/Cubits | list lifecycle (5), list filters (2), list CRM-signal refresh (4), form (8), delete (4) |
 | Mappers/view models | tile mapper (4), tile data (7) |
-| Pure | date_grouping (10), timeline_ordering (7) |
-| Widgets | feed_view (3), feed_header (8), feed_content (9), feed_state_body (12), tile (7), tile_skeleton (3), type_icon (4), timeline (6), add_edit_sheet (4), delete_dialog (3), helpers (4) |
+| Pure | date_grouping (10), timeline_ordering (7), form_dirty (5), submit_params (2) |
+| Widgets | feed_view (3), feed_header (8), feed_content (4), feed_content_diff (5), feed_state_body (12), tile (7), tile_skeleton (3), type_icon (4), timeline (6), add_edit_sheet (4), delete_dialog (3), group_header (4), refresh_notice (1), swipe_background (3), helpers (4) |
+
+Widget tests drive the sliver feed with `whenListen` mock blocs and pump past the one-shot stagger timer (`extraSlow + 1ms`); the restartable-cancel lifecycle test suspends each fetch on its own Completer.
 
 ## 12. Known issues / TODO
 
-- `interactions_list_bloc_test.dart` holds a single lifecycle case (the 2026-11-01 suite had 7) — broad list lifecycle coverage shrank during the UI batches; restore as its own task.
 - `watch_interaction_changes_usecase_test.dart` uses a real `StreamController`; signal delivery is flushed through the event loop.
-- `interactions_group_header.dart` has no dedicated test file (exercised indirectly through `interactions_feed_content_test.dart`).
 
 ## 13. Changelog
 
+- 2026-11-15 — Stale feed/tile/add-edit widget tests rewritten for the sliver output (176 cases total); added list-bloc lifecycle (incl. restartable cancel) + filters, form dirty/submit-params pure tests, and group-header / refresh-notice / swipe-background widget tests; feed-content tests split into static-render and diff/stagger files; Tests table updated, shrunken-coverage known issue removed.
 - 2026-11-12 — Doc repaired against the working tree: full UI documented (file map grew to the real widget/pure/view-model layer), Tests rewritten to the 29 real files/148 cases, i18n namespace and Screens & routes added, holders noted as `blocs/` (list) and `cubits/` (form/delete), `InteractionType` documented as feature-owned.
 - 2026-11-08: UI batch 4 — `FiltersCleared` (search + type, keeps customer/opportunity scope); header owns its search controller and empties it on clear-all; detailed feed skeleton; date header redesigned (pill + count), card modernised, no duplicate date in feed cards.
 - 2026-11-07: Add/edit/delete helpers resolve cubits through DI (`getIt`) and close them afterwards; opportunity chip polished (icon, readable colours).

@@ -19,12 +19,14 @@ import 'package:orbit/features/interactions/presentation/cubits/interaction_dele
 import 'package:orbit/features/interactions/presentation/widgets/interactions_feed_view.dart';
 import 'package:orbit/features/interactions/presentation/widgets/interactions_feed_header.dart';
 import 'package:orbit/features/interactions/presentation/widgets/interactions_feed_state_body.dart';
+import 'package:orbit/features/interactions/presentation/widgets/interaction_tile_skeleton.dart';
+import 'package:orbit/features/interactions/presentation/constants/interaction_layout_constants.dart';
 import 'package:orbit/features/interactions/presentation/view_models/interaction_tile_data.dart';
-import 'package:orbit/core/animations/loading/shimmer_box.dart';
 
 import '../../test_helpers.dart';
 
-class _MockListBloc extends MockBloc<InteractionsListEvent, InteractionsListState>
+class _MockListBloc
+    extends MockBloc<InteractionsListEvent, InteractionsListState>
     implements InteractionsListBloc {}
 
 class _MockFormCubit extends MockBloc<void, InteractionFormState>
@@ -54,13 +56,15 @@ void main() {
       registerFallbackValue(const InteractionsListRefreshed());
       registerFallbackValue(const InteractionsListSearchChanged(''));
       registerFallbackValue(const InteractionsListFiltersChanged());
-      registerFallbackValue(InteractionTileData(
-        id: 1,
-        type: InteractionType.call,
-        subject: 'Test',
-        description: 'Desc',
-        date: today,
-      ));
+      registerFallbackValue(
+        InteractionTileData(
+          id: 1,
+          type: InteractionType.call,
+          subject: 'Test',
+          description: 'Desc',
+          date: today,
+        ),
+      );
     });
 
     Widget buildTestWidget({
@@ -68,16 +72,8 @@ void main() {
       required InteractionFormState formState,
       required InteractionDeleteState deleteState,
     }) {
-      whenListen(
-        listBloc,
-        Stream.value(listState),
-        initialState: listState,
-      );
-      whenListen(
-        formCubit,
-        Stream.value(formState),
-        initialState: formState,
-      );
+      whenListen(listBloc, Stream.value(listState), initialState: listState);
+      whenListen(formCubit, Stream.value(formState), initialState: formState);
       whenListen(
         deleteCubit,
         Stream.value(deleteState),
@@ -90,12 +86,15 @@ void main() {
           BlocProvider<InteractionFormCubit>.value(value: formCubit),
           BlocProvider<InteractionDeleteCubit>.value(value: deleteCubit),
         ],
-        child: InteractionsFeedView(onOpenOpportunity: callbacks.onOpenOpportunity),
+        child: InteractionsFeedView(
+          onOpenOpportunity: callbacks.onOpenOpportunity,
+        ),
       );
     }
 
-    testWidgets('initial load shows skeleton via Bloc',
-        (WidgetTester tester) async {
+    testWidgets('initial load shows skeleton via Bloc', (
+      WidgetTester tester,
+    ) async {
       final listState = const InteractionsListInitial(
         criteria: InteractionsCriteria(),
       );
@@ -109,12 +108,14 @@ void main() {
         ),
       );
 
-      // Should show skeleton (ShimmerBox)
-      expect(find.byType(ShimmerBox), findsNWidgets(3));
+      // Should show the skeleton twin (two groups of header + tile rows)
+      expect(find.byType(InteractionGroupHeaderSkeleton), findsNWidgets(2));
+      expect(find.byType(InteractionTileSkeletonList), findsNWidgets(2));
     });
 
-    testWidgets('pull-to-refresh dispatches InteractionsListRefreshed',
-        (WidgetTester tester) async {
+    testWidgets('pull-to-refresh dispatches InteractionsListRefreshed', (
+      WidgetTester tester,
+    ) async {
       final interactions = [
         InteractionTileData(
           id: 1,
@@ -165,8 +166,15 @@ void main() {
       verify(() => listBloc.add(const InteractionsListRefreshed())).called(1);
     });
 
-    testWidgets('renders header, content, and bottom padding',
-        (WidgetTester tester) async {
+    testWidgets('renders header, content, and bottom padding', (
+      WidgetTester tester,
+    ) async {
+      // Tall viewport: the trailing bottom-padding sliver must be inside the
+      // built region for the child to exist.
+      tester.view.physicalSize = const Size(800, 1400);
+      tester.view.devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+
       final listState = const InteractionsListInitial(
         criteria: InteractionsCriteria(),
       );
@@ -189,10 +197,15 @@ void main() {
       // Should have state body
       expect(find.byType(InteractionsFeedStateBody), findsOneWidget);
 
-      // Should have bottom padding
-      expect(find.byWidgetPredicate(
-        (widget) => widget is SizedBox && widget.height == 100,
-      ), findsOneWidget);
+      // Should have bottom padding sized by the shared constant
+      expect(
+        find.byWidgetPredicate(
+          (widget) =>
+              widget is SizedBox &&
+              widget.height == InteractionLayoutConstants.feedBottomPadding,
+        ),
+        findsOneWidget,
+      );
     });
   });
 }
