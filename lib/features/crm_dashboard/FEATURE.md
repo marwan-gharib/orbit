@@ -1,6 +1,6 @@
 # CRM Dashboard Feature
 
-> Last verified: 2026-11-12
+> Last verified: 2026-11-15
 > Path: `lib/features/crm_dashboard/`
 
 ## 1. Purpose
@@ -89,15 +89,24 @@ closings by month and the sales team ranking. All figures come from one
 
 ## 11. Tests
 
-none — `test/features/crm_dashboard/` and `test/core/widgets/charts/` exist as empty directories; no test files (see Known issues).
+66 tests in `test/features/crm_dashboard/`, all passing (`crm_dashboard_test_mocks.dart` holds the shared mocks and fixtures):
+
+- Models: every `data/models/` class — fromJson, neutral defaults for missing/mistyped keys, FormatException on wrongly shaped lists, toEntity.
+- Data: `DashboardRemoteDataSource` (endpoint GET + parse, non-object body, client error, wrong list shape), `DashboardRepositoryImpl` (success/failure passthrough).
+- Domain: `DashboardStage.fromValue`, `GetDashboardOverviewUseCase` passthrough.
+- Cubit: first-load success/error, no reload with content, no second fetch while loading, silent refresh keeps data (`isRefreshing`), failed refresh keeps data + `refreshFailure`, refresh from error → full load, stale-response token guard, no emit after close mid-fetch.
+- Pure: `dashboard_insights.dart` — forecast coverage, average open deal, share clamping, sales-team ranking (value → count → name), best month, stage metric, empty detection.
+- Widgets: `DashboardTab` (load on display, skeleton, figures, empty state, ErrorState + Retry re-loads) and `DashboardRefreshNotice` (copy + Dismiss).
+
+Widget tests use `MockDashboardCubit` + `whenListen` (real cubits never resume futures inside `testWidgets`); `test/core/widgets/charts/` covers the chart widgets, scale and data classes (see Core).
 
 ## 12. Known issues / TODO
 
-- Full test-suite gap: model parsing, repository, cubit (incl. out-of-order requests), pure insights, skeleton/view layouts at 320/360/412 px × text scale 1/1.5/2, view switching, empty state, reduce motion — described in the 2026-11-08 doc but absent from the working tree; same for the `core/widgets/charts/` tests. Restore as its own task.
 - Charts use LTR layout inside RTL locales for now.
 - The past-close-date KPI does not navigate (the opportunities list has no overdue filter yet).
 
 ## 13. Changelog
 
+- 2026-11-15 — Test suite restored (66 tests: models, datasource, repository, usecase, cubit with request guards, insights, tab + refresh notice widgets); charts tests restored under `test/core/widgets/charts/`; Tests section rewritten, Known-issue gap entry removed.
 - 2026-11-12 — Doc repaired against the working tree: restructured to the 13 template sections, entities/models and file map expanded to the real files (card header, legend item, refresh notice added), Tests corrected to none (suite absent from the working tree — moved to Known issues), endpoint by constant name.
 - 2026-11-08: Feature created (domain/data/cubit/UI), DI module, shell tab 0, core `widgets/charts/` and the compact money formatter.
