@@ -1,6 +1,6 @@
 # CRM Shell Feature
 
-> Last verified: 2026-11-12
+> Last verified: 2026-11-15
 > Path: `lib/features/crm_shell/`
 
 ## 1. Purpose
@@ -85,17 +85,24 @@ none — composition only.
 
 ## 11. Tests
 
-none — no `test/features/crm_shell/` yet (navigation map and integration flows planned).
+4 tests in `test/features/crm_shell/presentation/widgets/crm_shell_test.dart`, all passing:
+
+- Shell renders the CRM title and all three tab labels (i18n).
+- Starts on the Dashboard tab and loads it exactly once; the opportunities list is NOT started until its tab is selected.
+- Selecting the Opportunities tab builds the skeleton and dispatches `OpportunitiesListStarted` once.
+- Tapping an `OpportunityCard` pushes the detail route and shows the opportunity id.
+
+Mocks: `MockDashboardCubit` + local `MockBloc` mocks for the four shell blocs, registered in getIt per test (reset in tearDown); the shell runs under a two-route `GoRouter` (`RoutePaths.crm` + `RoutePaths.crmOpportunityDetails`) inside the shared `pumpApp` harness. Tab taps target the nav-bar icons — unselected labels are clipped and not hit-testable.
 
 ## 12. Known issues / TODO
 
-- Missing test coverage: navigation map and shell integration flows have no tests.
 - `crm_shell.dart` pushes the detail route with a string literal
   (`'/crm/opportunities/$id'`) instead of `RoutePaths.crmOpportunityDetails` (ARCH-10) —
   small fix needed.
 
 ## 13. Changelog
 
+- 2026-11-15 — Shell test suite added (4 widget tests: labels, dashboard-first load, opportunities tab start, card → detail navigation); Tests section rewritten, Known-issue test-coverage entry removed.
 - 2026-11-12 — Doc repaired against the working tree: three tabs incl. Dashboard (tab 0), `FloatingNavBar` documented (was `AnimatedChipSelector`), deleted barrel removed from the file map, `customer_notes` demoted to indirect dependency, `crm_dashboard` recorded, tests marked absent, string-literal route push flagged.
 - 2026-11-08: Dashboard tab added (tab 0) from `crm_dashboard`; nav bar has 3 items and shows only the selected label. `FloatingNavBar` follows `TabController.animation` frame by frame (no stacked implicit animation, no overshoot).
 - 2026-11-07: Top tab bar replaced by the core `FloatingNavBar` (floating, away from edges, sliding spring pill, hides while scrolling down).
